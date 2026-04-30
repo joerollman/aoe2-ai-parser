@@ -419,6 +419,9 @@ real action instead of a `can-*` fact after `=>`, or adding a missing load file.
   allow `any-*` or `every-*` wildcards in its `PlayerNumber` slot. The same
   single-player restriction is enforced for `up-get-player-color`,
   `up-get-upgrade-id`, `up-store-player-chat`, and `up-store-player-name`.
+  `up-find-player-flare` is checked separately: `any-*` is allowed, but
+  `this-any-*` and `every-*` are reported because the command documentation says
+  those forms are not designed for flare lookup.
 - Literal numeric id slots and resolved integer `defconst` values are checked
   against explicit documented ranges. For example, `(set-goal 0 1)` is reported
   as `command-numeric-range-mismatch` because AIRef documents `GoalId` as

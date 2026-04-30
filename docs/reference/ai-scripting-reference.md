@@ -576,6 +576,9 @@ is explicit. For example, `up-set-placement-data`, `up-get-player-color`,
 `any-*` and `every-*` player wildcards in their `PlayerNumber` slots; use an
 exact player, `my-player-number`, `scenario-player-#`, `lobby-player-#`, or a
 `this-any-*` rule variable instead.
+`up-find-player-flare` has a different documented restriction: `any-*` is
+allowed, but `this-any-*` and `every-*` are reported because flare ownership
+does not identify the actual sender reliably.
 
 ## Logical Operators
 

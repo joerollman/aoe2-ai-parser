@@ -2294,6 +2294,54 @@ void debug() {
 
         self.assertEqual(findings, [])
 
+    def test_flags_unsupported_player_wildcards_for_up_find_player_flare(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.per"
+            path.write_text(
+                """
+(defconst flare-point 41)
+(defrule
+    (true)
+=>
+    (up-find-player-flare this-any-ally flare-point)
+    (up-find-player-flare every-enemy flare-point)
+    (disable-self)
+)
+""".strip(),
+                encoding="utf-8",
+            )
+
+            findings = lint_file(path)
+
+        self.assertEqual(
+            [finding.code for finding in findings],
+            ["command-argument-mismatch", "command-argument-mismatch"],
+        )
+        self.assertTrue(all("not designed for flare lookup" in finding.message for finding in findings))
+
+    def test_allows_supported_player_values_for_up_find_player_flare(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.per"
+            path.write_text(
+                """
+(defconst flare-point 41)
+(defrule
+    (true)
+=>
+    (up-find-player-flare any-ally flare-point)
+    (up-find-player-flare focus-player flare-point)
+    (up-find-player-flare target-player flare-point)
+    (up-find-player-flare 1 flare-point)
+    (disable-self)
+)
+""".strip(),
+                encoding="utf-8",
+            )
+
+            findings = lint_file(path)
+
+        self.assertEqual(findings, [])
+
     def test_flags_binary_logical_operator_with_too_many_child_facts(self) -> None:
         with TemporaryDirectory() as tmp:
             path = Path(tmp) / "sample.per"

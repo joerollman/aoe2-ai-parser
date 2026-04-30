@@ -1744,6 +1744,10 @@ def is_any_every_player_wildcard(value: str) -> bool:
     return value.startswith("any-") or value.startswith("every-")
 
 
+def is_flare_unsupported_player_wildcard(value: str) -> bool:
+    return value.startswith("this-any-") or value.startswith("every-")
+
+
 SINGLE_PLAYER_NUMBER_COMMANDS = {
     "up-get-player-color",
     "up-get-upgrade-id",
@@ -1929,6 +1933,19 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
                         index,
                         "command-argument-mismatch",
                         f"{expr.head} PlayerNumber {value!r} cannot use any/every wildcard players; use an exact player, my-player-number, scenario-player-#, lobby-player-#, or this-any-* rule variable",
+                    )
+                )
+            if (
+                expr.head == "up-find-player-flare"
+                and parameter_name == "PlayerNumber"
+                and is_flare_unsupported_player_wildcard(value)
+            ):
+                findings.append(
+                    finding_for_arg(
+                        expr,
+                        index,
+                        "command-argument-mismatch",
+                        f"{expr.head} PlayerNumber {value!r} is not designed for flare lookup; use any-*, my-player-number, focus-player, target-player, scenario-player-#, lobby-player-#, or loop exact players",
                     )
                 )
             family_finding = lint_parameter_family_operand(expr, parameters, parameter_name, value, index)
