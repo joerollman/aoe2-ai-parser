@@ -109,6 +109,7 @@ for (const needle of [
   "function formatPackageIssueGroups",
   "payload.issue_groups || []",
   '"lint-package", packageRoot, "--json", "--fail-level", "error"',
+  'path.extname(filePath).toLowerCase() === ".ai"',
   "exports._test",
 ]) {
   assertIncludes(clientSource, needle, clientPath);
@@ -149,6 +150,7 @@ for (const needle of [
 for (const needle of [
   "function runLabPackageLinter",
   '"lint-package", packageRoot, "--json", "--fail-level", "error"',
+  'path.extname(filePath).toLowerCase() === ".ai"',
   "function collectAiRootDiagnostics",
   "missing-load-target",
   "stale-ai-root",
