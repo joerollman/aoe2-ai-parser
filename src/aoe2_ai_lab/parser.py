@@ -731,6 +731,14 @@ def parse_script(path: str | Path) -> Script:
     action_lines: list[int] = []
     fact_columns: list[int] = []
     action_columns: list[int] = []
+    pending_fact_expr = ""
+    pending_fact_line = 0
+    pending_fact_column = 0
+    pending_fact_balance = 0
+    pending_action_expr = ""
+    pending_action_line = 0
+    pending_action_column = 0
+    pending_action_balance = 0
     target = facts
     target_lines = fact_lines
     target_columns = fact_columns
@@ -745,6 +753,58 @@ def parse_script(path: str | Path) -> Script:
         line_number: int,
         column_offset: int,
     ) -> None:
+        nonlocal pending_fact_expr, pending_fact_line, pending_fact_column, pending_fact_balance
+        nonlocal pending_action_expr, pending_action_line, pending_action_column, pending_action_balance
+
+        is_fact_destination = destination is facts
+        if is_fact_destination:
+            pending_expr = pending_fact_expr
+            pending_line = pending_fact_line
+            pending_column = pending_fact_column
+            pending_balance = pending_fact_balance
+        else:
+            pending_expr = pending_action_expr
+            pending_line = pending_action_line
+            pending_column = pending_action_column
+            pending_balance = pending_action_balance
+
+        if pending_expr:
+            pending_expr = f"{pending_expr}\n{code}"
+            pending_balance += count_code_parens(code)
+            if pending_balance <= 0:
+                destination.append(pending_expr)
+                destination_lines.append(pending_line)
+                destination_columns.append(pending_column)
+                pending_expr = ""
+                pending_line = 0
+                pending_column = 0
+                pending_balance = 0
+            if is_fact_destination:
+                pending_fact_expr = pending_expr
+                pending_fact_line = pending_line
+                pending_fact_column = pending_column
+                pending_fact_balance = pending_balance
+            else:
+                pending_action_expr = pending_expr
+                pending_action_line = pending_line
+                pending_action_column = pending_column
+                pending_action_balance = pending_balance
+            return
+
+        code_balance = count_code_parens(code)
+        if code_balance > 0:
+            if is_fact_destination:
+                pending_fact_expr = code
+                pending_fact_line = line_number
+                pending_fact_column = column_offset
+                pending_fact_balance = code_balance
+            else:
+                pending_action_expr = code
+                pending_action_line = line_number
+                pending_action_column = column_offset
+                pending_action_balance = code_balance
+            return
+
         for segment, segment_column in split_top_level_expression_spans(code):
             destination.append(segment)
             destination_lines.append(line_number)
@@ -773,6 +833,14 @@ def parse_script(path: str | Path) -> Script:
 
     def finish_rule(end_line: int) -> None:
         nonlocal in_rule, rule_balance
+        if pending_fact_expr:
+            facts.append(pending_fact_expr)
+            fact_lines.append(pending_fact_line)
+            fact_columns.append(pending_fact_column)
+        if pending_action_expr:
+            actions.append(pending_action_expr)
+            action_lines.append(pending_action_line)
+            action_columns.append(pending_action_column)
         rules.append(
             Rule(
                 start_line=start_line,
@@ -816,6 +884,14 @@ def parse_script(path: str | Path) -> Script:
             action_lines = []
             fact_columns = []
             action_columns = []
+            pending_fact_expr = ""
+            pending_fact_line = 0
+            pending_fact_column = 0
+            pending_fact_balance = 0
+            pending_action_expr = ""
+            pending_action_line = 0
+            pending_action_column = 0
+            pending_action_balance = 0
             target = facts
             target_lines = fact_lines
             target_columns = fact_columns

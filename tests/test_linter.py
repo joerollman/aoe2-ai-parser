@@ -2430,6 +2430,26 @@ void debug() {
         self.assertEqual(findings[0].severity, "error")
         self.assertIn("or expects 2 child facts, got 3", findings[0].message)
 
+    def test_allows_valid_multiline_nested_logical_operator(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.per"
+            path.write_text(
+                """
+(defrule
+    (or (population < 2)
+        (and (military-population < 4)
+            (unit-type-count monk < 2)))
+=>
+    (disable-self)
+)
+""".strip(),
+                encoding="utf-8",
+            )
+
+            findings = lint_file(path)
+
+        self.assertEqual(findings, [])
+
     def test_flags_not_with_too_many_child_facts(self) -> None:
         with TemporaryDirectory() as tmp:
             path = Path(tmp) / "sample.per"

@@ -127,6 +127,30 @@ class ParserTests(unittest.TestCase):
         self.assertEqual(script.rules[0].actions, ("(disable-self)",))
         self.assertEqual(script.rules[0].action_lines, (4,))
 
+    def test_combines_multiline_nested_fact_expression(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.per"
+            path.write_text(
+                """
+(defrule
+    (or (population < 2)
+        (and (military-population < 4)
+            (unit-type-count monk < 2)))
+=>
+    (disable-self)
+)
+""".strip(),
+                encoding="utf-8",
+            )
+
+            script = parse_script(path)
+
+        rule = script.rules[0]
+        self.assertEqual(len(rule.facts), 1)
+        self.assertEqual(rule.fact_lines, (2,))
+        self.assertEqual(rule.fact_exprs[0].head, "or")
+        self.assertEqual(rule.fact_exprs[0].args[1].head, "and")
+
     def test_parses_final_action_on_rule_closing_line(self) -> None:
         with TemporaryDirectory() as tmp:
             path = Path(tmp) / "sample.per"
