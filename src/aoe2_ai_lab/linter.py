@@ -112,6 +112,12 @@ class Finding:
         return f"{path}:{self.line}: {self.severity}: {self.code}: {self.message}"
 
 
+@dataclass(frozen=True)
+class CommandExpressionUse:
+    expr: Expression
+    context: str
+
+
 def has_failure(
     findings: list[Finding],
     fail_level: str = "error",
@@ -1710,19 +1716,19 @@ def finding_for_arg(expr: Expression, index: int, code: str, message: str) -> Fi
     return Finding(expr.line, code, message, span=expression_arg_span(expr, index))
 
 
-def iter_command_expressions(rule: object) -> list[Expression]:
-    expressions: list[Expression] = []
+def iter_command_expression_uses(rule: object) -> list[CommandExpressionUse]:
+    expressions: list[CommandExpressionUse] = []
 
     def walk_fact(expr: Expression) -> None:
         if expr.head not in FACT_LOGICAL_HEADS:
-            expressions.append(expr)
+            expressions.append(CommandExpressionUse(expr, "fact"))
         for arg in expr.args:
             if isinstance(arg, Expression):
                 walk_fact(arg)
 
     for expr in getattr(rule, "fact_exprs", ()):
         walk_fact(expr)
-    expressions.extend(getattr(rule, "action_exprs", ()))
+    expressions.extend(CommandExpressionUse(expr, "action") for expr in getattr(rule, "action_exprs", ()))
     return expressions
 
 
@@ -1751,6 +1757,7 @@ def is_flare_unsupported_player_wildcard(value: str) -> bool:
 SINGLE_PLAYER_NUMBER_COMMANDS = {
     "up-get-player-color",
     "up-get-upgrade-id",
+    "up-get-player-fact",
     "up-set-placement-data",
     "up-store-player-chat",
     "up-store-player-name",
@@ -1894,7 +1901,8 @@ def lint_type_op_operand(
 def lint_command_schema(rule: object, defined_constants: set[str], constant_values: dict[str, int]) -> list[Finding]:
     findings: list[Finding] = []
 
-    for expr in iter_command_expressions(rule):
+    for command_use in iter_command_expression_uses(rule):
+        expr = command_use.expr
         if expr.head not in SCHEMA_VALIDATED_COMMANDS:
             continue
         if SPLIT_TYPED_COMPARISON_RE.search(expr.source):
@@ -1924,6 +1932,7 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
             value = args[index]
             if (
                 expr.head in SINGLE_PLAYER_NUMBER_COMMANDS
+                and command_use.context == "action"
                 and parameter_name == "PlayerNumber"
                 and is_any_every_player_wildcard(value)
             ):

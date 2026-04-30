@@ -573,9 +573,10 @@ the same certainty.
 Command-specific argument rules are also allowed when the command documentation
 is explicit. For example, `up-set-placement-data`, `up-get-player-color`,
 `up-get-upgrade-id`, `up-store-player-chat`, and `up-store-player-name` reject
-`any-*` and `every-*` player wildcards in their `PlayerNumber` slots; use an
-exact player, `my-player-number`, `scenario-player-#`, `lobby-player-#`, or a
-`this-any-*` rule variable instead.
+`any-*` and `every-*` player wildcards in their `PlayerNumber` slots. The same
+restriction is enforced for `up-get-player-fact` only when used as an action;
+use an exact player, `my-player-number`, `scenario-player-#`, `lobby-player-#`,
+or a `this-any-*` rule variable instead.
 `up-find-player-flare` has a different documented restriction: `any-*` is
 allowed, but `this-any-*` and `every-*` are reported because flare ownership
 does not identify the actual sender reliably.

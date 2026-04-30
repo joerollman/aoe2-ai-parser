@@ -2249,6 +2249,7 @@ void debug() {
     (true)
 =>
     (up-get-player-color any-ally out-goal)
+    (up-get-player-fact any-ally player-number 0 out-goal)
     (up-get-upgrade-id every-enemy 0 out-goal out-goal)
     (up-store-player-chat any-enemy)
     (up-store-player-name every-ally)
@@ -2267,6 +2268,7 @@ void debug() {
                 "command-argument-mismatch",
                 "command-argument-mismatch",
                 "command-argument-mismatch",
+                "command-argument-mismatch",
             ],
         )
         self.assertTrue(all("cannot use any/every wildcard players" in finding.message for finding in findings))
@@ -2281,9 +2283,29 @@ void debug() {
     (true)
 =>
     (up-get-player-color this-any-ally out-goal)
+    (up-get-player-fact this-any-ally player-number 0 out-goal)
     (up-get-upgrade-id this-any-enemy 0 out-goal out-goal)
     (up-store-player-chat this-any-enemy)
     (up-store-player-name this-any-ally)
+    (disable-self)
+)
+""".strip(),
+                encoding="utf-8",
+            )
+
+            findings = lint_file(path)
+
+        self.assertEqual(findings, [])
+
+    def test_allows_any_player_wildcard_for_up_get_player_fact_fact_context(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.per"
+            path.write_text(
+                """
+(defconst out-goal 41)
+(defrule
+    (up-get-player-fact any-ally player-number 0 out-goal)
+=>
     (disable-self)
 )
 """.strip(),
