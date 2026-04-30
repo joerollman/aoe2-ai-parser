@@ -102,6 +102,7 @@ class PreprocessorFrame:
 LOAD_IF_DEFINED_RE = re.compile(r"^#load-if-defined\s+([A-Za-z_][A-Za-z0-9_-]*)\b")
 LOAD_IF_NOT_DEFINED_RE = re.compile(r"^#load-if-not-defined\s+([A-Za-z_][A-Za-z0-9_-]*)\b")
 PREPROCESSOR_CONTROL_RE = re.compile(r"^#(?:load-if-defined|load-if-not-defined|else|end-if)\b")
+MAX_PREPROCESSOR_NESTING_DEPTH = 50
 
 
 def is_escaped_quote(text: str, index: int) -> bool:
@@ -317,6 +318,15 @@ def collect_preprocessor_issues(lines: list[str]) -> tuple[PreprocessorIssue, ..
                         condition_value=condition_known,
                     )
                 )
+                if len(stack) > MAX_PREPROCESSOR_NESTING_DEPTH:
+                    issues.append(
+                        PreprocessorIssue(
+                            number,
+                            "preprocessor-nesting-depth-exceeded",
+                            f"conditional loading commands can nest at most {MAX_PREPROCESSOR_NESTING_DEPTH} levels deep",
+                            line_confidence,
+                        )
+                    )
                 continue
 
             if directive.startswith("#load-if-not-defined"):
@@ -340,6 +350,15 @@ def collect_preprocessor_issues(lines: list[str]) -> tuple[PreprocessorIssue, ..
                         condition_value=not condition_known,
                     )
                 )
+                if len(stack) > MAX_PREPROCESSOR_NESTING_DEPTH:
+                    issues.append(
+                        PreprocessorIssue(
+                            number,
+                            "preprocessor-nesting-depth-exceeded",
+                            f"conditional loading commands can nest at most {MAX_PREPROCESSOR_NESTING_DEPTH} levels deep",
+                            line_confidence,
+                        )
+                    )
                 continue
 
             if directive.startswith("#else"):

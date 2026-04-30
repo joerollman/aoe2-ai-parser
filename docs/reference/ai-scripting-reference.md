@@ -157,6 +157,7 @@ Important limits for `sample_ai` work:
   16, so prefer staged rules even when DE would allow a larger block.
 - Rules are limited to 10,000 total.
 - Timers are 1-50.
+- Preprocessor conditional loading commands can nest up to 50 levels.
 - Defconst values are limited to signed 16-bit integer range
   (`-32768` to `32767`). The validator reports
   `defconst-value-out-of-range` for numeric constants outside this range.
@@ -753,6 +754,7 @@ Useful checks to add to `aoe2_ai_lab`:
 - Max line length below 255.
 - Balanced parentheses with rule-aware diagnostics.
 - `defrule` must contain `=>`.
+- Preprocessor conditional nesting depth above 50.
 - Empty facts/actions.
 - Repeated chat without `disable-self`, timer, or goal guard.
 - Logical operator child count.

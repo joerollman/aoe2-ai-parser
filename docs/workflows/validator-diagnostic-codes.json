@@ -201,6 +201,14 @@
       "meaning": "A preprocessor directive has invalid syntax, such as a missing condition token."
     },
     {
+      "code": "preprocessor-nesting-depth-exceeded",
+      "source": "preprocessor",
+      "severity": "error",
+      "corpus": "active",
+      "cursor_action": "none",
+      "meaning": "`#load-if-defined` and `#load-if-not-defined` conditionals are nested more than the documented maximum of 50 levels."
+    },
+    {
       "code": "malformed-defconst",
       "source": "lint",
       "severity": "error",

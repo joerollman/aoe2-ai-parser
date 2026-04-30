@@ -521,6 +521,20 @@ class ParserTests(unittest.TestCase):
         self.assertEqual([issue.code for issue in issues], ["duplicate-preprocessor-else"])
         self.assertEqual(issues[0].confidence, "conditional")
 
+    def test_preprocessor_flags_nesting_depth_above_50(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.per"
+            path.write_text(
+                "\n".join(["#load-if-defined UNKNOWN"] * 51 + ["#end-if"] * 51),
+                encoding="utf-8",
+            )
+
+            issues = preprocessor_issues(path)
+
+        self.assertEqual([issue.code for issue in issues], ["preprocessor-nesting-depth-exceeded"])
+        self.assertEqual(issues[0].line, 51)
+        self.assertIn("50", issues[0].message)
+
     def test_preprocessor_ignores_directive_text_inside_strings(self) -> None:
         with TemporaryDirectory() as tmp:
             path = Path(tmp) / "sample.per"

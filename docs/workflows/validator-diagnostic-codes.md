@@ -52,6 +52,7 @@ Manual `--suppress-code <code>` can suppress any finding code for one lint run. 
 | `load-cycle` | package lint | error | active | none | The reachable load graph cycles back to an already-active `.per` file. |
 | `load-depth-exceeded` | package lint | error | active | none | The reachable load graph exceeds the documented maximum nested load depth of 10. |
 | `malformed-preprocessor-directive` | preprocessor | error | active | none | A preprocessor directive has invalid syntax, such as a missing condition token. |
+| `preprocessor-nesting-depth-exceeded` | preprocessor | error | active | none | `#load-if-defined` and `#load-if-not-defined` conditionals are nested more than the documented maximum of 50 levels. |
 | `malformed-defconst` | lint | error | active | none | A `defconst` declaration is structurally invalid, such as a missing name, missing value, unterminated quoted text value, or multiple unquoted value tokens. |
 | `malformed-include-directive` | lint | error | active | none | An `include` directive is structurally invalid, usually because its target is not quoted. |
 | `malformed-load-directive` | lint | error | active | none | A `load` or `#load` directive is structurally invalid, usually because its target is not quoted. |

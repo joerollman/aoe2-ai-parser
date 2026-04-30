@@ -238,6 +238,7 @@ FATAL_PRE_PARSE_CODES = {
     "defrule-missing-arrow",
     "duplicate-preprocessor-else",
     "malformed-preprocessor-directive",
+    "preprocessor-nesting-depth-exceeded",
     "unbalanced-parentheses",
     "unexpected-preprocessor-else",
     "unexpected-preprocessor-end-if",
