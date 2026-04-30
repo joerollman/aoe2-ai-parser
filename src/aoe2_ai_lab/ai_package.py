@@ -428,6 +428,8 @@ def find_package_roots(package_dir: str | Path) -> list[PackageRoot]:
     root = Path(package_dir)
     if root.is_file() and root.suffix.lower() == ".ai":
         return resolve_ai_roots(root, package_dir=root.parent)
+    if root.is_file() and root.suffix.lower() == ".per":
+        return [PackageRoot(ai_path=root, per_path=root, package_dir=root.parent)]
 
     roots: list[PackageRoot] = []
     for ai_path in sorted(root.rglob("*.ai")):
@@ -454,6 +456,16 @@ def inspect_package_integrity(package_dir: str | Path) -> PackageIntegrityResult
             package_dir=package_root,
             roots=roots,
             stale_ai_roots=stale_ai_roots,
+            unreachable_per_files=[],
+            duplicate_root_targets={},
+        )
+    if root.is_file() and root.suffix.lower() == ".per":
+        package_root = root.parent
+        roots = [PackageRoot(ai_path=root, per_path=root, package_dir=package_root)]
+        return PackageIntegrityResult(
+            package_dir=package_root,
+            roots=roots,
+            stale_ai_roots=[],
             unreachable_per_files=[],
             duplicate_root_targets={},
         )

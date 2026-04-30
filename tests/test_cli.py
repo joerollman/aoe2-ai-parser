@@ -802,6 +802,34 @@ class CliTests(unittest.TestCase):
         self.assertEqual(Path(payload["roots"][0]["ai_path"]).name, "Focused.ai")
         self.assertEqual(payload["integrity"]["unreachable_per_files"], [])
 
+    def test_lint_package_accepts_single_per_file_path(self) -> None:
+        with WorkspaceTempDir() as root:
+            per_path = root / "Standalone.per"
+            per_path.write_text(
+                """
+(load "shared")
+(defrule
+    (true)
+=>
+    (do-nothing)
+)
+""".strip(),
+                encoding="utf-8",
+            )
+            (root / "shared.per").write_text("(defconst shared-const 1)\n", encoding="utf-8")
+            (root / "unused.per").write_text("(defconst unused 1)\n", encoding="utf-8")
+            buffer = io.StringIO()
+            with redirect_stdout(buffer):
+                code = main(["lint-package", str(per_path), "--json"])
+
+        self.assertEqual(code, 0)
+        payload = json.loads(buffer.getvalue())
+        self.assertEqual(payload["root_count"], 1)
+        self.assertEqual(Path(payload["roots"][0]["ai_path"]).name, "Standalone.per")
+        self.assertEqual(Path(payload["roots"][0]["per_path"]).name, "Standalone.per")
+        self.assertEqual(payload["totals"]["reachable_file_count"], 2)
+        self.assertEqual(payload["integrity"]["unreachable_per_files"], [])
+
     def test_lint_package_json_marks_error_failures(self) -> None:
         with WorkspaceTempDir() as root:
             (root / "Bad.ai").write_text('(load "Bad")\n', encoding="utf-8")

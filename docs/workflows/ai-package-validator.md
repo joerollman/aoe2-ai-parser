@@ -26,6 +26,15 @@ $env:PYTHONPATH='src'
 python -m aoe2_ai_lab lint-package "path\\to\\Some AI.ai" --profile corpus --summary
 ```
 
+You can also pass a specific `.per` file to validate that script plus its
+reachable `load`, `#load`, and `load-random` graph without needing a wrapper
+`.ai` file:
+
+```powershell
+$env:PYTHONPATH='src'
+python -m aoe2_ai_lab lint-package "path\\to\\main.per" --profile corpus --summary
+```
+
 Community/corpus package lint:
 
 ```powershell

@@ -124,6 +124,8 @@ class CursorExtensionTests(unittest.TestCase):
         self.assertIn("function collectAiRootDiagnostics", server_source)
         self.assertIn("missing-load-target", server_source)
         self.assertIn('path.extname(filePath).toLowerCase() === ".ai"', server_source)
+        self.assertIn('path.extname(filePath).toLowerCase() === ".per"', server_source)
+        self.assertIn("return isPerFile ? filePath : null;", server_source)
 
     def test_lab_extension_has_setup_diagnostics_and_packaging_ignore(self) -> None:
         root = Path(__file__).resolve().parents[1]

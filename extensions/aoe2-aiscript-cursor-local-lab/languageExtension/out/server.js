@@ -381,6 +381,7 @@ function findNearestPackageRoot(filePath, workspacePath) {
     if (path.extname(filePath).toLowerCase() === ".ai") {
         return filePath;
     }
+    let isPerFile = path.extname(filePath).toLowerCase() === ".per";
     let current = fs.statSync(filePath).isDirectory() ? filePath : path.dirname(filePath);
     let workspaceRoot = path.resolve(workspacePath);
     while (true) {
@@ -395,10 +396,10 @@ function findNearestPackageRoot(filePath, workspacePath) {
         }
         let parent = path.dirname(current);
         if (current === parent) {
-            return null;
+            return isPerFile ? filePath : null;
         }
         if (path.relative(workspaceRoot, parent).startsWith("..")) {
-            return null;
+            return isPerFile ? filePath : null;
         }
         current = parent;
     }
