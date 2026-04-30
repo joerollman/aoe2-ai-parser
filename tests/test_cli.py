@@ -773,9 +773,11 @@ class CliTests(unittest.TestCase):
         self.assertEqual(payload["totals"]["confidence_counts"], {"definite": 1})
         self.assertEqual(payload["totals"]["failed_root_count"], 0)
         self.assertEqual(payload["finding_groups"][0]["code"], "up-build-place-point-coordinate-as-escrow")
+        self.assertEqual(payload["finding_groups"][0]["unique_occurrence_count"], 1)
         self.assertEqual(payload["finding_groups"][0]["examples"][0]["path"], str((root / "Warn.per").resolve()))
         self.assertEqual(payload["issue_groups"][0]["source"], "lint")
         self.assertEqual(payload["issue_groups"][0]["code"], "up-build-place-point-coordinate-as-escrow")
+        self.assertEqual(payload["issue_groups"][0]["unique_occurrence_count"], 1)
 
     def test_lint_package_accepts_single_ai_file_path(self) -> None:
         with WorkspaceTempDir() as root:
@@ -1037,6 +1039,7 @@ class CliTests(unittest.TestCase):
         self.assertIn("## Issue Categories", report)
         self.assertLess(report.index("## Issue Categories"), report.index("## Root Manifest"))
         self.assertIn("### `up-build-place-point-coordinate-as-escrow`", report)
+        self.assertIn("- Unique occurrences: `1`", report)
         self.assertIn("third argument is escrow state", report)
         self.assertIn("validator-diagnostic-codes.md#diagnostic-up-build-place-point-coordinate-as-escrow", report)
         self.assertIn("Warn.per:7", report)

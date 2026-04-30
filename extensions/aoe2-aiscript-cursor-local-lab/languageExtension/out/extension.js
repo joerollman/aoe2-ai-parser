@@ -215,8 +215,13 @@ function relativeDisplayPath(filePath, labPath) {
 }
 function formatPackageIssueGroups(stdout, labPath) {
     let payload;
+    let jsonText = stdout;
+    let jsonStart = stdout.indexOf("{");
+    if (jsonStart > 0) {
+        jsonText = stdout.slice(jsonStart);
+    }
     try {
-        payload = JSON.parse(stdout);
+        payload = JSON.parse(jsonText);
     }
     catch (_error) {
         return stdout || "No output.";
@@ -239,7 +244,8 @@ function formatPackageIssueGroups(stdout, labPath) {
     issueGroups.forEach(group => {
         let severity = formatCounts(group.severity_counts || {});
         let confidence = formatCounts(group.confidence_counts || {});
-        lines.push("  [" + (group.source || "lint") + "] " + group.code + " (" + group.count + ")");
+        let unique = group.unique_occurrence_count && group.unique_occurrence_count !== group.count ? ", " + group.unique_occurrence_count + " unique" : "";
+        lines.push("  [" + (group.source || "lint") + "] " + group.code + " (" + group.count + unique + ")");
         lines.push("    severity: " + severity);
         lines.push("    confidence: " + confidence);
         if (group.explanation) {

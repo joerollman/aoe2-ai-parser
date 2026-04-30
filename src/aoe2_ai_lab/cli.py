@@ -736,11 +736,22 @@ def finding_groups_to_json(findings: list[dict[str, object]]) -> list[dict[str, 
     for code, items in sorted(grouped.items()):
         severity_counts = Counter(str(item["severity"]) for item in items)
         confidence_counts = Counter(str(item["confidence"]) for item in items)
+        unique_occurrences = {
+            (
+                str(item["path"]),
+                int(item["line"]),
+                str(item["severity"]),
+                str(item["confidence"]),
+                str(item["message"]),
+            )
+            for item in items
+        }
         examples = sorted(items, key=lambda item: (str(item["path"]), int(item["line"])))[:5]
         groups.append(
             {
                 "code": code,
                 "count": len(items),
+                "unique_occurrence_count": len(unique_occurrences),
                 "severity_counts": dict(sorted(severity_counts.items())),
                 "confidence_counts": dict(sorted(confidence_counts.items())),
                 "explanation": diagnostic_code_explanation(code),
@@ -1176,11 +1187,26 @@ def package_report_to_markdown(payload: dict[str, object]) -> str:
         findings = findings_by_code.get(code, [])
         integrity_items = integrity_categories.get(code, [])
         count = len(findings) if findings else len(integrity_items)
+        unique_count = count
+        if findings:
+            unique_count = len(
+                {
+                    (
+                        finding["path"],
+                        finding["line"],
+                        finding["severity"],
+                        finding["confidence"],
+                        finding["message"],
+                    )
+                    for finding in findings
+                }
+            )
         lines.extend(
             [
                 f"### `{code}`",
                 "",
                 f"- Count: `{count}`",
+                f"- Unique occurrences: `{unique_count}`",
                 f"- Explanation: {diagnostic_code_explanation(code)}",
                 f"- Documentation: {diagnostic_code_markdown_link(code)}",
             ]

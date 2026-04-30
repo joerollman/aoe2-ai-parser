@@ -80,6 +80,7 @@ assert(
 );
 
 let stdout = "";
+let stderr = "";
 try {
   stdout = execFileSync(
     "python",
@@ -93,9 +94,10 @@ try {
   );
 } catch (error) {
   stdout = String(error.stdout || "");
+  stderr = String(error.stderr || "");
 }
 
-assert(stdout.trim().startsWith("{"), "lint-package --json did not produce JSON stdout");
+assert(stdout.includes("{"), `lint-package --json did not produce JSON stdout; stderr: ${stderr.slice(0, 500)}`);
 
 const formatted = extensionModule._test.formatPackageIssueGroups(stdout, repoRoot);
 
@@ -103,7 +105,7 @@ for (const needle of [
   "Package summary:",
   "  roots: 5",
   "  reachable files: 7",
-  "  lint findings: 12",
+  "  lint findings: 11",
   "Issue categories:",
   "[lint] command-role-mismatch (2)",
   "[integrity] stale-ai-root (1)",

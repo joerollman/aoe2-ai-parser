@@ -113,6 +113,7 @@ for (const tokenType of [
 
 for (const needle of [
   "function formatPackageIssueGroups",
+  "stdout.indexOf(\"{\")",
   "payload.issue_groups || []",
   '"lint-package", packageRoot, "--json", "--fail-level", "error"',
   'path.extname(filePath).toLowerCase() === ".ai"',
