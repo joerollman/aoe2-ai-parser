@@ -1,0 +1,88 @@
+{
+  "workbench.editorAssociations": {
+    "*.md": "vscode.markdown.preview.editor"
+  },
+  "markdown.preview.openMarkdownLinks": "inPreview",
+  "markdown.preview.scrollPreviewWithEditor": true,
+  "markdown.preview.scrollEditorWithPreview": true,
+  "editor.semanticHighlighting.enabled": true,
+  "editor.semanticTokenColorCustomizations": {
+    "enabled": true,
+    "rules": {
+      "aoe2Action": "#569CD6",
+      "aoe2Fact": "#C586C0",
+      "aoe2FactAction": "#4EC9B0",
+      "aoe2Command": "#DCDCAA",
+      "aoe2StrategicNumber": "#4BA3FF",
+      "aoe2Object": "#CE9178",
+      "aoe2Tech": "#B5CEA8",
+      "aoe2Value": "#D7BA7D",
+      "aoe2LocalConstant": {
+        "foreground": "#7EE787"
+      },
+      "aoe2Action:aoe2aiscript": "#569CD6",
+      "aoe2Fact:aoe2aiscript": "#C586C0",
+      "aoe2FactAction:aoe2aiscript": "#4EC9B0",
+      "aoe2Command:aoe2aiscript": "#DCDCAA",
+      "aoe2StrategicNumber:aoe2aiscript": "#4BA3FF",
+      "aoe2Object:aoe2aiscript": "#CE9178",
+      "aoe2Tech:aoe2aiscript": "#B5CEA8",
+      "aoe2Value:aoe2aiscript": "#D7BA7D",
+      "aoe2LocalConstant:aoe2aiscript": {
+        "foreground": "#7EE787"
+      }
+    }
+  },
+  "editor.tokenColorCustomizations": {
+    "textMateRules": [
+      {
+        "scope": "entity.name.function.aoe2aiscript.action",
+        "settings": {
+          "foreground": "#569CD6"
+        }
+      },
+      {
+        "scope": "entity.name.function.aoe2aiscript.fact",
+        "settings": {
+          "foreground": "#C586C0"
+        }
+      },
+      {
+        "scope": "support.constant.strategic-number.aoe2aiscript",
+        "settings": {
+          "foreground": "#4BA3FF"
+        }
+      },
+      {
+        "scope": "constant.other.object.aoe2aiscript",
+        "settings": {
+          "foreground": "#CE9178"
+        }
+      },
+      {
+        "scope": "aoe2aiscript.tech",
+        "settings": {
+          "foreground": "#B5CEA8"
+        }
+      },
+      {
+        "scope": "constant.other.value.aoe2aiscript",
+        "settings": {
+          "foreground": "#D7BA7D"
+        }
+      },
+      {
+        "scope": "variable.other.aoe2aiscript.resource",
+        "settings": {
+          "foreground": "#D7BA7D"
+        }
+      },
+      {
+        "scope": "variable.other.constant.aoe2aiscript",
+        "settings": {
+          "foreground": "#7EE787"
+        }
+      }
+    ]
+  }
+}

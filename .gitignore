@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+build/
+dist/
+*.egg-info/
+.tmp/
+node_modules/
+*.vsix
+pytest-cache-files-*/
+extensions/aoe2-aiscript-cursor-local-lab/lab/

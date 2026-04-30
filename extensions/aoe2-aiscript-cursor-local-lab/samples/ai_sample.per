@@ -1,0 +1,32 @@
+;---------------------------------------------------------------------;
+; Filename: ai_sample.per
+; Author: J.V. Cardenzana
+;---------------------------------------------------------------------;
+; Discription:
+;       This file provides a sample of a few rules that demonstrate
+;       how the syntax hylighting is suppose to behave. It allows for
+;       testing the different syntax highlighting regular expressions
+;       to ensure that everything works correctly.
+;---------------------------------------------------------------------;
+
+
+(load "ai_sample\get2feudal")
+(load "ai_sample\testerrors")
+
+;*******************************
+; CONSTANTS
+;*******************************
+(defconst go-to-feudal 1)           ; Specifies if we should go to feudal age
+(defconst cur-game-time 1)          ; Most recently stored value of `game-time`
+
+
+; This is a comment
+(defrule                            ; This is the start of a new rule
+    (true)                          ; This will guarantee the rule runs
+    =>
+    (chat-to-all "I'm alive!!!")
+    (chat-to-all "I'm going to go to feudal-age and resign")
+    (disable-self)                  ; Stop the rule from constantly running
+)
+
+; defrule is not highlighted when placed in a comment

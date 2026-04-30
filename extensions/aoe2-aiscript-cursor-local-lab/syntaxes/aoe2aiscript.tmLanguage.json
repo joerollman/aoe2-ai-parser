@@ -1,0 +1,131 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "AiScript",
+	"patterns": [
+		{
+			"include": "#fact-expression"
+		},{
+			"include": "#loads"
+		},{
+			"include": "#action"
+		},{
+			"include": "#keywords"
+		},{
+			"include": "#strings"
+		},{
+			"include": "#comments"
+		}
+	],
+	"repository": {
+		"keywords": {
+			"patterns": [
+				{
+					"name": "support.constant.strategic-number.aoe2aiscript",
+					"match": "\\bsn-[A-Za-z0-9_-]+\\b"
+				},{
+					"name": "constant.other.object.aoe2aiscript",
+					"match": "\\b(?:[A-Za-z0-9_-]+-(?:class|line)|villager|town-center|sheep|boar|deer|forage-bush|farm|house|mill|lumber-camp|mining-camp|barracks|archery-range|stable|market|blacksmith|dock|castle|monastery|university|tower|palisade-wall|stone-wall|gate)\\b"
+				},{
+					"name": "constant.other.value.aoe2aiscript",
+					"match": "\\b(?:action-[A-Za-z0-9_-]+|position-[A-Za-z0-9_-]+|search-[A-Za-z0-9_-]+|goal-[A-Za-z0-9_-]+|group-type-[A-Za-z0-9_-]+|formation-[A-Za-z0-9_-]+|stance-[A-Za-z0-9_-]+)\\b"
+				},{
+					"name": "variable.other.constant.aoe2aiscript",
+					"match": "\\b(?:goal|gl)-[A-Za-z0-9_-]+\\b"
+				},{
+					"name": "variable.other.aoe2aiscript.resource",
+					"match": "(?<!-)\\b(food|wood|gold|stone)\\b(?!-)"
+				},{
+					"name": "constant.numeric.aoe2aiscript",
+					"match": "\\s-?\\d+(?!-)"
+				},{
+					"name": "aoe2aiscript.age",
+					"match": "\\b(dark|feudal|castle|imperial)-age\\b"
+				},{
+					"name": "aoe2aiscript.tech",
+					"match": "\\bri-(\\w+-?)+\\b"
+				},{
+					"name": "keyword.control.aoe2aiscript.control",
+					"match": "(?<!-)(?<=\\()\\s*\\b(and|nand|nor|not|or)\\b(?!-)"
+				},{
+					"name": "constant.language.aoe2aiscript.truefalse",
+					"match": "(?<=\\()(?:\\s*)\\b(true|false)\\b(?:\\s*)(?=\\))"
+				}
+			]},
+		"action": {
+			"patterns": [
+				{
+					"name": "keyword.control.aoe2aiscript.defact.disableself",
+					"match": "\\b(disable-self)\\b"
+				},{
+					"name": "keyword.control.aoe2aiscript.defact.donothing",
+					"match": "\\b(do-nothing)\\b"
+				},{
+					"name": "entity.name.function.aoe2aiscript.action.jump",
+					"match": "(?<=\\()\\s*(up-jump-\\w+)"
+				},{
+					"name": "storage.type.aoe2aiscript.def.const",
+					"match": "\\b(defconst)\\s+([A-Za-z_][A-Za-z0-9_-]*)",
+					"captures": {
+						"1": {"name": "storage.type.aoe2aiscript.def.const"},
+						"2": {"name": "variable.other.constant.aoe2aiscript"}
+					}
+				},{
+					"name": "entity.name.function.aoe2aiscript.action",
+					"match": "(?<=\\()\\s*(\\w+-?)+"
+				}
+			]},
+		"loads": {
+			"patterns": [
+				{
+					"name": "keyword.control.aoe2aiscript.load.if",
+					"match": "(#load-if-(not-)*defined)"
+				},{
+					"name": "keyword.control.aoe2aiscript.load.elseend",
+					"match": "(#else|#end-if)"
+				},{
+					"name": "keyword.control.aoe2aiscript.load.file",
+					"match": "(?<=\\()\\s*(load|load-random)(?=\\s)"
+				}
+			]},
+		"fact-expression": {
+			"begin": "(?<=\\()defrule",
+			"end": "=>",
+			"beginCaptures": {
+				"0": {"name": "storage.type.aoe2aiscript.def.rule"}
+			},
+			"endCaptures": {
+				"0": {"name": "support.type.aoe2aiscript.yields"}
+			},
+			"name": "keywords.factgroup",
+			"patterns": [
+				{"include": "#keywords"},
+				{"include": "#comments"},
+				{"include": "#strings"},
+				{
+					"name": "entity.name.function.aoe2aiscript.fact",
+					"match": "(?<=\\()\\s*(\\w+-?)+"
+				}
+			]},
+		"strings": {
+			"name": "string.quoted.double.aoe2aiscript",
+			"begin": "\"",
+			"end": "\"",
+			"patterns": [
+				{
+					"name": "constant.character.escape.aoe2aiscript",
+					"match": "\\\\."
+				}
+			]},
+		"comments": {
+			"name": "comment.line.semicolon",
+			"begin": ";",
+			"end": "$",
+			"patterns": [
+				{
+					"name": "comment.line.double-slash",
+					"match": "\\\\."
+				}
+			]}
+	},
+	"scopeName": "source.per"
+}

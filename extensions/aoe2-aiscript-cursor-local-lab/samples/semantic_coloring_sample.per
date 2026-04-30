@@ -1,0 +1,52 @@
+; AoE2 AI Lab semantic coloring sample.
+; Open this file after reloading Cursor and inspect token colors/scopes.
+
+(defconst goal-opening-state 1)
+(defconst gl-house-builder 10)
+(defconst gl-sheep-x 41)
+(defconst gl-sheep-y 42)
+
+(defrule
+    (true)
+    (can-build house)
+    (strategic-number sn-maximum-town-size < 40)
+    (up-compare-sn sn-disable-villager-garrison c:== 0)
+=>
+    (set-goal goal-opening-state 1)
+    (set-strategic-number sn-maximum-town-size 24)
+    (set-strategic-number sn-disable-villager-garrison 3)
+    (chat-to-all "semantic coloring: commands, SNs, objects, and values")
+    (disable-self)
+)
+
+(defrule
+    (goal goal-opening-state 1)
+    (can-research ri-loom)
+=>
+    (research ri-loom)
+    (up-full-reset-search)
+    (up-find-local c: villager c: 2)
+    (up-find-remote c: livestock-class c: 1)
+    (up-set-target-object search-local c: 0)
+    (up-set-target-object search-remote c: 0)
+    (up-target-objects 0 action-gather formation-line stance-stand-ground)
+)
+
+(defrule
+    (true)
+=>
+    (up-get-point position-center gl-sheep-x)
+    (up-target-point gl-sheep-x action-move formation-box stance-aggressive)
+    (up-modify-sn sn-maximum-town-size c:+ 4)
+    (up-modify-goal gl-house-builder c:= 2)
+    (disable-self)
+)
+
+(defrule
+    (up-gaia-type-count c: food > 0)
+    (up-gaia-type-count c: wood >= 0)
+    (up-gaia-type-count c: gold >= 0)
+    (up-gaia-type-count c: stone >= 0)
+=>
+    (do-nothing)
+)

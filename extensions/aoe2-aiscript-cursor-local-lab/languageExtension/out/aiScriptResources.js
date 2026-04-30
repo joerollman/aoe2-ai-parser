@@ -1,0 +1,485 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+/**********************************************************************/ /**
+ * Import AI scripting resources
+ **************************************************************************/
+const aoe2actions = require("./resources/aoe2Action.json");
+const aoe2buildings = require("./resources/aoe2BuildingId.json");
+const aoe2civs = require("./resources/aoe2CivId.json");
+const aoe2facts = require("./resources/aoe2Fact.json");
+const aoe2factaction = require("./resources/aoe2FactAction.json");
+const aoe2misc = require("./resources/aoe2Misc.json");
+const aoe2stratnum = require("./resources/aoe2StrategicNumbers.json");
+const aoe2techs = require("./resources/aoe2TechId.json");
+const aoe2units = require("./resources/aoe2UnitId.json");
+// Initialize the parameter list
+let ai_script_parameters = new Map();
+/**********************************************************************/ /**
+ * Loads all parameters from the resource files
+ **************************************************************************/
+function loadAoE2Parameters() {
+    // Fill all the parameters
+    loadBuildings();
+    loadCommands();
+    loadCivs();
+    loadMisc();
+    loadStrategicNumbers();
+    loadTechs();
+    loadUnits();
+    return ai_script_parameters;
+}
+exports.loadAoE2Parameters = loadAoE2Parameters;
+/**********************************************************************/ /**
+ * Loads facts, actions and factactions
+ **************************************************************************/
+function loadCommands() {
+    // Facts
+    let facts = {
+        label: "Fact",
+        description: aoe2facts.Fact.description,
+        subcategories: aoe2facts.Fact.subcategories,
+        values: new Map()
+    };
+    aoe2facts.Fact.values.forEach(fact => {
+        facts.values[fact.name] = getCommandPar(fact, facts.label);
+    });
+    // Actions
+    let actions = {
+        label: "Action",
+        description: aoe2actions.Action.description,
+        subcategories: aoe2actions.Action.subcategories,
+        values: new Map()
+    };
+    aoe2actions.Action.values.forEach(action => {
+        actions.values[action.name] = getCommandPar(action, actions.label);
+    });
+    // FactActions
+    let factactions = {
+        label: "FactAction",
+        description: aoe2factaction.FactAction.description,
+        parentcategories: aoe2factaction.FactAction.parentcategories,
+        values: new Map()
+    };
+    aoe2factaction.FactAction.values.forEach(faction => {
+        factactions.values[faction.name] = getCommandPar(faction, factactions.label);
+    });
+    // Add the commands to the type map
+    ai_script_parameters[facts.label] = facts;
+    ai_script_parameters[actions.label] = actions;
+    ai_script_parameters[factactions.label] = factactions;
+}
+/**********************************************************************/ /**
+ * Formats the results from a command object into an AiScriptPar
+ **************************************************************************/
+function getCommandPar(command, section) {
+    // Define command parameters
+    let command_pars = [];
+    let param_text = "";
+    if (command.param === undefined) {
+        param_text = "";
+    }
+    else if (command.param[0].type !== "noop") {
+        param_text = getParamText(command.param);
+        command_pars = command.param;
+    }
+    // Get examples text
+    let example_text = "";
+    if (command.example !== undefined) {
+        example_text = getExampleText(command.example);
+    }
+    return {
+        label: command.name,
+        description: command.description + param_text + example_text,
+        section: section,
+        pars: command_pars,
+        examples: command.example
+    };
+}
+/**********************************************************************/ /**
+ * Loads BuidingId objects into ai_script_parameters
+ **************************************************************************/
+function loadBuildings() {
+    Object.keys(aoe2buildings).forEach(buildkey => {
+        let buildingType = {
+            label: buildkey,
+            description: aoe2buildings[buildkey].description,
+            parentcategories: aoe2buildings[buildkey].parentcategories,
+            subcategories: aoe2buildings[buildkey].subcategories,
+            values: new Map()
+        };
+        // Loop through all of the values
+        aoe2buildings[buildkey].values.forEach(building => {
+            // Construct building description
+            let build_descrip = building.description;
+            if (building.requires !== undefined)
+                build_descrip += getRequiresText(building.requires);
+            buildingType.values[building.name] = {
+                label: building.name,
+                description: build_descrip,
+                section: buildkey,
+                requires: building.requires,
+                defined: (building.defined !== undefined) ? (building.defined === 1) : true
+            };
+        });
+        ai_script_parameters[buildkey] = buildingType;
+    });
+}
+/**********************************************************************/ /**
+ * Loads CivId objects into ai_script_parameters
+ **************************************************************************/
+function loadCivs() {
+    Object.keys(aoe2civs).forEach(civkey => {
+        let civType = {
+            label: civkey,
+            description: aoe2civs[civkey].description,
+            parentcategories: aoe2civs[civkey].parentcategories,
+            subcategories: aoe2civs[civkey].subcategories,
+            values: new Map()
+        };
+        aoe2civs[civkey].values.forEach(civ => {
+            let civ_descrip = "AI's civilization";
+            let civ_unique = "undefined";
+            if (civ.name != "my-civ") {
+                // Get description and unique info
+                civ_descrip = civ.name.toUpperCase() + " civilization";
+                civ_unique = undefined;
+                if (civ.link === undefined) {
+                    civ_descrip += getUniquesText(civ.unique);
+                    civ_unique = civ.unique;
+                }
+                else {
+                    let civ_par = ai_script_parameters[civ.link.type].values[civ.link.value];
+                    civ_descrip = civ_par.description;
+                    civ_unique = civ_par.unique;
+                }
+            }
+            // Add the civ info
+            civType.values[civ.name] = {
+                label: civ.name,
+                description: civ_descrip,
+                section: civkey,
+                unique: civ_unique
+            };
+        });
+        ai_script_parameters[civkey] = civType;
+    });
+}
+/**********************************************************************/ /**
+ * Loads Misc resource objects into ai_script_parameters
+ **************************************************************************/
+function loadMisc() {
+    // Loop over all keys and all items in each key
+    Object.keys(aoe2misc).forEach(misc => {
+        let miscType = {
+            label: misc,
+            description: aoe2misc[misc].description,
+            parentcategories: aoe2misc[misc].parentcategories,
+            subcategories: aoe2misc[misc].subcategories,
+            values: new Map()
+        };
+        if (misc === "Control") {
+            aoe2misc[misc].values.forEach(item => {
+                miscType.values[item.name] = getCommandPar(item, miscType.label);
+            });
+        }
+        else {
+            aoe2misc[misc].values.forEach(item => {
+                miscType.values[item.name] = {
+                    label: item.name,
+                    description: item.description,
+                    section: misc,
+                    id: item.id
+                };
+            });
+        }
+        ai_script_parameters[miscType.label] = miscType;
+    });
+}
+/**********************************************************************/ /**
+ * Loads TechId objects into ai_script_parameters
+ **************************************************************************/
+function loadStrategicNumbers() {
+    let snType = {
+        label: "StrategicNumber",
+        description: aoe2stratnum.StrategicNumber.description,
+        values: new Map()
+    };
+    aoe2stratnum.StrategicNumber.values.forEach(num => {
+        snType.values[num.name] = {
+            label: num.name,
+            description: num.notes,
+            section: snType.label
+        };
+    });
+    ai_script_parameters[snType.label] = snType;
+}
+/**********************************************************************/ /**
+ * Loads TechId objects into ai_script_parameters
+ **************************************************************************/
+function loadTechs() {
+    let techType = {
+        label: "TechId",
+        description: aoe2techs.TechId.description,
+        subcategories: aoe2techs.TechId.subcategories,
+        values: new Map()
+    };
+    aoe2techs.TechId.values.forEach(tech => {
+        techType.values[tech.name] = {
+            label: tech.name,
+            description: tech.description + getRequiresText(tech.requires),
+            section: techType.label,
+            requires: tech.requires,
+            defined: (tech.defined !== undefined) ? (tech.defined === 1) : true
+        };
+    });
+    ai_script_parameters[techType.label] = techType;
+}
+/**********************************************************************/ /**
+ * Loads UnitId objects into ai_script_parameters
+ **************************************************************************/
+function loadUnits() {
+    Object.keys(aoe2units).forEach(unitkey => {
+        let unitType = {
+            label: unitkey,
+            description: aoe2units[unitkey].description,
+            parentcategories: aoe2units[unitkey].parentcategories,
+            subcategories: aoe2units[unitkey].subcategories,
+            values: new Map()
+        };
+        aoe2units[unitkey].values.forEach(unit => {
+            // Construct unit description
+            let unit_descrip = unit.description;
+            if (unit.line !== undefined)
+                unit_descrip += "\n\n* line: " + unit.line;
+            if (unit.class !== undefined)
+                unit_descrip += "\n* class: " + unit.class;
+            unitType.values[unit.name] = {
+                label: unit.name,
+                description: unit_descrip,
+                section: unitkey,
+                requires: unit.requires,
+                defined: (unit.defined !== undefined) ? (unit.defined === 1) : true
+            };
+        });
+        ai_script_parameters[unitkey] = unitType;
+    });
+}
+/**********************************************************************/ /**
+ * Formats the parameters of a command into a markdown string
+ *  @param[in] params       Array of {type: string, note: string} objects
+ *  @return Markdown formatted text
+ **************************************************************************/
+function getParamText(params) {
+    let parText = "\n\n**Parameters**  \n";
+    params.forEach(par => {
+        if (par.type === "noop") {
+            parText += "*none*";
+        }
+        else {
+            parText += "* **" + par.type + "**: *" + par.note + "*";
+        }
+        parText += "\n";
+    });
+    return parText;
+}
+/**********************************************************************/ /**
+ * Formats the examples of a given parameter into a markdown string
+ *  @param[in] example      Array of {title: string, data: string} objects
+ *  @return Markdown formatted text
+ **************************************************************************/
+function getExampleText(example) {
+    let exText = "";
+    if (example.length > 0) {
+        // Replace '>', '<', '"'
+        let elementData = example[0].data;
+        elementData = elementData.split('&lt;').join('<');
+        elementData = elementData.split('&gt;').join('>');
+        elementData = elementData.split('&quot;').join('"');
+        exText = "\n\n**Example**  \n" + example[0].title;
+        if (example[0].title !== "none") {
+            exText += "\n" + "```\n" + elementData + "\n```";
+        }
+    }
+    return exText;
+}
+/**********************************************************************/ /**
+ * Formats the 'require' of a given parameter into a markdown string
+ *  @param[in] requires     AiScriptRequires compatible object
+ *  @return Markdown formatted text
+ **************************************************************************/
+function getRequiresText(requires) {
+    let reqText = "\n\n### Requires:";
+    // Age
+    reqText += "\n- **Age:** " + requires.age;
+    reqText += "\n- **Building:** " + getFormattedList(requires.building);
+    reqText += "\n- **Techs:** " + getFormattedList(requires.tech);
+    reqText += "\n- **Civ:** " + getFormattedList(requires.civ);
+    return reqText;
+}
+/**********************************************************************/ /**
+ * Formats the 'unique' attributes of a given civilization as a markdown string
+ *  @param[in] uniqList     AiScriptUniques compatible object
+ *  @return Markdown formatted text
+ **************************************************************************/
+function getUniquesText(uniqList) {
+    let text = "\n\n### Uniques";
+    text += "\n* **Units**: " + getFormattedList(uniqList.unit);
+    text += "\n* **Techs**: " + getFormattedList(uniqList.tech);
+    if (uniqList.building[0] !== "none") {
+        text += "\n**Buildings**: " + getFormattedList(uniqList.building);
+    }
+    return text;
+}
+/**********************************************************************/ /**
+ * Formats a list of strings based on a set of predetermined use cases
+ *  @param[in] req      Array of {title: string, data: string} objects
+ *  @return Markdown formatted text
+ *
+ * If the item is 'none' or 'all' the returned string is simple that word
+ * but in italics.
+ *
+ * If the string in the array is preceded by a '!', the string is formatted
+ * with a line through it. For example, a TechId that contains '!aztec' in
+ * its 'requires.civ' identifies that tech as not being available to Aztecs.
+ * This results in a line through that civ in the generated completion text.
+ **************************************************************************/
+function getFormattedList(myList) {
+    let text = "";
+    myList.forEach(item => {
+        // Add commas for additional items in the list
+        if (item != myList[0]) {
+            text += ", ";
+        }
+        // Item is 'none' or 'all', format in italics
+        if ((item === "none") || (item === "all")) {
+            text += "*" + item + "*";
+        }
+        // A '!' signifies the need to format as a strikethrough
+        else if (item[0] === "!") {
+            text += "~~" + item.slice(1) + "~~";
+        }
+        // Otherwise add the item as is
+        else {
+            text += item;
+        }
+    });
+    return text;
+}
+// Define a set of excluded types for inheritance checking. These require
+// much more detailed information to accurately check. 
+var excluded_types = ['StrategicNumber', 'GoalId', 'PlayerId', "TauntId", "RelOp", "UpRelOp"];
+/**********************************************************************/ /**
+ * Checks if `value` is a member (or subcategory member) of the `expected` type
+ *  @param[in] value      	Value to see if it is a member of the 'expected' type
+ *  @param[in] expected		Type/category to be checked
+ *  @param[in] params		Map of all valid AoE2 script types
+ *  @return Whether or not @p value inherits from @p expected
+ *
+ * Method is recursive, as it also checks the sub-categories of expected
+ * and all of their sub-categories, etc ...
+ **************************************************************************/
+var InheritsFrom = function ifname(value, expected, params) {
+    // For now we cannot assess numbers correctly
+    if (/^-*[0-9]+$/g.test(value))
+        return true;
+    // Load the parameters if none were passed
+    if (params === undefined)
+        params = loadAoE2Parameters();
+    // TODO: enable better error checking so these exclusions are not necessary
+    if (excluded_types.indexOf(expected) !== -1) {
+        return true;
+    }
+    let inherits = false;
+    if (params[expected] !== undefined) {
+        if (params[expected].values[value] !== undefined) {
+            inherits = true;
+        }
+        else if (params[expected].subcategories !== undefined) {
+            params[expected].subcategories.forEach(category => {
+                inherits = (inherits || ifname(value, category, params));
+            });
+        }
+    }
+    return inherits;
+};
+exports.InheritsFrom = InheritsFrom;
+/**********************************************************************/ /**
+ * Locates the parameter with a given name in the resources
+ *  @param[in] scriptPars   Map of all valid AoE2 script types
+ *  @param[in] parName		Name of parameter to locate
+ *  @param[in] type			Type associated with parName (if known)
+ *  @return AiScriptPar if parName is found, otherwise return undefined
+ **************************************************************************/
+function findParam(scriptPars, parName, type) {
+    let parObj = undefined;
+    // Check if type was supplied
+    if ((type !== undefined) && (InheritsFrom(parName, type, scriptPars))) {
+        parObj = scriptPars[type].values[parName];
+    }
+    // ... otherwise loop through all types
+    else {
+        Object.keys(scriptPars).forEach(category => {
+            let cat = scriptPars[category];
+            if (cat.values !== undefined) {
+                if (cat.values[parName] !== undefined)
+                    parObj = cat.values[parName];
+            }
+        });
+    }
+    return parObj;
+}
+exports.findParam = findParam;
+var levenshtein = require("levenshtein");
+/**********************************************************************/ /**
+ * Returns parameters close in spelling to supplied input
+ *  @param[in] input		Name of parameter to locate
+ *  @param[in] categories	Types to search under
+ *  @param[in] scriptPars   Map of all valid AoE2 script types
+ *  @return List of potential matching parameter names.
+ *
+ * Computes the closesness in spelling using the 'Levenstein distance'.
+ * Uses recursion to check subcategories of the supplied categories.
+ **************************************************************************/
+var guessParam = function guessPar(input, categories, scriptPars) {
+    let curLeven = {
+        guess: [],
+        dist: 6 // Maximum allowed distance (may need tuning)
+    };
+    categories.forEach(cat => {
+        let category = scriptPars[cat];
+        // Test all parameters of this category
+        Object.keys(category.values).forEach(param => {
+            let leven = new levenshtein(input, param);
+            curLeven = updateLevenDist({ guess: [param], dist: leven.distance }, curLeven);
+        });
+        // Test parameters of subcategories
+        if (category.subcategories !== undefined) {
+            let newLeven = guessPar(input, category.subcategories, scriptPars);
+            curLeven = updateLevenDist(newLeven, curLeven);
+        }
+    });
+    return curLeven;
+};
+exports.guessParam = guessParam;
+/**********************************************************************/ /**
+ * returns the updated `levenGuess` object if `newLevel` is closer
+ *  @param[in] input		Name of parameter to locate
+ *  @param[in] categories	Types to search under
+ *  @param[in] scriptPars   Map of all valid AoE2 script types
+ *  @return List of potential matching parameter names.
+ *
+ * @p newLeven replace @p curLeven if it's distance is smaller, otherwise
+ * the values are appended to curLeven if the distance is the same or ignored
+ * if they are larger.
+ **************************************************************************/
+function updateLevenDist(newLeven, curLeven) {
+    if (newLeven.dist < curLeven.dist) {
+        curLeven.guess = newLeven.guess;
+        curLeven.dist = newLeven.dist;
+    }
+    else if (newLeven.dist == curLeven.dist) {
+        curLeven.guess = curLeven.guess.concat(newLeven.guess);
+    }
+    return curLeven;
+}
+//# sourceMappingURL=aiScriptResources.js.map

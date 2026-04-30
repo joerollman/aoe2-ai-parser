@@ -1,0 +1,40 @@
+; Open this file in Cursor after reloading the local AoE2 AiScript extension.
+; Save the file to refresh diagnostics. This sample is intentionally invalid.
+; It is loaded by lab_diagnostics_sample.ai so package-aware linting should see it.
+
+(defrule
+    (true)
+=>
+    (chat-to-all "lab linter repeat-chat sample")
+)
+
+(defrule
+    (true)
+=>
+    (set-strategic-number sn-not-a-real-strategic-number 5)
+    (disable-self)
+)
+
+(defrule
+    (up-gaia-type-count c: forage-bush > 3)
+=>
+    (do-nothing)
+)
+
+(defrule
+    (up-get-point position-not-real g: 50)
+=>
+    (do-nothing)
+)
+
+(defrule
+    (true)
+=>
+    (up-can-build 0 house)
+    (disable-self)
+)
+
+(defrule
+    (true)
+=>
+)

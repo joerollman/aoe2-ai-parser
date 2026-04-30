@@ -1,0 +1,8 @@
+.git/**
+.vscode/**
+*.vsix
+**/*.vsix
+npm-debug.log
+languageExtension/src/**
+languageExtension/tsconfig.json
+tsconfig.json

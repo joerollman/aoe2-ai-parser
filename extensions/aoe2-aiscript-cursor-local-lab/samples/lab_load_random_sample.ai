@@ -1,0 +1,4 @@
+(load-random
+    0 "lab_random_disabled"
+    100 "lab_random_enabled"
+)

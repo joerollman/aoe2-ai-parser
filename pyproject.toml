@@ -1,0 +1,16 @@
+[project]
+name = "aoe2-ai-lab"
+version = "0.1.0"
+description = "Tooling and experiments for Age of Empires II DE AI scripting"
+requires-python = ">=3.12"
+dependencies = []
+
+[project.scripts]
+aoe2-ai-lab = "aoe2_ai_lab.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+

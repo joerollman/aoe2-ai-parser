@@ -1,0 +1,26 @@
+{
+  "name": "aoe2-ai-parser-tools",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "lint:rms": "node scripts/lint-rms.mjs",
+    "verify:editor-extension": "node scripts/verify-cursor-extension.mjs",
+    "verify:cursor-extension": "node scripts/verify-cursor-extension.mjs",
+    "sync:extension-lab": "node scripts/sync-extension-lab.mjs",
+    "smoke:cursor-completions": "node scripts/smoke-cursor-completions.mjs",
+    "smoke:cursor-package-output": "node scripts/smoke-cursor-package-output.mjs",
+    "package:editor-extension": "node scripts/install-cursor-extension.mjs --package-only",
+    "publish:vscode-extension": "node scripts/publish-extension.mjs vscode",
+    "publish:openvsx-extension": "node scripts/publish-extension.mjs openvsx",
+    "install:cursor-extension": "node scripts/install-cursor-extension.mjs --editor cursor",
+    "install:cursor-extension:bump": "node scripts/install-cursor-extension.mjs --editor cursor --bump-patch",
+    "install:vscode-extension": "node scripts/install-cursor-extension.mjs --editor code",
+    "install:vscode-extension:bump": "node scripts/install-cursor-extension.mjs --editor code --bump-patch",
+    "generate:symbol-docs": "node scripts/generate-symbol-docs.mjs",
+    "generate:diagnostic-registry": "node scripts/generate-diagnostic-registry.mjs",
+    "check:diagnostic-registry": "node scripts/generate-diagnostic-registry.mjs --check"
+  },
+  "dependencies": {
+    "aoe2-rms-parser": "^2.0.1"
+  }
+}
