@@ -73,6 +73,8 @@ def finding_suggestion(code: str, message: str) -> str | None:
         return "Keep only one definite defconst value for the symbol, or guard conflicting values with mutually exclusive preprocessor branches."
     if code == "defconst-alias-cycle":
         return "Break the alias cycle by assigning one constant a numeric value or a non-cyclic documented symbol."
+    if code == "defconst-value-out-of-range":
+        return "Use a value from -32768 to 32767, or store wider runtime values in goals or strategic numbers instead of defconsts."
     if code == "command-role-mismatch":
         if "likely intended action:" in message:
             return message.split("likely intended action:", 1)[1].strip()
@@ -240,6 +242,8 @@ RECOVERABLE_STRUCTURE_CODES = {
     "unbalanced-parentheses",
     "unterminated-defrule",
 }
+DEFCONST_MIN_VALUE = -32768
+DEFCONST_MAX_VALUE = 32767
 
 
 def _load_builtin_class_entries() -> tuple[set[str], dict[int, set[str]]]:
@@ -1286,6 +1290,29 @@ def lint_malformed_defconst(path: Path) -> list[Finding]:
                     source_line.confidence,
                 )
             )
+    return findings
+
+
+def lint_defconst_numeric_range(path: Path) -> list[Finding]:
+    findings: list[Finding] = []
+    for source_line in active_source_lines(path):
+        parsed_token = parse_defconst_token(source_line.text)
+        if parsed_token is None:
+            continue
+        name, value_token = parsed_token
+        if not is_int_literal(value_token):
+            continue
+        value = int(value_token)
+        if DEFCONST_MIN_VALUE <= value <= DEFCONST_MAX_VALUE:
+            continue
+        findings.append(
+            Finding(
+                source_line.number,
+                "defconst-value-out-of-range",
+                f"defconst {name!r} value {value} is outside signed 16-bit range {DEFCONST_MIN_VALUE} to {DEFCONST_MAX_VALUE}",
+                source_line.confidence,
+            )
+        )
     return findings
 
 
@@ -2765,6 +2792,7 @@ def lint_file(
         for issue in preprocessor_issues(script_path)
     )
     pre_parse_findings.extend(with_line_confidence(lint_malformed_defconst(script_path)))
+    pre_parse_findings.extend(with_line_confidence(lint_defconst_numeric_range(script_path)))
     pre_parse_findings.extend(with_line_confidence(lint_malformed_load_directives(script_path)))
     pre_parse_findings.extend(with_line_confidence(lint_malformed_load_random_directives(script_path)))
     pre_parse_findings.extend(with_line_confidence(lint_builtin_defconst_shadow(script_path)))

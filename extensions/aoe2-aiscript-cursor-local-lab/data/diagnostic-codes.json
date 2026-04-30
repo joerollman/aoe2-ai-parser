@@ -113,6 +113,14 @@
       "meaning": "A set of `defconst` aliases forms a cycle, so the constants cannot resolve to a numeric value."
     },
     {
+      "code": "defconst-value-out-of-range",
+      "source": "lint",
+      "severity": "error",
+      "corpus": "active",
+      "cursor_action": "explain",
+      "meaning": "A numeric `defconst` value is outside the documented signed 16-bit range of -32768 to 32767."
+    },
+    {
       "code": "duplicate-preprocessor-else",
       "source": "preprocessor",
       "severity": "error",

@@ -934,6 +934,54 @@ class LinterTests(unittest.TestCase):
 
         self.assertEqual(findings, [])
 
+    def test_flags_defconst_numeric_value_outside_signed_16_bit_range(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.per"
+            path.write_text(
+                """
+(defconst chat-buffer 7031232)
+(defconst too-low -32769)
+(defrule
+    (true)
+=>
+    (do-nothing)
+)
+""".strip(),
+                encoding="utf-8",
+            )
+
+            findings = lint_file(path)
+
+        self.assertEqual(
+            [finding.code for finding in findings],
+            ["defconst-value-out-of-range", "defconst-value-out-of-range"],
+        )
+        self.assertEqual([finding.line for finding in findings], [1, 2])
+        self.assertEqual(findings[0].severity, "error")
+        self.assertIn("signed 16-bit", findings[0].message)
+
+    def test_allows_defconst_numeric_value_at_signed_16_bit_boundaries(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.per"
+            path.write_text(
+                """
+(defconst minimum -32768)
+(defconst maximum 32767)
+(defconst alias maximum)
+(defconst greeting "hello")
+(defrule
+    (true)
+=>
+    (do-nothing)
+)
+""".strip(),
+                encoding="utf-8",
+            )
+
+            findings = lint_file(path)
+
+        self.assertEqual(findings, [])
+
     def test_suppress_codes_filters_specific_findings(self) -> None:
         with TemporaryDirectory() as tmp:
             path = Path(tmp) / "sample.per"

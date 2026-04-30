@@ -123,6 +123,7 @@ Examples:
 - `missing-load-target`: error.
 - `duplicate-preprocessor-else`: error.
 - `malformed-defconst`: error.
+- `defconst-value-out-of-range`: error.
 - `malformed-load-directive`: error.
 - `malformed-include-directive`: error.
 - `malformed-load-random-directive`: error.

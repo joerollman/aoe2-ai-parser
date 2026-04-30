@@ -157,7 +157,9 @@ Important limits for `sample_ai` work:
   16, so prefer staged rules even when DE would allow a larger block.
 - Rules are limited to 10,000 total.
 - Timers are 1-50.
-- Defconst values are limited to signed 16-bit integer range.
+- Defconst values are limited to signed 16-bit integer range
+  (`-32768` to `32767`). The validator reports
+  `defconst-value-out-of-range` for numeric constants outside this range.
 - Lines are limited to 255 characters, comments included.
 - DUC local search list holds up to 240 own-unit IDs.
 - DUC remote search list holds up to 40 target IDs.
@@ -752,6 +754,7 @@ Useful checks to add to `aoe2_ai_lab`:
 - Logical operator child count.
 - Rule element count.
 - Duplicate `defconst` names and duplicate goal IDs.
+- Numeric `defconst` values outside signed 16-bit range.
 - Missing symbolic constants after typed prefixes such as `c:`.
 - Goal IDs outside 1-512.
 - Suspicious direct numeric goal IDs where a defconst should be used.
