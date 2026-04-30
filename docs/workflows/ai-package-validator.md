@@ -415,7 +415,9 @@ real action instead of a `can-*` fact after `=>`, or adding a missing load file.
   warnings.
 - Explicit command-specific argument restrictions are reported as
   `command-argument-mismatch`. For example, `up-set-placement-data` does not
-  allow `any-*` or `every-*` wildcards in its `PlayerNumber` slot.
+  allow `any-*` or `every-*` wildcards in its `PlayerNumber` slot. The same
+  single-player restriction is enforced for `up-get-player-color`,
+  `up-get-upgrade-id`, `up-store-player-chat`, and `up-store-player-name`.
 - Literal numeric id slots and resolved integer `defconst` values are checked
   against explicit documented ranges. For example, `(set-goal 0 1)` is reported
   as `command-numeric-range-mismatch` because AIRef documents `GoalId` as

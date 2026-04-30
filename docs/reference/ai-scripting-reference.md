@@ -569,10 +569,11 @@ symbol. Numeric IDs, reachable `defconst`s, and dynamic typed sources such as
 the same certainty.
 
 Command-specific argument rules are also allowed when the command documentation
-is explicit. For example, `up-set-placement-data` rejects `any-*` and `every-*`
-player wildcards in its `PlayerNumber` slot; use an exact player,
-`my-player-number`, `scenario-player-#`, `lobby-player-#`, or a `this-any-*`
-rule variable instead.
+is explicit. For example, `up-set-placement-data`, `up-get-player-color`,
+`up-get-upgrade-id`, `up-store-player-chat`, and `up-store-player-name` reject
+`any-*` and `every-*` player wildcards in their `PlayerNumber` slots; use an
+exact player, `my-player-number`, `scenario-player-#`, `lobby-player-#`, or a
+`this-any-*` rule variable instead.
 
 ## Logical Operators
 

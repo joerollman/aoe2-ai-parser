@@ -1717,6 +1717,15 @@ def is_any_every_player_wildcard(value: str) -> bool:
     return value.startswith("any-") or value.startswith("every-")
 
 
+SINGLE_PLAYER_NUMBER_COMMANDS = {
+    "up-get-player-color",
+    "up-get-upgrade-id",
+    "up-set-placement-data",
+    "up-store-player-chat",
+    "up-store-player-name",
+}
+
+
 def typed_operand_kind(value: str) -> str | None:
     if value.startswith("sn-"):
         return "strategic number"
@@ -1883,7 +1892,7 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
             parameter_name = parameter.get("name", "")
             value = args[index]
             if (
-                expr.head == "up-set-placement-data"
+                expr.head in SINGLE_PLAYER_NUMBER_COMMANDS
                 and parameter_name == "PlayerNumber"
                 and is_any_every_player_wildcard(value)
             ):

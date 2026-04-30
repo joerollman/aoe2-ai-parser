@@ -2191,6 +2191,61 @@ void debug() {
 
         self.assertEqual(findings, [])
 
+    def test_flags_any_player_wildcard_for_single_player_actions(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.per"
+            path.write_text(
+                """
+(defconst out-goal 41)
+(defrule
+    (true)
+=>
+    (up-get-player-color any-ally out-goal)
+    (up-get-upgrade-id every-enemy 0 out-goal out-goal)
+    (up-store-player-chat any-enemy)
+    (up-store-player-name every-ally)
+    (disable-self)
+)
+""".strip(),
+                encoding="utf-8",
+            )
+
+            findings = lint_file(path)
+
+        self.assertEqual(
+            [finding.code for finding in findings],
+            [
+                "command-argument-mismatch",
+                "command-argument-mismatch",
+                "command-argument-mismatch",
+                "command-argument-mismatch",
+            ],
+        )
+        self.assertTrue(all("cannot use any/every wildcard players" in finding.message for finding in findings))
+
+    def test_allows_this_any_rule_variable_for_single_player_actions(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.per"
+            path.write_text(
+                """
+(defconst out-goal 41)
+(defrule
+    (true)
+=>
+    (up-get-player-color this-any-ally out-goal)
+    (up-get-upgrade-id this-any-enemy 0 out-goal out-goal)
+    (up-store-player-chat this-any-enemy)
+    (up-store-player-name this-any-ally)
+    (disable-self)
+)
+""".strip(),
+                encoding="utf-8",
+            )
+
+            findings = lint_file(path)
+
+        self.assertEqual(findings, [])
+
     def test_flags_binary_logical_operator_with_too_many_child_facts(self) -> None:
         with TemporaryDirectory() as tmp:
             path = Path(tmp) / "sample.per"
