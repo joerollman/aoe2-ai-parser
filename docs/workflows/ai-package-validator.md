@@ -413,6 +413,9 @@ real action instead of a `can-*` fact after `=>`, or adding a missing load file.
   `command-family-mismatch` because a `GoalId` slot received an `sn-*`
   strategic-number-looking token. These checks use naming evidence only and are
   warnings.
+- Explicit command-specific argument restrictions are reported as
+  `command-argument-mismatch`. For example, `up-set-placement-data` does not
+  allow `any-*` or `every-*` wildcards in its `PlayerNumber` slot.
 - Literal numeric id slots and resolved integer `defconst` values are checked
   against explicit documented ranges. For example, `(set-goal 0 1)` is reported
   as `command-numeric-range-mismatch` because AIRef documents `GoalId` as

@@ -568,6 +568,12 @@ symbol. Numeric IDs, reachable `defconst`s, and dynamic typed sources such as
 `g:`/`s:` operands remain valid because they cannot be resolved statically with
 the same certainty.
 
+Command-specific argument rules are also allowed when the command documentation
+is explicit. For example, `up-set-placement-data` rejects `any-*` and `every-*`
+player wildcards in its `PlayerNumber` slot; use an exact player,
+`my-player-number`, `scenario-player-#`, `lobby-player-#`, or a `this-any-*`
+rule variable instead.
+
 ## Logical Operators
 
 Supported logical commands:

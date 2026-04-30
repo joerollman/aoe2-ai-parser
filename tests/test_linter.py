@@ -2152,6 +2152,45 @@ void debug() {
         self.assertEqual(findings[0].code, "command-family-mismatch")
         self.assertIn("ObjectId", findings[0].message)
 
+    def test_flags_any_player_wildcard_for_up_set_placement_data(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.per"
+            path.write_text(
+                """
+(defrule
+    (true)
+=>
+    (up-set-placement-data any-ally town-center c: 1)
+    (disable-self)
+)
+""".strip(),
+                encoding="utf-8",
+            )
+
+            findings = lint_file(path)
+
+        self.assertEqual(findings[0].code, "command-argument-mismatch")
+        self.assertIn("cannot use any/every wildcard players", findings[0].message)
+
+    def test_allows_this_any_rule_variable_for_up_set_placement_data(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.per"
+            path.write_text(
+                """
+(defrule
+    (true)
+=>
+    (up-set-placement-data this-any-enemy town-center c: 1)
+    (disable-self)
+)
+""".strip(),
+                encoding="utf-8",
+            )
+
+            findings = lint_file(path)
+
+        self.assertEqual(findings, [])
+
     def test_flags_binary_logical_operator_with_too_many_child_facts(self) -> None:
         with TemporaryDirectory() as tmp:
             path = Path(tmp) / "sample.per"

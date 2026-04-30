@@ -1713,6 +1713,10 @@ def direct_id_values_for_parameter(parameter_name: str) -> set[str] | None:
     return None
 
 
+def is_any_every_player_wildcard(value: str) -> bool:
+    return value.startswith("any-") or value.startswith("every-")
+
+
 def typed_operand_kind(value: str) -> str | None:
     if value.startswith("sn-"):
         return "strategic number"
@@ -1878,6 +1882,19 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
         for index, parameter in enumerate(parameters):
             parameter_name = parameter.get("name", "")
             value = args[index]
+            if (
+                expr.head == "up-set-placement-data"
+                and parameter_name == "PlayerNumber"
+                and is_any_every_player_wildcard(value)
+            ):
+                findings.append(
+                    finding_for_arg(
+                        expr,
+                        index,
+                        "command-argument-mismatch",
+                        f"{expr.head} PlayerNumber {value!r} cannot use any/every wildcard players; use an exact player, my-player-number, scenario-player-#, lobby-player-#, or this-any-* rule variable",
+                    )
+                )
             family_finding = lint_parameter_family_operand(expr, parameters, parameter_name, value, index)
             if family_finding is not None:
                 findings.append(family_finding)
