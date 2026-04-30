@@ -1995,8 +1995,9 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
                 and not is_known_schema_value(value, SEARCH_SOURCE_VALUES, defined_constants)
             ):
                 findings.append(
-                    Finding(
-                        expr.line,
+                    finding_for_arg(
+                        expr,
+                        index,
                         "command-argument-mismatch",
                         f"{expr.head} SearchSource {value!r} should be search-local or search-remote",
                     )
@@ -2007,8 +2008,9 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
                 and not is_known_schema_value(value, DUC_ACTION_VALUES, defined_constants)
             ):
                 findings.append(
-                    Finding(
-                        expr.line,
+                    finding_for_arg(
+                        expr,
+                        index,
                         "command-argument-mismatch",
                         f"{expr.head} DUCAction {value!r} is not documented",
                     )
@@ -2020,8 +2022,9 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
                 and not is_known_schema_value(value, FORMATION_VALUES, defined_constants)
             ):
                 findings.append(
-                    Finding(
-                        expr.line,
+                    finding_for_arg(
+                        expr,
+                        index,
                         "command-argument-mismatch",
                         f"{expr.head} Formation {value!r} is not documented",
                     )
@@ -2033,8 +2036,9 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
                 and not is_known_schema_value(value, ATTACK_STANCE_VALUES, defined_constants)
             ):
                 findings.append(
-                    Finding(
-                        expr.line,
+                    finding_for_arg(
+                        expr,
+                        index,
                         "command-argument-mismatch",
                         f"{expr.head} AttackStance {value!r} is not documented",
                     )
@@ -2045,8 +2049,9 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
                 and not is_known_schema_value(value, COMPARE_OP_VALUES, defined_constants)
             ):
                 findings.append(
-                    Finding(
-                        expr.line,
+                    finding_for_arg(
+                        expr,
+                        index,
                         "command-argument-mismatch",
                         f"{expr.head} compareOp {value!r} is not documented",
                     )
@@ -2061,8 +2066,9 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
                 and not is_known_schema_value(value, MATH_OP_VALUES, defined_constants)
             ):
                 findings.append(
-                    Finding(
-                        expr.line,
+                    finding_for_arg(
+                        expr,
+                        index,
                         "command-argument-mismatch",
                         f"{expr.head} mathOp {value!r} is not documented",
                     )
@@ -2077,8 +2083,9 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
                 and not is_known_schema_value(value, PLACEMENT_TYPE_VALUES, defined_constants)
             ):
                 findings.append(
-                    Finding(
-                        expr.line,
+                    finding_for_arg(
+                        expr,
+                        index,
                         "command-argument-mismatch",
                         f"{expr.head} PlacementType {value!r} is not documented",
                     )
@@ -2089,8 +2096,9 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
                 and not is_known_schema_value(value, RESEARCH_STATE_VALUES, defined_constants)
             ):
                 findings.append(
-                    Finding(
-                        expr.line,
+                    finding_for_arg(
+                        expr,
+                        index,
                         "command-argument-mismatch",
                         f"{expr.head} ResearchState {value!r} is not documented",
                     )
@@ -2111,8 +2119,9 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
                 } else RESOURCE_VALUES
                 if valid_resources and not is_known_schema_value(value, valid_resources, defined_constants):
                     findings.append(
-                        Finding(
-                            expr.line,
+                        finding_for_arg(
+                            expr,
+                            index,
                             "command-argument-mismatch",
                             f"{expr.head} Resource {value!r} is not documented",
                         )
@@ -2123,8 +2132,9 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
                 and not is_known_schema_value(value, AGE_VALUES, defined_constants)
             ):
                 findings.append(
-                    Finding(
-                        expr.line,
+                    finding_for_arg(
+                        expr,
+                        index,
                         "command-argument-mismatch",
                         f"{expr.head} Age {value!r} is not documented",
                     )
@@ -2135,8 +2145,9 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
                 and not is_known_schema_value(value, DIFFICULTY_VALUES, defined_constants)
             ):
                 findings.append(
-                    Finding(
-                        expr.line,
+                    finding_for_arg(
+                        expr,
+                        index,
                         "command-argument-mismatch",
                         f"{expr.head} Difficulty {value!r} is not documented",
                     )
@@ -2147,8 +2158,9 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
                 and not is_known_schema_value(value, OBJECT_DATA_VALUES, defined_constants)
             ):
                 findings.append(
-                    Finding(
-                        expr.line,
+                    finding_for_arg(
+                        expr,
+                        index,
                         "command-argument-mismatch",
                         f"{expr.head} ObjectData {value!r} is not documented",
                     )
@@ -2159,8 +2171,9 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
                 and not is_known_schema_value(value, PLAYER_STANCE_VALUES, defined_constants)
             ):
                 findings.append(
-                    Finding(
-                        expr.line,
+                    finding_for_arg(
+                        expr,
+                        index,
                         "command-argument-mismatch",
                         f"{expr.head} PlayerStance {value!r} is not documented",
                     )
@@ -2171,8 +2184,9 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
                 and not is_known_schema_value(value, POSITION_TYPE_VALUES, defined_constants)
             ):
                 findings.append(
-                    Finding(
-                        expr.line,
+                    finding_for_arg(
+                        expr,
+                        index,
                         "command-argument-mismatch",
                         f"{expr.head} PositionType {value!r} is not documented",
                     )
@@ -2183,8 +2197,9 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
                 and not is_known_schema_value(value, TIMER_STATE_VALUES, defined_constants)
             ):
                 findings.append(
-                    Finding(
-                        expr.line,
+                    finding_for_arg(
+                        expr,
+                        index,
                         "command-argument-mismatch",
                         f"{expr.head} TimerState {value!r} is not documented",
                     )
@@ -2195,8 +2210,9 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
                 and not is_known_schema_value(value, OBJECT_LIST_VALUES, defined_constants)
             ):
                 findings.append(
-                    Finding(
-                        expr.line,
+                    finding_for_arg(
+                        expr,
+                        index,
                         "command-argument-mismatch",
                         f"{expr.head} ObjectList {value!r} is not documented",
                     )
@@ -2207,8 +2223,9 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
                 and not is_known_schema_value(value, OBJECT_STATUS_VALUES, defined_constants)
             ):
                 findings.append(
-                    Finding(
-                        expr.line,
+                    finding_for_arg(
+                        expr,
+                        index,
                         "command-argument-mismatch",
                         f"{expr.head} ObjectStatus {value!r} is not documented",
                     )
@@ -2219,8 +2236,9 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
                 and not is_known_schema_value(value, SEARCH_ORDER_VALUES, defined_constants)
             ):
                 findings.append(
-                    Finding(
-                        expr.line,
+                    finding_for_arg(
+                        expr,
+                        index,
                         "command-argument-mismatch",
                         f"{expr.head} SearchOrder {value!r} is not documented",
                     )
@@ -2231,8 +2249,9 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
                 and not is_known_schema_value(value, CIV_VALUES, defined_constants)
             ):
                 findings.append(
-                    Finding(
-                        expr.line,
+                    finding_for_arg(
+                        expr,
+                        index,
                         "command-argument-mismatch",
                         f"{expr.head} Civ {value!r} is not documented",
                     )
@@ -2243,8 +2262,9 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
                 and not is_known_schema_value(value, COMMODITY_VALUES, defined_constants)
             ):
                 findings.append(
-                    Finding(
-                        expr.line,
+                    finding_for_arg(
+                        expr,
+                        index,
                         "command-argument-mismatch",
                         f"{expr.head} Commodity {value!r} is not documented",
                     )
@@ -2255,8 +2275,9 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
                 and not is_known_schema_value(value, FACT_ID_VALUES, defined_constants)
             ):
                 findings.append(
-                    Finding(
-                        expr.line,
+                    finding_for_arg(
+                        expr,
+                        index,
                         "command-argument-mismatch",
                         f"{expr.head} FactId {value!r} is not documented",
                     )
@@ -2267,8 +2288,9 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
                 and not is_known_schema_value(value, MAP_TYPE_VALUES, defined_constants)
             ):
                 findings.append(
-                    Finding(
-                        expr.line,
+                    finding_for_arg(
+                        expr,
+                        index,
                         "command-argument-mismatch",
                         f"{expr.head} MapType {value!r} is not documented",
                     )
@@ -2279,8 +2301,9 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
                 and not is_known_schema_value(value, PROJECTILE_TYPE_VALUES, defined_constants)
             ):
                 findings.append(
-                    Finding(
-                        expr.line,
+                    finding_for_arg(
+                        expr,
+                        index,
                         "command-argument-mismatch",
                         f"{expr.head} ProjectileType {value!r} is not documented",
                     )
@@ -2291,8 +2314,9 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
                 and not is_known_schema_value(value, RESOURCE_TYPE_VALUES, defined_constants)
             ):
                 findings.append(
-                    Finding(
-                        expr.line,
+                    finding_for_arg(
+                        expr,
+                        index,
                         "command-argument-mismatch",
                         f"{expr.head} ResourceType {value!r} is not documented",
                     )
@@ -2303,8 +2327,9 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
                 and not is_known_schema_value(value, EVENT_TYPE_VALUES, defined_constants)
             ):
                 findings.append(
-                    Finding(
-                        expr.line,
+                    finding_for_arg(
+                        expr,
+                        index,
                         "command-argument-mismatch",
                         f"{expr.head} EventType {value!r} is not documented",
                     )
@@ -2315,8 +2340,9 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
                 and not is_known_schema_value(value, EXPLORED_STATE_VALUES, defined_constants)
             ):
                 findings.append(
-                    Finding(
-                        expr.line,
+                    finding_for_arg(
+                        expr,
+                        index,
                         "command-argument-mismatch",
                         f"{expr.head} ExploredState {value!r} is not documented",
                     )
@@ -2327,8 +2353,9 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
                 and not is_known_schema_value(value, FIND_PLAYER_METHOD_VALUES, defined_constants)
             ):
                 findings.append(
-                    Finding(
-                        expr.line,
+                    finding_for_arg(
+                        expr,
+                        index,
                         "command-argument-mismatch",
                         f"{expr.head} FindPlayerMethod {value!r} is not documented",
                     )
@@ -2339,8 +2366,9 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
                 and not is_known_schema_value(value, GAME_TYPE_VALUES, defined_constants)
             ):
                 findings.append(
-                    Finding(
-                        expr.line,
+                    finding_for_arg(
+                        expr,
+                        index,
                         "command-argument-mismatch",
                         f"{expr.head} GameType {value!r} is not documented",
                     )
@@ -2351,8 +2379,9 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
                 and not is_known_schema_value(value, GROUP_TYPE_VALUES, defined_constants)
             ):
                 findings.append(
-                    Finding(
-                        expr.line,
+                    finding_for_arg(
+                        expr,
+                        index,
                         "command-argument-mismatch",
                         f"{expr.head} GroupType {value!r} is not documented",
                     )
@@ -2363,8 +2392,9 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
                 and not is_known_schema_value(value, IDLE_TYPE_VALUES, defined_constants)
             ):
                 findings.append(
-                    Finding(
-                        expr.line,
+                    finding_for_arg(
+                        expr,
+                        index,
                         "command-argument-mismatch",
                         f"{expr.head} IdleType {value!r} is not documented",
                     )
@@ -2375,8 +2405,9 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
                 and not is_known_schema_value(value, MAP_SIZE_VALUES, defined_constants)
             ):
                 findings.append(
-                    Finding(
-                        expr.line,
+                    finding_for_arg(
+                        expr,
+                        index,
                         "command-argument-mismatch",
                         f"{expr.head} MapSize {value!r} is not documented",
                     )
@@ -2387,8 +2418,9 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
                 and not is_known_schema_value(value, PRIORITY_TYPE_VALUES, defined_constants)
             ):
                 findings.append(
-                    Finding(
-                        expr.line,
+                    finding_for_arg(
+                        expr,
+                        index,
                         "command-argument-mismatch",
                         f"{expr.head} PriorityType {value!r} is not documented",
                     )
@@ -2399,8 +2431,9 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
                 and not is_known_schema_value(value, SCOUT_METHOD_VALUES, defined_constants)
             ):
                 findings.append(
-                    Finding(
-                        expr.line,
+                    finding_for_arg(
+                        expr,
+                        index,
                         "command-argument-mismatch",
                         f"{expr.head} ScoutMethod {value!r} is not documented",
                     )
@@ -2411,8 +2444,9 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
                 and not is_known_schema_value(value, STARTING_RESOURCES_VALUES, defined_constants)
             ):
                 findings.append(
-                    Finding(
-                        expr.line,
+                    finding_for_arg(
+                        expr,
+                        index,
                         "command-argument-mismatch",
                         f"{expr.head} StartingResources {value!r} is not documented",
                     )
@@ -2423,8 +2457,9 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
                 and not is_known_schema_value(value, SUB_GAME_TYPE_VALUES, defined_constants)
             ):
                 findings.append(
-                    Finding(
-                        expr.line,
+                    finding_for_arg(
+                        expr,
+                        index,
                         "command-argument-mismatch",
                         f"{expr.head} SubGameType {value!r} is not documented",
                     )
@@ -2435,8 +2470,9 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
                 and not is_known_schema_value(value, VICTORY_CONDITION_VALUES, defined_constants)
             ):
                 findings.append(
-                    Finding(
-                        expr.line,
+                    finding_for_arg(
+                        expr,
+                        index,
                         "command-argument-mismatch",
                         f"{expr.head} VictoryCondition {value!r} is not documented",
                     )
@@ -2447,8 +2483,9 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
                 and not is_known_schema_value(value, ACTION_ID_VALUES, defined_constants)
             ):
                 findings.append(
-                    Finding(
-                        expr.line,
+                    finding_for_arg(
+                        expr,
+                        index,
                         "command-argument-mismatch",
                         f"{expr.head} ActionId {value!r} is not documented",
                     )
@@ -2459,8 +2496,9 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
                 and not is_known_schema_value(value, ATTR_ID_VALUES, defined_constants)
             ):
                 findings.append(
-                    Finding(
-                        expr.line,
+                    finding_for_arg(
+                        expr,
+                        index,
                         "command-argument-mismatch",
                         f"{expr.head} AttrId {value!r} is not documented",
                     )
@@ -2471,8 +2509,9 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
                 and not is_known_schema_value(value, DIFF_PARAMETER_ID_VALUES, defined_constants)
             ):
                 findings.append(
-                    Finding(
-                        expr.line,
+                    finding_for_arg(
+                        expr,
+                        index,
                         "command-argument-mismatch",
                         f"{expr.head} DiffParameterId {value!r} is not documented",
                     )
@@ -2483,8 +2522,9 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
                 and not is_known_schema_value(value, EFFECT_ID_VALUES, defined_constants)
             ):
                 findings.append(
-                    Finding(
-                        expr.line,
+                    finding_for_arg(
+                        expr,
+                        index,
                         "command-argument-mismatch",
                         f"{expr.head} EffectId {value!r} is not documented",
                     )
@@ -2495,8 +2535,9 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
                 and not is_known_schema_value(value, ORDER_ID_VALUES, defined_constants)
             ):
                 findings.append(
-                    Finding(
-                        expr.line,
+                    finding_for_arg(
+                        expr,
+                        index,
                         "command-argument-mismatch",
                         f"{expr.head} OrderId {value!r} is not documented",
                     )
@@ -2508,8 +2549,9 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
                 and not is_known_schema_value(value, TERRAIN_VALUES, defined_constants)
             ):
                 findings.append(
-                    Finding(
-                        expr.line,
+                    finding_for_arg(
+                        expr,
+                        index,
                         "command-argument-mismatch",
                         f"{expr.head} Terrain {value!r} is not documented",
                     )
@@ -2520,8 +2562,9 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
                 and not is_known_schema_value(value, WALL_ID_VALUES, defined_constants)
             ):
                 findings.append(
-                    Finding(
-                        expr.line,
+                    finding_for_arg(
+                        expr,
+                        index,
                         "command-argument-mismatch",
                         f"{expr.head} WallId {value!r} is not documented",
                     )
@@ -2532,8 +2575,9 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
                 and not (value.startswith('"') and value.endswith('"'))
             ):
                 findings.append(
-                    Finding(
-                        expr.line,
+                    finding_for_arg(
+                        expr,
+                        index,
                         "command-argument-mismatch",
                         f"{expr.head} {parameter_name} {value!r} should be quoted text",
                     )
