@@ -3209,6 +3209,28 @@ void debug() {
 
         self.assertEqual(findings, [])
 
+    def test_explains_archived_non_de_direct_id_symbols(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.per"
+            path.write_text(
+                """
+(defrule
+    (unit-type-count stable-tarkan < 1)
+    (can-research ri-tracking)
+=>
+    (do-nothing)
+)
+""".strip(),
+                encoding="utf-8",
+            )
+
+            findings = lint_file(path)
+
+        messages = [finding.message for finding in findings]
+        self.assertEqual([finding.code for finding in findings], ["command-argument-mismatch", "command-argument-mismatch"])
+        self.assertTrue(any("archived as non-DE" in message and "object registry" in message for message in messages))
+        self.assertTrue(any("archived as non-DE" in message and "tech registry" in message for message in messages))
+
     def test_flags_invalid_count_compare_operator(self) -> None:
         with TemporaryDirectory() as tmp:
             path = Path(tmp) / "sample.per"

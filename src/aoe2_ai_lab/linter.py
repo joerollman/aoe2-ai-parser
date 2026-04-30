@@ -813,6 +813,18 @@ def _load_strategic_number_names() -> set[str]:
     }
 
 
+def _load_archived_symbol_names(filename: str) -> set[str]:
+    archive_path = Path(__file__).resolve().parents[2] / "docs" / "extracted" / filename
+    if not archive_path.exists():
+        return set()
+    names: set[str] = set()
+    for line in archive_path.read_text(encoding="utf-8-sig").splitlines():
+        match = re.match(r"\|\s*`([^`]+)`\s*\|", line)
+        if match:
+            names.add(match.group(1))
+    return names
+
+
 DUC_ACTION_VALUES = _load_value_family_names("DUCAction")
 FORMATION_VALUES = _load_value_family_names("Formation")
 ATTACK_STANCE_VALUES = _load_value_family_names("AttackStance")
@@ -862,6 +874,8 @@ WALL_ID_VALUES = _load_value_family_names("WallId") | {"stone-wall-line"}
 SUPPLEMENTAL_DOCUMENTED_OBJECT_NAMES = {"villager-food"}
 DOCUMENTED_OBJECT_NAMES = _load_object_ai_names() | SUPPLEMENTAL_DOCUMENTED_OBJECT_NAMES
 DOCUMENTED_TECH_NAMES = _load_tech_ai_names()
+ARCHIVED_NON_DE_OBJECT_NAMES = _load_archived_symbol_names("non-de-object-archive.md")
+ARCHIVED_NON_DE_TECH_NAMES = _load_archived_symbol_names("non-de-tech-archive.md")
 DOCUMENTED_STRATEGIC_NUMBER_NAMES = _load_strategic_number_names()
 KNOWN_STRATEGIC_NUMBER_NAMES = DOCUMENTED_STRATEGIC_NUMBER_NAMES | BINARY_OBSERVED_STRATEGIC_NUMBER_NAMES
 DOCUMENTED_TYPED_CONSTANTS = (
@@ -1773,6 +1787,14 @@ def direct_id_values_for_parameter(parameter_name: str) -> set[str] | None:
     return None
 
 
+def direct_id_not_documented_message(command: str, parameter_name: str, value: str) -> str:
+    if parameter_name in {"BuildingId", "ObjectId", "UnitId"} and value in ARCHIVED_NON_DE_OBJECT_NAMES:
+        return f"{command} {parameter_name} {value!r} is archived as non-DE and is excluded from the DE object registry"
+    if parameter_name == "TechId" and value in ARCHIVED_NON_DE_TECH_NAMES:
+        return f"{command} {parameter_name} {value!r} is archived as non-DE and is excluded from the DE tech registry"
+    return f"{command} {parameter_name} {value!r} is not documented"
+
+
 def is_any_every_player_wildcard(value: str) -> bool:
     return value.startswith("any-") or value.startswith("every-")
 
@@ -2001,7 +2023,7 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
                         expr,
                         index,
                         "command-argument-mismatch",
-                        f"{expr.head} {parameter_name} {value!r} is not documented",
+                        direct_id_not_documented_message(expr.head, parameter_name, value),
                     )
                 )
             if parameter_name == "typeOp" and value not in TYPE_OP_VALUES:
