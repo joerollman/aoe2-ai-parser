@@ -579,7 +579,10 @@ symbol. Numeric IDs, reachable `defconst`s, and dynamic typed sources such as
 `g:`/`s:` operands remain valid because they cannot be resolved statically with
 the same certainty. Object aliases mentioned in inventory notes, such as
 `villager-wood` and `trebuchet-set` in "Can be counted with ..." notes, are
-treated as documented object names for counting and typed constant slots.
+treated as documented object names for counting and typed constant slots. The
+validator also accepts `villager-food`, sourced from the bundled AoE2 AiScript
+unit-id data as id 978, because AIRef omits that aggregate food-gatherer alias
+while documenting the other gatherer aliases.
 
 Command-specific argument rules are also allowed when the command documentation
 is explicit. For example, `up-set-placement-data`, `up-get-player-color`,

@@ -856,7 +856,11 @@ EFFECT_ID_VALUES = _load_value_family_names("EffectId")
 ORDER_ID_VALUES = _load_value_family_names("OrderId")
 TERRAIN_VALUES = _load_value_family_names("Terrain")
 WALL_ID_VALUES = _load_value_family_names("WallId") | {"stone-wall-line"}
-DOCUMENTED_OBJECT_NAMES = _load_object_ai_names()
+# AIRef currently documents several villager gatherer aliases through object
+# notes, but omits the aggregate food gatherer alias that appears in the
+# AoE2 AiScript extension unit-id data as id 978.
+SUPPLEMENTAL_DOCUMENTED_OBJECT_NAMES = {"villager-food"}
+DOCUMENTED_OBJECT_NAMES = _load_object_ai_names() | SUPPLEMENTAL_DOCUMENTED_OBJECT_NAMES
 DOCUMENTED_TECH_NAMES = _load_tech_ai_names()
 DOCUMENTED_STRATEGIC_NUMBER_NAMES = _load_strategic_number_names()
 KNOWN_STRATEGIC_NUMBER_NAMES = DOCUMENTED_STRATEGIC_NUMBER_NAMES | BINARY_OBSERVED_STRATEGIC_NUMBER_NAMES

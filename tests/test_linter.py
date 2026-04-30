@@ -3194,9 +3194,11 @@ void debug() {
                 """
 (defrule
     (unit-type-count villager-wood < 10)
+    (unit-type-count villager-food < 10)
     (unit-type-count-total trebuchet-set < 3)
 =>
     (up-find-local c: villager-wood c: 1)
+    (up-find-local c: villager-food c: 1)
     (disable-self)
 )
 """.strip(),
