@@ -426,6 +426,9 @@ def collect_reachable_per_files(
 
 def find_package_roots(package_dir: str | Path) -> list[PackageRoot]:
     root = Path(package_dir)
+    if root.is_file() and root.suffix.lower() == ".ai":
+        return resolve_ai_roots(root, package_dir=root.parent)
+
     roots: list[PackageRoot] = []
     for ai_path in sorted(root.rglob("*.ai")):
         roots.extend(resolve_ai_roots(ai_path, package_dir=root))
@@ -434,6 +437,27 @@ def find_package_roots(package_dir: str | Path) -> list[PackageRoot]:
 
 def inspect_package_integrity(package_dir: str | Path) -> PackageIntegrityResult:
     root = Path(package_dir)
+    if root.is_file() and root.suffix.lower() == ".ai":
+        package_root = root.parent
+        roots = resolve_ai_roots(root, package_dir=package_root)
+        stale_ai_roots = (
+            []
+            if roots
+            else [
+                StaleAiRoot(
+                    ai_path=root,
+                    message=describe_ai_root_failure(root, package_dir=package_root),
+                )
+            ]
+        )
+        return PackageIntegrityResult(
+            package_dir=package_root,
+            roots=roots,
+            stale_ai_roots=stale_ai_roots,
+            unreachable_per_files=[],
+            duplicate_root_targets={},
+        )
+
     roots: list[PackageRoot] = []
     stale_ai_roots: list[StaleAiRoot] = []
     for ai_path in sorted(root.rglob("*.ai")):

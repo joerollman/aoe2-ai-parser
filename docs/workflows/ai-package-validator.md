@@ -19,6 +19,13 @@ $env:PYTHONPATH='src'
 python -m aoe2_ai_lab lint-package extensions\aoe2-aiscript-cursor-local-lab\samples --profile default
 ```
 
+You can pass a specific `.ai` file to validate just one root from a larger pack:
+
+```powershell
+$env:PYTHONPATH='src'
+python -m aoe2_ai_lab lint-package "path\\to\\Some AI.ai" --profile corpus --summary
+```
+
 Community/corpus package lint:
 
 ```powershell

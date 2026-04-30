@@ -94,6 +94,26 @@ class AiPackageTests(unittest.TestCase):
         self.assertEqual([package_root.ai_path.name for package_root in roots], ["Loaded.ai", "Named.ai"])
         self.assertEqual([package_root.per_path.name for package_root in roots], ["main.per", "Named.per"])
 
+    def test_find_package_roots_accepts_single_ai_file(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            ai_path = root / "Loaded.ai"
+            ai_path.write_text('(load "scripts/main")\n', encoding="utf-8")
+            scripts = root / "scripts"
+            scripts.mkdir()
+            (scripts / "main.per").write_text("(defrule\n    (true)\n=>\n    (do-nothing)\n)\n", encoding="utf-8")
+            (root / "unused.per").write_text("(defconst unused 1)\n", encoding="utf-8")
+
+            roots = find_package_roots(ai_path)
+            integrity = inspect_package_integrity(ai_path)
+
+        self.assertEqual(len(roots), 1)
+        self.assertEqual(roots[0].ai_path.name, "Loaded.ai")
+        self.assertEqual(roots[0].per_path.name, "main.per")
+        self.assertEqual(integrity.package_dir, root)
+        self.assertEqual([package_root.per_path.name for package_root in integrity.roots], ["main.per"])
+        self.assertEqual(integrity.unreachable_per_files, [])
+
     def test_find_package_roots_keeps_multiple_ai_loads(self) -> None:
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
