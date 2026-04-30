@@ -597,9 +597,17 @@ Correct pattern:
 
 Linter opportunities:
 
-- Flag logical operators with the wrong number of direct child facts.
 - Count logical operators toward rule element limits.
 - Prefer indentation that makes nesting obvious.
+
+Current linter behavior:
+
+- `logical-operator-arity-mismatch` reports `not` with anything other than one
+  direct child fact.
+- `logical-operator-arity-mismatch` reports `and`, `or`, `nand`, `nor`, `xor`,
+  and `xnor` with anything other than two direct child facts.
+- Multi-line logical blocks are scanned as rule fragments, because the parser
+  preserves some multi-line expressions as line fragments for compatibility.
 
 ## Limits Worth Designing Around
 

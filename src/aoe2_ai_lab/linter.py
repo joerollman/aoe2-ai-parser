@@ -85,6 +85,8 @@ def finding_suggestion(code: str, message: str) -> str | None:
         return "Define a goal set to without-escrow and pass that goal instead of literal 0."
     if code == "command-argument-mismatch" and "mathOp" in message:
         return "Use a documented math operator such as c:=, g:=, c:+, c:-, g:+, or g:- as appropriate."
+    if code == "logical-operator-arity-mismatch":
+        return "Use exactly one child fact for not, and exactly two child facts for binary logical operators; nest operators for larger groups."
     return None
 
 
@@ -2529,6 +2531,89 @@ def lint_command_roles(rule: object) -> list[Finding]:
     return findings
 
 
+def lint_logical_operator_arity(rule: object) -> list[Finding]:
+    findings: list[Finding] = []
+    facts = getattr(rule, "facts", ())
+    fact_lines = getattr(rule, "fact_lines", ()) or (getattr(rule, "start_line"),) * len(facts)
+    fact_exprs = getattr(rule, "fact_exprs", ())
+    expected_counts = {
+        "not": 1,
+        "and": 2,
+        "or": 2,
+        "nand": 2,
+        "nor": 2,
+        "xor": 2,
+        "xnor": 2,
+    }
+
+    def walk(expr: Expression) -> None:
+        if expr.head in expected_counts:
+            if count_code_parens(expr.source) != 0:
+                return
+            child_fact_count = sum(1 for arg in expr.args if isinstance(arg, Expression))
+            expected = expected_counts[expr.head]
+            if child_fact_count != expected:
+                facts_label = "fact" if expected == 1 else "facts"
+                findings.append(
+                    Finding(
+                        expr.line,
+                        "logical-operator-arity-mismatch",
+                        f"{expr.head} expects {expected} child {facts_label}, got {child_fact_count}",
+                        span=expr.head_span,
+                    )
+                )
+        for arg in expr.args:
+            if isinstance(arg, Expression):
+                walk(arg)
+
+    for expr in fact_exprs:
+        walk(expr)
+
+    stack: list[dict[str, object]] = []
+    for fact, line in zip(facts, fact_lines):
+        symbol = first_symbol(fact)
+        balance_delta = count_code_parens(fact)
+        opens_logical = symbol in expected_counts and balance_delta > 0
+        is_complete_expr = fact.strip().startswith("(") and balance_delta == 0
+
+        if opens_logical:
+            if stack:
+                stack[-1]["count"] = int(stack[-1]["count"]) + 1
+            stack.append(
+                {
+                    "head": symbol,
+                    "line": line,
+                    "count": 0,
+                    "balance": balance_delta,
+                }
+            )
+            continue
+
+        if is_complete_expr and stack:
+            stack[-1]["count"] = int(stack[-1]["count"]) + 1
+            continue
+
+        if balance_delta < 0 and stack:
+            stack[-1]["balance"] = int(stack[-1]["balance"]) + balance_delta
+            while stack and int(stack[-1]["balance"]) <= 0:
+                frame = stack.pop()
+                head = str(frame["head"])
+                expected = expected_counts[head]
+                child_fact_count = int(frame["count"])
+                if child_fact_count != expected:
+                    facts_label = "fact" if expected == 1 else "facts"
+                    findings.append(
+                        Finding(
+                            int(frame["line"]),
+                            "logical-operator-arity-mismatch",
+                            f"{head} expects {expected} child {facts_label}, got {child_fact_count}",
+                        )
+                    )
+                if stack:
+                    stack[-1]["balance"] = int(stack[-1]["balance"]) + int(frame["balance"])
+    return findings
+
+
 def lint_unsafe_set_target_objects(rules: tuple[object, ...]) -> list[Finding]:
     search_ready = {"search-local": False, "search-remote": False}
     findings: list[Finding] = []
@@ -2722,6 +2807,7 @@ def lint_file(
         findings.extend(apply_confidence(lint_livestock_point_default(rule), rule_confidence))
         findings.extend(apply_confidence(lint_up_build_place_point_escrow(rule), rule_confidence))
         findings.extend(apply_confidence(lint_command_roles(rule), rule_confidence))
+        findings.extend(apply_confidence(lint_logical_operator_arity(rule), rule_confidence))
         findings.extend(apply_confidence(lint_command_schema(rule, defined_constants, constant_values), rule_confidence))
 
         if not any(action.startswith("(disable-self") for action in rule.actions):

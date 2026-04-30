@@ -46,6 +46,7 @@ Manual `--suppress-code <code>` can suppress any finding code for one lint run. 
 | `duplicate-defconst-conflict` | lint | warning | suppressed | none | A definitely active file assigns two different parsed values to the same `defconst` name. |
 | `empty-action` | lint | error | active | none | A rule has no actions after `=>`. |
 | `livestock-default-point` | lint | warning | active | none | Livestock targeting uses `action-default` where `action-move` is usually expected. |
+| `logical-operator-arity-mismatch` | lint | error | active | none | A logical operator has the wrong number of direct child facts. `not` expects one child fact; binary operators such as `and` and `or` expect two. |
 | `load-cycle` | package lint | error | active | none | The reachable load graph cycles back to an already-active `.per` file. |
 | `load-depth-exceeded` | package lint | error | active | none | The reachable load graph exceeds the documented maximum nested load depth of 10. |
 | `malformed-preprocessor-directive` | preprocessor | error | active | none | A preprocessor directive has invalid syntax, such as a missing condition token. |

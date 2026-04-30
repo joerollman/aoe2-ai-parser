@@ -2152,6 +2152,76 @@ void debug() {
         self.assertEqual(findings[0].code, "command-family-mismatch")
         self.assertIn("ObjectId", findings[0].message)
 
+    def test_flags_binary_logical_operator_with_too_many_child_facts(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.per"
+            path.write_text(
+                """
+(defrule
+    (or
+        (true)
+        (false)
+        (game-time > 5)
+    )
+=>
+    (disable-self)
+)
+""".strip(),
+                encoding="utf-8",
+            )
+
+            findings = lint_file(path)
+
+        self.assertEqual(findings[0].code, "logical-operator-arity-mismatch")
+        self.assertEqual(findings[0].severity, "error")
+        self.assertIn("or expects 2 child facts, got 3", findings[0].message)
+
+    def test_flags_not_with_too_many_child_facts(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.per"
+            path.write_text(
+                """
+(defrule
+    (not
+        (true)
+        (false)
+    )
+=>
+    (disable-self)
+)
+""".strip(),
+                encoding="utf-8",
+            )
+
+            findings = lint_file(path)
+
+        self.assertEqual(findings[0].code, "logical-operator-arity-mismatch")
+        self.assertIn("not expects 1 child fact, got 2", findings[0].message)
+
+    def test_allows_nested_logical_operator_for_three_alternatives(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.per"
+            path.write_text(
+                """
+(defrule
+    (or
+        (true)
+        (or
+            (false)
+            (game-time > 5)
+        )
+    )
+=>
+    (disable-self)
+)
+""".strip(),
+                encoding="utf-8",
+            )
+
+            findings = lint_file(path)
+
+        self.assertEqual(findings, [])
+
     def test_allows_matching_symbol_family_in_direct_slots(self) -> None:
         with TemporaryDirectory() as tmp:
             path = Path(tmp) / "sample.per"

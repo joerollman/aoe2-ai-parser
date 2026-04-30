@@ -153,6 +153,14 @@
       "meaning": "Livestock targeting uses `action-default` where `action-move` is usually expected."
     },
     {
+      "code": "logical-operator-arity-mismatch",
+      "source": "lint",
+      "severity": "error",
+      "corpus": "active",
+      "cursor_action": "none",
+      "meaning": "A logical operator has the wrong number of direct child facts. `not` expects one child fact; binary operators such as `and` and `or` expect two."
+    },
+    {
       "code": "load-cycle",
       "source": "package lint",
       "severity": "error",
