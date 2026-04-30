@@ -997,6 +997,16 @@ def is_symbolic_identifier(value: str) -> bool:
     return bool(IDENTIFIER_RE.match(value))
 
 
+def undefined_typed_constant_message(value: str) -> str:
+    if value in ARCHIVED_NON_DE_TECH_NAMES:
+        return f"{value!r} follows c: but is archived as non-DE and is excluded from the DE tech registry"
+    if value in ARCHIVED_NON_DE_OBJECT_NAMES:
+        return f"{value!r} follows c: but is archived as non-DE and is excluded from the DE object registry"
+    if value in ARCHIVED_NON_DE_STRATEGIC_NUMBER_NAMES:
+        return f"{value!r} follows c: but is archived as non-DE and is excluded from the DE strategic-number registry"
+    return f"{value!r} follows c: but is not defined with defconst"
+
+
 def lint_typed_constants(
     line: int,
     expr: str,
@@ -1025,7 +1035,7 @@ def lint_typed_constants(
                 Finding(
                     line,
                     "undefined-constant",
-                    f"{value!r} follows c: but is not defined with defconst",
+                    undefined_typed_constant_message(value),
                 )
             )
     return findings

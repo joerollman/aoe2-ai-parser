@@ -465,7 +465,8 @@ real action instead of a `can-*` fact after `=>`, or adding a missing load file.
 - Object, tech, and strategic-number symbols that only appear in the local
   non-DE archive remain invalid for DE validation, but the diagnostic message
   explains that they are archived non-DE symbols instead of reporting them as
-  unknown symbols.
+  unknown symbols. This applies both to command-specific id slots and generic
+  `c:` typed constants.
 - `map-type` uses the local MapType registry plus narrow supplemental modern DE
   values when the scraped registry lags behind current maps. Keep this list
   small and evidence-based.

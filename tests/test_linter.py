@@ -3239,6 +3239,7 @@ void debug() {
     (unit-type-count stable-tarkan < 1)
     (can-research ri-tracking)
 =>
+    (up-chat-data-to-all "tech %d" c: ri-tracking)
     (do-nothing)
 )
 """.strip(),
@@ -3248,7 +3249,10 @@ void debug() {
             findings = lint_file(path)
 
         messages = [finding.message for finding in findings]
-        self.assertEqual([finding.code for finding in findings], ["command-argument-mismatch", "command-argument-mismatch"])
+        self.assertEqual(
+            [finding.code for finding in findings],
+            ["command-argument-mismatch", "command-argument-mismatch", "undefined-constant"],
+        )
         self.assertTrue(any("archived as non-DE" in message and "object registry" in message for message in messages))
         self.assertTrue(any("archived as non-DE" in message and "tech registry" in message for message in messages))
 

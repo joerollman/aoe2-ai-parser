@@ -589,7 +589,9 @@ explanation, not validation. If a script uses an archived object or tech symbol
 in a DE-validated slot, the validator still reports `command-argument-mismatch`,
 but the message identifies the symbol as archived non-DE instead of simply
 unknown. Archived strategic numbers similarly remain `undefined-strategic-number`
-warnings with a non-DE archive explanation.
+warnings with a non-DE archive explanation. The same archive explanation is
+used for archived symbols that appear after a generic `c:` typed constant
+prefix.
 
 `map-type` is validated against the local MapType registry plus narrow
 supplements for values seen in modern DE scripts where the scraped registry is
