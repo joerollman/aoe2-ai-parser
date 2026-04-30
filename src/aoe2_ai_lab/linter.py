@@ -301,11 +301,16 @@ def _load_command_entries() -> dict[str, dict]:
         return {}
 
     data = json.loads(inventory_path.read_text(encoding="utf-8-sig"))
-    return {
+    commands = {
         command.get("name", ""): command
         for command in data.get("commands", [])
         if command.get("name")
     }
+    # AIRef currently labels this slot as GoalId, but the command compares
+    # strategic numbers and the documented example uses sn-maximum-town-size.
+    if "up-compare-sn" in commands and commands["up-compare-sn"].get("command_parameters"):
+        commands["up-compare-sn"]["command_parameters"][0]["name"] = "SnId"
+    return commands
 
 
 COMMAND_ENTRIES = _load_command_entries()
@@ -758,6 +763,9 @@ def _load_object_ai_names() -> set[str]:
     for entry in data.get("objects", []):
         names.update(normalize_inventory_aliases(str(entry.get("ai_name") or "")))
         names.update(normalize_inventory_aliases(str(entry.get("line") or "")))
+        notes = str(entry.get("notes") or "")
+        for match in re.finditer(r"Can be counted with ([A-Za-z0-9_-]+)", notes):
+            names.add(match.group(1))
     return names
 
 

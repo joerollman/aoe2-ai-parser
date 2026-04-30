@@ -423,6 +423,11 @@ real action instead of a `can-*` fact after `=>`, or adding a missing load file.
   `command-family-mismatch` because a `GoalId` slot received an `sn-*`
   strategic-number-looking token. These checks use naming evidence only and are
   warnings.
+- The validator applies narrow local schema corrections when the scraped AIRef
+  signature conflicts with the command description and examples. For example,
+  AIRef labels the first `up-compare-sn` argument as `GoalId`, but the command
+  compares strategic numbers and its example uses `sn-maximum-town-size`, so the
+  validator treats that slot as `SnId`.
 - Explicit command-specific argument restrictions are reported as
   `command-argument-mismatch`. For example, `up-set-placement-data` does not
   allow `any-*` or `every-*` wildcards in its `PlayerNumber` slot. The same

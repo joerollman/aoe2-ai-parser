@@ -575,7 +575,9 @@ Direct `UnitId`, `BuildingId`, `ObjectId`, `TechId`, and `ClassId` slots are
 validated against local DE reference inventories when the argument is a literal
 symbol. Numeric IDs, reachable `defconst`s, and dynamic typed sources such as
 `g:`/`s:` operands remain valid because they cannot be resolved statically with
-the same certainty.
+the same certainty. Object aliases mentioned in inventory notes, such as
+`villager-wood` and `trebuchet-set` in "Can be counted with ..." notes, are
+treated as documented object names for counting and typed constant slots.
 
 Command-specific argument rules are also allowed when the command documentation
 is explicit. For example, `up-set-placement-data`, `up-get-player-color`,

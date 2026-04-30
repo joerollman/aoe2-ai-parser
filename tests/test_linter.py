@@ -2222,6 +2222,43 @@ void debug() {
         self.assertEqual(findings[0].code, "command-family-mismatch")
         self.assertIn("SnId", findings[0].message)
 
+    def test_allows_strategic_number_symbol_for_up_compare_sn(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.per"
+            path.write_text(
+                """
+(defrule
+    (up-compare-sn sn-focus-player-number > 0)
+=>
+    (do-nothing)
+)
+""".strip(),
+                encoding="utf-8",
+            )
+
+            findings = lint_file(path)
+
+        self.assertEqual(findings, [])
+
+    def test_flags_goal_symbol_for_up_compare_sn(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.per"
+            path.write_text(
+                """
+(defrule
+    (up-compare-sn gl-target > 0)
+=>
+    (do-nothing)
+)
+""".strip(),
+                encoding="utf-8",
+            )
+
+            findings = lint_file(path)
+
+        self.assertEqual(findings[0].code, "command-family-mismatch")
+        self.assertIn("SnId", findings[0].message)
+
     def test_flags_goal_symbol_in_object_id_slot(self) -> None:
         with TemporaryDirectory() as tmp:
             path = Path(tmp) / "sample.per"
@@ -3118,6 +3155,26 @@ void debug() {
     (idle-farm-count == 0)
 =>
     (do-nothing)
+)
+""".strip(),
+                encoding="utf-8",
+            )
+
+            findings = lint_file(path)
+
+        self.assertEqual(findings, [])
+
+    def test_allows_object_count_aliases_from_inventory_notes(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.per"
+            path.write_text(
+                """
+(defrule
+    (unit-type-count villager-wood < 10)
+    (unit-type-count-total trebuchet-set < 3)
+=>
+    (up-find-local c: villager-wood c: 1)
+    (disable-self)
 )
 """.strip(),
                 encoding="utf-8",
