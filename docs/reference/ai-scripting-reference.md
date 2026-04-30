@@ -595,6 +595,11 @@ warnings with a non-DE archive explanation.
 supplements for values seen in modern DE scripts where the scraped registry is
 behind the game, currently `custom` and `michi`.
 
+Documented value-family constants such as attack stances are accepted after
+`c:` without requiring local `defconst`s. Scraped value-family names ending in
+`*`, such as `scout-cavalry-class*`, are also available through their plain
+alias (`scout-cavalry-class`) when used as built-in class constants.
+
 Command-specific argument rules are also allowed when the command documentation
 is explicit. For example, `up-set-placement-data`, `up-get-player-color`,
 `up-get-upgrade-id`, `up-store-player-chat`, and `up-store-player-name` reject

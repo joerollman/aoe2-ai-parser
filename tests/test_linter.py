@@ -3504,6 +3504,8 @@ void debug() {
     (up-modify-group-flag 1 c: 1)
     (up-reset-group c: 1)
     (up-create-group 0 0 c: 1)
+    (up-find-local c: scout-cavalry-class c: 1)
+    (up-set-attack-stance spearman-line c: stance-stand-ground)
     (up-assign-builders c: house c: 1)
     (up-set-placement-data my-player-number house c: 1)
     (up-set-offense-priority c: villager c: 1)

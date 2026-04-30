@@ -469,6 +469,8 @@ real action instead of a `can-*` fact after `=>`, or adding a missing load file.
 - `map-type` uses the local MapType registry plus narrow supplemental modern DE
   values when the scraped registry lags behind current maps. Keep this list
   small and evidence-based.
+- `c:` typed constants are allowed to reference documented value-family
+  constants such as attack stances without a local `defconst`.
 - `can-research-with-escrow` is a fact, not an action. If it appears after
   `=>`, the validator reports `command-role-mismatch` and suggests `research`
   after escrow release or `up-research` with an escrow-state goal.

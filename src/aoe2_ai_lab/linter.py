@@ -285,11 +285,15 @@ def _load_builtin_class_entries() -> tuple[set[str], dict[int, set[str]]]:
             if not name or entry_id is None:
                 continue
             builtin_names.add(name)
+            if name.endswith("*"):
+                builtin_names.add(name.rstrip("*"))
             try:
                 numeric_id = int(entry_id)
             except (TypeError, ValueError):
                 continue
             builtin_ids.setdefault(numeric_id, set()).add(name)
+            if name.endswith("*"):
+                builtin_ids.setdefault(numeric_id, set()).add(name.rstrip("*"))
     return builtin_names, builtin_ids
 
 
@@ -735,6 +739,17 @@ def _load_value_family_names(parameter_name: str) -> set[str]:
     return set()
 
 
+def normalize_value_family_names(values: set[str]) -> set[str]:
+    normalized: set[str] = set()
+    for value in values:
+        if not value:
+            continue
+        normalized.add(value)
+        if value.endswith("*"):
+            normalized.add(value.rstrip("*"))
+    return normalized
+
+
 def expand_value_aliases(values: set[str]) -> set[str]:
     expanded: set[str] = set()
     for value in values:
@@ -869,6 +884,49 @@ EFFECT_ID_VALUES = _load_value_family_names("EffectId")
 ORDER_ID_VALUES = _load_value_family_names("OrderId")
 TERRAIN_VALUES = _load_value_family_names("Terrain")
 WALL_ID_VALUES = _load_value_family_names("WallId") | {"stone-wall-line"}
+DOCUMENTED_VALUE_CONSTANTS = normalize_value_family_names(
+    DUC_ACTION_VALUES
+    | FORMATION_VALUES
+    | ATTACK_STANCE_VALUES
+    | PLACEMENT_TYPE_VALUES
+    | RESEARCH_STATE_VALUES
+    | RESOURCE_VALUES
+    | ESCROW_RESOURCE_VALUES
+    | AGE_VALUES
+    | DIFFICULTY_VALUES
+    | OBJECT_DATA_VALUES
+    | PLAYER_STANCE_VALUES
+    | POSITION_TYPE_VALUES
+    | TIMER_STATE_VALUES
+    | OBJECT_LIST_VALUES
+    | OBJECT_STATUS_VALUES
+    | SEARCH_ORDER_VALUES
+    | CIV_VALUES
+    | COMMODITY_VALUES
+    | FACT_ID_VALUES
+    | MAP_TYPE_VALUES
+    | PROJECTILE_TYPE_VALUES
+    | RESOURCE_TYPE_VALUES
+    | EVENT_TYPE_VALUES
+    | EXPLORED_STATE_VALUES
+    | FIND_PLAYER_METHOD_VALUES
+    | GAME_TYPE_VALUES
+    | GROUP_TYPE_VALUES
+    | IDLE_TYPE_VALUES
+    | MAP_SIZE_VALUES
+    | PRIORITY_TYPE_VALUES
+    | SCOUT_METHOD_VALUES
+    | STARTING_RESOURCES_VALUES
+    | SUB_GAME_TYPE_VALUES
+    | VICTORY_CONDITION_VALUES
+    | ACTION_ID_VALUES
+    | ATTR_ID_VALUES
+    | DIFF_PARAMETER_ID_VALUES
+    | EFFECT_ID_VALUES
+    | ORDER_ID_VALUES
+    | TERRAIN_VALUES
+    | WALL_ID_VALUES
+)
 # AIRef currently documents several villager gatherer aliases through object
 # notes, but omits the aggregate food gatherer alias that appears in the
 # AoE2 AiScript extension unit-id data as id 978.
@@ -957,9 +1015,7 @@ def lint_typed_constants(
             or value in BUILTIN_TYPED_CONSTANTS
             or value in DOCUMENTED_TYPED_CONSTANTS
             or value in BUILTIN_CLASS_NAMES
-            or value in RESOURCE_VALUES
-            or value in OBJECT_LIST_VALUES
-            or value in OBJECT_STATUS_VALUES
+            or value in DOCUMENTED_VALUE_CONSTANTS
         ):
             continue
         if value.startswith(("g:", "s:", "c:")):
