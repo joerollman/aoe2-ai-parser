@@ -3481,6 +3481,7 @@ void debug() {
     (civ-selected briton)
     (map-type arabia)
     (map-type custom)
+    (map-type michi)
     (current-age-time >= 0)
     (enemy-buildings-in-town)
     (town-under-attack)

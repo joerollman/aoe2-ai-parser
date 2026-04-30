@@ -466,6 +466,9 @@ real action instead of a `can-*` fact after `=>`, or adding a missing load file.
   non-DE archive remain invalid for DE validation, but the diagnostic message
   explains that they are archived non-DE symbols instead of reporting them as
   unknown symbols.
+- `map-type` uses the local MapType registry plus narrow supplemental modern DE
+  values when the scraped registry lags behind current maps. Keep this list
+  small and evidence-based.
 - `can-research-with-escrow` is a fact, not an action. If it appears after
   `=>`, the validator reports `command-role-mismatch` and suggests `research`
   after escrow release or `up-research` with an escrow-state goal.

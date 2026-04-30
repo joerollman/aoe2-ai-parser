@@ -591,6 +591,10 @@ but the message identifies the symbol as archived non-DE instead of simply
 unknown. Archived strategic numbers similarly remain `undefined-strategic-number`
 warnings with a non-DE archive explanation.
 
+`map-type` is validated against the local MapType registry plus narrow
+supplements for values seen in modern DE scripts where the scraped registry is
+behind the game, currently `custom` and `michi`.
+
 Command-specific argument rules are also allowed when the command documentation
 is explicit. For example, `up-set-placement-data`, `up-get-player-color`,
 `up-get-upgrade-id`, `up-store-player-chat`, and `up-store-player-name` reject
