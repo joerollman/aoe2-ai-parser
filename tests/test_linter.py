@@ -239,6 +239,27 @@ class LinterTests(unittest.TestCase):
         self.assertEqual(findings[0].code, "undefined-strategic-number")
         self.assertNotIn("undefined-identifier", {finding.code for finding in findings})
 
+    def test_explains_archived_non_de_strategic_number(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.per"
+            path.write_text(
+                """
+(defrule
+    (true)
+=>
+    (set-strategic-number sn-number-defend-groups 1)
+    (disable-self)
+)
+""".strip(),
+                encoding="utf-8",
+            )
+
+            findings = lint_file(path)
+
+        self.assertEqual(findings[0].code, "undefined-strategic-number")
+        self.assertIn("archived as non-DE", findings[0].message)
+        self.assertIn("strategic-number registry", findings[0].message)
+
     def test_allows_defined_strategic_number_constant(self) -> None:
         with TemporaryDirectory() as tmp:
             path = Path(tmp) / "sample.per"

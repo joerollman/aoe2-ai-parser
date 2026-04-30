@@ -876,6 +876,7 @@ DOCUMENTED_OBJECT_NAMES = _load_object_ai_names() | SUPPLEMENTAL_DOCUMENTED_OBJE
 DOCUMENTED_TECH_NAMES = _load_tech_ai_names()
 ARCHIVED_NON_DE_OBJECT_NAMES = _load_archived_symbol_names("non-de-object-archive.md")
 ARCHIVED_NON_DE_TECH_NAMES = _load_archived_symbol_names("non-de-tech-archive.md")
+ARCHIVED_NON_DE_STRATEGIC_NUMBER_NAMES = _load_archived_symbol_names("non-de-strategic-number-archive.md")
 DOCUMENTED_STRATEGIC_NUMBER_NAMES = _load_strategic_number_names()
 KNOWN_STRATEGIC_NUMBER_NAMES = DOCUMENTED_STRATEGIC_NUMBER_NAMES | BINARY_OBSERVED_STRATEGIC_NUMBER_NAMES
 DOCUMENTED_TYPED_CONSTANTS = (
@@ -996,11 +997,15 @@ def lint_strategic_number_identifier(
     if value.startswith(("g:", "s:", "c:")):
         return []
     if value.startswith("sn-") and is_symbolic_identifier(value):
+        if value in ARCHIVED_NON_DE_STRATEGIC_NUMBER_NAMES:
+            message = f"{value!r} is archived as non-DE and is excluded from the DE strategic-number registry"
+        else:
+            message = f"{value!r} is used as a strategic number but is not defined with defconst"
         return [
             Finding(
                 line,
                 "undefined-strategic-number",
-                f"{value!r} is used as a strategic number but is not defined with defconst",
+                message,
             )
         ]
     return []

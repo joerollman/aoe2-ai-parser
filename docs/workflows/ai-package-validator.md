@@ -462,9 +462,10 @@ real action instead of a `can-*` fact after `=>`, or adding a missing load file.
   as `command-numeric-range-mismatch` because AIRef documents `GoalId` as
   `1 to 16000`. Dynamic typed values such as `g:` and `s:` are skipped because
   their runtime value cannot be known statically.
-- Object and tech symbols that only appear in the local non-DE archive remain
-  invalid for DE validation, but `command-argument-mismatch` explains that they
-  are archived non-DE symbols instead of reporting them as unknown symbols.
+- Object, tech, and strategic-number symbols that only appear in the local
+  non-DE archive remain invalid for DE validation, but the diagnostic message
+  explains that they are archived non-DE symbols instead of reporting them as
+  unknown symbols.
 - `can-research-with-escrow` is a fact, not an action. If it appears after
   `=>`, the validator reports `command-role-mismatch` and suggests `research`
   after escrow release or `up-research` with an escrow-state goal.

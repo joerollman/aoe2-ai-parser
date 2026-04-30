@@ -584,10 +584,12 @@ validator also accepts `villager-food`, sourced from the bundled AoE2 AiScript
 unit-id data as id 978, because AIRef omits that aggregate food-gatherer alias
 while documenting the other gatherer aliases.
 
-The local non-DE object and tech archives are used for explanation, not
-validation. If a script uses an archived object or tech symbol in a DE-validated
-slot, the validator still reports `command-argument-mismatch`, but the message
-identifies the symbol as archived non-DE instead of simply unknown.
+The local non-DE object, tech, and strategic-number archives are used for
+explanation, not validation. If a script uses an archived object or tech symbol
+in a DE-validated slot, the validator still reports `command-argument-mismatch`,
+but the message identifies the symbol as archived non-DE instead of simply
+unknown. Archived strategic numbers similarly remain `undefined-strategic-number`
+warnings with a non-DE archive explanation.
 
 Command-specific argument rules are also allowed when the command documentation
 is explicit. For example, `up-set-placement-data`, `up-get-player-color`,
