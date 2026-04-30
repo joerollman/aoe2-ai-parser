@@ -469,7 +469,10 @@ real action instead of a `can-*` fact after `=>`, or adding a missing load file.
   `c:` typed constants.
 - `map-type` uses the local MapType registry plus narrow supplemental modern DE
   values when the scraped registry lags behind current maps. Keep this list
-  small and evidence-based.
+  small and evidence-based. `michi` is observed in community AI scripts, but the
+  documented path found so far is the RMS `ai_info_map_type` Michi flag /
+  `UP-MICHI-STYLE`; keep `(map-type michi)` as a review warning until it is
+  verified in game or documentation.
 - `c:` typed constants are allowed to reference documented value-family
   constants such as attack stances without a local `defconst`.
 - `can-research-with-escrow` is a fact, not an action. If it appears after

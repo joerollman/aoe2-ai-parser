@@ -3485,7 +3485,6 @@ void debug() {
     (civ-selected briton)
     (map-type arabia)
     (map-type custom)
-    (map-type michi)
     (current-age-time >= 0)
     (enemy-buildings-in-town)
     (town-under-attack)
@@ -3593,6 +3592,27 @@ void debug() {
             findings = lint_file(path)
 
         self.assertEqual(findings, [])
+
+    def test_warns_for_observed_but_unverified_michi_map_type(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.per"
+            path.write_text(
+                """
+(defrule
+    (map-type michi)
+=>
+    (do-nothing)
+)
+""",
+                encoding="utf-8",
+            )
+
+            findings = lint_file(path)
+
+        self.assertEqual(len(findings), 1)
+        self.assertEqual(findings[0].code, "command-argument-mismatch")
+        self.assertIn("observed in community scripts", findings[0].message)
+        self.assertIn("UP-MICHI-STYLE", findings[0].message)
 
     def test_flags_invalid_resource_type_schema_argument(self) -> None:
         with TemporaryDirectory() as tmp:

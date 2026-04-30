@@ -861,7 +861,8 @@ SEARCH_ORDER_VALUES = _load_value_family_names("SearchOrder")
 CIV_VALUES = _load_value_family_names("Civ")
 COMMODITY_VALUES = _load_value_family_names("Commodity")
 FACT_ID_VALUES = _load_value_family_names("FactId")
-SUPPLEMENTAL_MAP_TYPE_VALUES = {"custom", "michi"}
+SUPPLEMENTAL_MAP_TYPE_VALUES = {"custom"}
+OBSERVED_UNVERIFIED_MAP_TYPE_VALUES = {"michi"}
 MAP_TYPE_VALUES = _load_value_family_names("MapType") | SUPPLEMENTAL_MAP_TYPE_VALUES
 PROJECTILE_TYPE_VALUES = _load_value_family_names("ProjectileType")
 RESOURCE_TYPE_VALUES = _load_value_family_names("ResourceType") | ESCROW_RESOURCE_VALUES
@@ -2408,12 +2409,20 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
                 and MAP_TYPE_VALUES
                 and not is_known_schema_value(value, MAP_TYPE_VALUES, defined_constants)
             ):
+                message = f"{expr.head} MapType {value!r} is not documented"
+                if value in OBSERVED_UNVERIFIED_MAP_TYPE_VALUES:
+                    message = (
+                        f"{expr.head} MapType {value!r} is observed in community scripts "
+                        "but is not present in the local MapType registry; Michi-style maps "
+                        "are documented through the RMS ai_info_map_type Michi flag / "
+                        "UP-MICHI-STYLE, so verify this fact in game before relying on it"
+                    )
                 findings.append(
                     finding_for_arg(
                         expr,
                         index,
                         "command-argument-mismatch",
-                        f"{expr.head} MapType {value!r} is not documented",
+                        message,
                     )
                 )
             elif (

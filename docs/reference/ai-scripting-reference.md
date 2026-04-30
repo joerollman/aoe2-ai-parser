@@ -595,7 +595,11 @@ prefix.
 
 `map-type` is validated against the local MapType registry plus narrow
 supplements for values seen in modern DE scripts where the scraped registry is
-behind the game, currently `custom` and `michi`.
+behind the game, currently `custom`. `michi` is observed in community AI
+scripts, but the local docs found so far point to Michi detection through the
+RMS `ai_info_map_type` Michi flag / `UP-MICHI-STYLE` rather than a documented
+standalone MapType value, so `(map-type michi)` remains a warning until verified
+in game or documentation.
 
 Documented value-family constants such as attack stances are accepted after
 `c:` without requiring local `defconst`s. Scraped value-family names ending in
