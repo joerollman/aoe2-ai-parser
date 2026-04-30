@@ -86,6 +86,558 @@ Manual `--suppress-code <code>` can suppress any finding code for one lint run. 
 | `up-build-place-point-coordinate-as-escrow` | lint | warning | active | explain | `up-build place-point` uses the current target point; its third argument is still escrow state, not a coordinate. |
 | `up-can-build-zero-escrow` | lint | warning | suppressed | explain | `up-can-build` uses literal `0` for escrow state; project scripts should prefer a named `without-escrow` goal. |
 
+## Code Details
+
+<a id="diagnostic-bad-set-goal"></a>
+
+### `bad-set-goal`
+
+- Source: lint
+- Default severity: error
+- Corpus profile: active
+- Cursor action: none
+- Meaning: `set-goal` is missing either the goal id or value.
+
+<a id="diagnostic-builtin-constant-alias"></a>
+
+### `builtin-constant-alias`
+
+- Source: lint
+- Default severity: info
+- Corpus profile: suppressed
+- Cursor action: none
+- Meaning: A local `class-*` constant aliases a documented built-in class id or built-in class symbol. Prefer the built-in name.
+
+<a id="diagnostic-command-argument-mismatch"></a>
+
+### `command-argument-mismatch`
+
+- Source: lint
+- Default severity: warning
+- Corpus profile: active
+- Cursor action: quick fix, explain
+- Meaning: A command argument does not match a known registry parameter family. This can be a real bug or a registry coverage gap.
+
+<a id="diagnostic-command-family-mismatch"></a>
+
+### `command-family-mismatch`
+
+- Source: lint
+- Default severity: warning
+- Corpus profile: active
+- Cursor action: explain
+- Meaning: A command argument is in a direct id slot but its symbol name strongly suggests a different family, such as an `sn-*` strategic number in a `GoalId` slot.
+
+<a id="diagnostic-command-numeric-range-mismatch"></a>
+
+### `command-numeric-range-mismatch`
+
+- Source: lint
+- Default severity: warning
+- Corpus profile: active
+- Cursor action: explain
+- Meaning: A literal numeric command argument or resolved integer `defconst` is outside an explicit documented range for that parameter, such as `0` in a `GoalId` slot documented as `1 to 16000`.
+
+<a id="diagnostic-command-arity-mismatch"></a>
+
+### `command-arity-mismatch`
+
+- Source: lint
+- Default severity: error
+- Corpus profile: active
+- Cursor action: none
+- Meaning: A schema-validated command has the wrong number of arguments.
+
+<a id="diagnostic-command-role-mismatch"></a>
+
+### `command-role-mismatch`
+
+- Source: lint
+- Default severity: error
+- Corpus profile: active
+- Cursor action: explain
+- Meaning: A command documented as Fact/Action/FactAction is used in the wrong rule side or nested context.
+
+<a id="diagnostic-command-typed-prefix-mismatch"></a>
+
+### `command-typed-prefix-mismatch`
+
+- Source: lint
+- Default severity: error
+- Corpus profile: active
+- Cursor action: quick fix, explain
+- Meaning: A `typeOp` slot received a math/compare operator such as `g:=` instead of a plain type prefix such as `g:`.
+
+<a id="diagnostic-command-typed-operand-mismatch"></a>
+
+### `command-typed-operand-mismatch`
+
+- Source: lint
+- Default severity: warning
+- Corpus profile: active
+- Cursor action: explain
+- Meaning: A valid typed prefix or typed operator is followed by an operand whose name strongly suggests a different type, such as `g:` or `g:=` before an `sn-*` strategic number.
+
+<a id="diagnostic-defrule-missing-arrow"></a>
+
+### `defrule-missing-arrow`
+
+- Source: lint
+- Default severity: error
+- Corpus profile: active
+- Cursor action: none
+- Meaning: A `defrule` closed without an `=>` separator.
+
+<a id="diagnostic-defconst-alias-cycle"></a>
+
+### `defconst-alias-cycle`
+
+- Source: lint
+- Default severity: warning
+- Corpus profile: active
+- Cursor action: none
+- Meaning: A set of `defconst` aliases forms a cycle, so the constants cannot resolve to a numeric value.
+
+<a id="diagnostic-defconst-value-out-of-range"></a>
+
+### `defconst-value-out-of-range`
+
+- Source: lint
+- Default severity: error
+- Corpus profile: active
+- Cursor action: explain
+- Meaning: A numeric `defconst` value is outside the documented signed 16-bit range of -32768 to 32767.
+
+<a id="diagnostic-duplicate-preprocessor-else"></a>
+
+### `duplicate-preprocessor-else`
+
+- Source: preprocessor
+- Default severity: error
+- Corpus profile: active
+- Cursor action: none
+- Meaning: One `#load-if-defined` or `#load-if-not-defined` block contains more than one `#else`.
+
+<a id="diagnostic-duplicate-root-target"></a>
+
+### `duplicate-root-target`
+
+- Source: integrity
+- Default severity: warning
+- Corpus profile: active
+- Cursor action: none
+- Meaning: Multiple `.ai` files resolve to the same root `.per`. This can be intentional for personalities but should be explicit.
+
+<a id="diagnostic-duplicate-defconst-conflict"></a>
+
+### `duplicate-defconst-conflict`
+
+- Source: lint
+- Default severity: warning
+- Corpus profile: suppressed
+- Cursor action: none
+- Meaning: A definitely active file assigns two different parsed values to the same `defconst` name.
+
+<a id="diagnostic-empty-action"></a>
+
+### `empty-action`
+
+- Source: lint
+- Default severity: error
+- Corpus profile: active
+- Cursor action: none
+- Meaning: A rule has no actions after `=>`.
+
+<a id="diagnostic-empty-fact"></a>
+
+### `empty-fact`
+
+- Source: lint
+- Default severity: error
+- Corpus profile: active
+- Cursor action: none
+- Meaning: A rule has no facts before `=>`.
+
+<a id="diagnostic-include-missing-xs-extension"></a>
+
+### `include-missing-xs-extension`
+
+- Source: lint
+- Default severity: error
+- Corpus profile: active
+- Cursor action: none
+- Meaning: An AI `include` directive has a quoted target that does not include the required `.xs` file extension.
+
+<a id="diagnostic-livestock-default-point"></a>
+
+### `livestock-default-point`
+
+- Source: lint
+- Default severity: warning
+- Corpus profile: active
+- Cursor action: none
+- Meaning: Livestock targeting uses `action-default` where `action-move` is usually expected.
+
+<a id="diagnostic-logical-operator-arity-mismatch"></a>
+
+### `logical-operator-arity-mismatch`
+
+- Source: lint
+- Default severity: error
+- Corpus profile: active
+- Cursor action: none
+- Meaning: A logical operator has the wrong number of direct child facts. `not` expects one child fact; binary operators such as `and` and `or` expect two.
+
+<a id="diagnostic-load-cycle"></a>
+
+### `load-cycle`
+
+- Source: package lint
+- Default severity: error
+- Corpus profile: active
+- Cursor action: none
+- Meaning: The reachable load graph cycles back to an already-active `.per` file.
+
+<a id="diagnostic-load-depth-exceeded"></a>
+
+### `load-depth-exceeded`
+
+- Source: package lint
+- Default severity: error
+- Corpus profile: active
+- Cursor action: none
+- Meaning: The reachable load graph exceeds the documented maximum nested load depth of 10.
+
+<a id="diagnostic-malformed-preprocessor-directive"></a>
+
+### `malformed-preprocessor-directive`
+
+- Source: preprocessor
+- Default severity: error
+- Corpus profile: active
+- Cursor action: none
+- Meaning: A preprocessor directive has invalid syntax, such as a missing condition token.
+
+<a id="diagnostic-preprocessor-nesting-depth-exceeded"></a>
+
+### `preprocessor-nesting-depth-exceeded`
+
+- Source: preprocessor
+- Default severity: error
+- Corpus profile: active
+- Cursor action: none
+- Meaning: `#load-if-defined` and `#load-if-not-defined` conditionals are nested more than the documented maximum of 50 levels.
+
+<a id="diagnostic-malformed-defconst"></a>
+
+### `malformed-defconst`
+
+- Source: lint
+- Default severity: error
+- Corpus profile: active
+- Cursor action: none
+- Meaning: A `defconst` declaration is structurally invalid, such as a missing name, missing value, unterminated quoted text value, or multiple unquoted value tokens.
+
+<a id="diagnostic-malformed-include-directive"></a>
+
+### `malformed-include-directive`
+
+- Source: lint
+- Default severity: error
+- Corpus profile: active
+- Cursor action: none
+- Meaning: An `include` directive is structurally invalid, usually because its target is not quoted.
+
+<a id="diagnostic-malformed-load-directive"></a>
+
+### `malformed-load-directive`
+
+- Source: lint
+- Default severity: error
+- Corpus profile: active
+- Cursor action: none
+- Meaning: A `load` or `#load` directive is structurally invalid, usually because its target is not quoted.
+
+<a id="diagnostic-malformed-load-random-directive"></a>
+
+### `malformed-load-random-directive`
+
+- Source: lint
+- Default severity: error
+- Corpus profile: active
+- Cursor action: none
+- Meaning: A `load-random` directive has a structurally invalid entry. Entries should be an optional weight followed by a quoted target.
+
+<a id="diagnostic-load-random-plus-weight-de-behavior"></a>
+
+### `load-random-plus-weight-de-behavior`
+
+- Source: lint
+- Default severity: warning
+- Corpus profile: suppressed
+- Cursor action: none
+- Meaning: A `load-random` entry uses a `+` weight form. AIRef documents this as UserPatch syntax and notes uncertain or bugged DE behavior.
+
+<a id="diagnostic-missing-include-target"></a>
+
+### `missing-include-target`
+
+- Source: package lint
+- Default severity: error
+- Corpus profile: active
+- Cursor action: none
+- Meaning: An `(include "...")` target could not be resolved.
+
+<a id="diagnostic-missing-load-target"></a>
+
+### `missing-load-target`
+
+- Source: package lint
+- Default severity: error
+- Corpus profile: active
+- Cursor action: quick fix, explain
+- Meaning: A `(load "...")` or `#load` target could not be resolved.
+
+<a id="diagnostic-raw-load-in-per"></a>
+
+### `raw-load-in-per`
+
+- Source: lint
+- Default severity: error
+- Corpus profile: active
+- Cursor action: none
+- Meaning: A raw `#load` directive appears in an installed `.per`; assemble components before install.
+
+<a id="diagnostic-redundant-built-in-defconst"></a>
+
+### `redundant-built-in-defconst`
+
+- Source: lint
+- Default severity: info
+- Corpus profile: suppressed
+- Cursor action: quick fix, explain
+- Meaning: A local `defconst` redefines a documented built-in class constant by the same name.
+
+<a id="diagnostic-repeat-chat"></a>
+
+### `repeat-chat`
+
+- Source: lint
+- Default severity: warning
+- Corpus profile: suppressed
+- Cursor action: explain
+- Meaning: A chat action may repeat every rule pass because the rule is not disabled or guarded.
+
+<a id="diagnostic-rule-too-long"></a>
+
+### `rule-too-long`
+
+- Source: lint
+- Default severity: error
+- Corpus profile: active
+- Cursor action: none
+- Meaning: A rule exceeds DE's 32 element limit for facts/actions/logical operators.
+
+<a id="diagnostic-split-typed-comparison"></a>
+
+### `split-typed-comparison`
+
+- Source: lint
+- Default severity: error
+- Corpus profile: active
+- Cursor action: none
+- Meaning: A typed comparison was split, such as `< g:` instead of `g:<`.
+
+<a id="diagnostic-source-line-too-long"></a>
+
+### `source-line-too-long`
+
+- Source: lint
+- Default severity: error
+- Corpus profile: active
+- Cursor action: none
+- Meaning: A source line exceeds the documented 255-character AI script line limit, including comments.
+
+<a id="diagnostic-stale-ai-root"></a>
+
+### `stale-ai-root`
+
+- Source: integrity
+- Default severity: error
+- Corpus profile: active
+- Cursor action: none
+- Meaning: An `.ai` file did not resolve to any root `.per`.
+
+<a id="diagnostic-unbalanced-parentheses"></a>
+
+### `unbalanced-parentheses`
+
+- Source: lint
+- Default severity: error
+- Corpus profile: active
+- Cursor action: none
+- Meaning: Parentheses close too early or the file is missing closing parentheses.
+
+<a id="diagnostic-undefined-constant"></a>
+
+### `undefined-constant`
+
+- Source: lint
+- Default severity: warning
+- Corpus profile: active
+- Cursor action: quick fix
+- Meaning: A value after `c:` is not a known built-in, documented value, or reachable `defconst`.
+
+<a id="diagnostic-undefined-identifier"></a>
+
+### `undefined-identifier`
+
+- Source: lint
+- Default severity: warning
+- Corpus profile: active
+- Cursor action: quick fix
+- Meaning: A token looks like an AoE identifier but is not known in reachable constants or local reference data.
+
+<a id="diagnostic-undefined-position-constant"></a>
+
+### `undefined-position-constant`
+
+- Source: lint
+- Default severity: warning
+- Corpus profile: active
+- Cursor action: quick fix
+- Meaning: A position token used by `up-get-point` is not a built-in or reachable `defconst`.
+
+<a id="diagnostic-undefined-strategic-number"></a>
+
+### `undefined-strategic-number`
+
+- Source: lint
+- Default severity: warning
+- Corpus profile: active
+- Cursor action: quick fix
+- Meaning: A strategic-number token is not in the local DE SN registry or reachable constants.
+
+<a id="diagnostic-unexpected-preprocessor-else"></a>
+
+### `unexpected-preprocessor-else`
+
+- Source: preprocessor
+- Default severity: error
+- Corpus profile: active
+- Cursor action: none
+- Meaning: `#else` appears without a matching active preprocessor conditional.
+
+<a id="diagnostic-unexpected-preprocessor-end-if"></a>
+
+### `unexpected-preprocessor-end-if`
+
+- Source: preprocessor
+- Default severity: error
+- Corpus profile: active
+- Cursor action: none
+- Meaning: `#end-if` appears without a matching active preprocessor conditional.
+
+<a id="diagnostic-unreachable-per-file"></a>
+
+### `unreachable-per-file`
+
+- Source: integrity
+- Default severity: info
+- Corpus profile: active
+- Cursor action: none
+- Meaning: A `.per` file exists in the package but is not reachable from any resolved `.ai` root.
+
+<a id="diagnostic-unsafe-goal-block"></a>
+
+### `unsafe-goal-block`
+
+- Source: lint
+- Default severity: warning
+- Corpus profile: active
+- Cursor action: none
+- Meaning: A command writes a block of goals too low in the goal range; use safer higher goals.
+
+<a id="diagnostic-unsafe-set-target-object"></a>
+
+### `unsafe-set-target-object`
+
+- Source: lint
+- Default severity: warning
+- Corpus profile: active
+- Cursor action: explain
+- Meaning: `up-set-target-object` reads a search list before retained search evidence proves that list was rebuilt.
+
+<a id="diagnostic-unscoped-duc-target"></a>
+
+### `unscoped-duc-target`
+
+- Source: lint
+- Default severity: warning
+- Corpus profile: active
+- Cursor action: explain
+- Meaning: A DUC target command runs without retained evidence that local target objects exist.
+
+<a id="diagnostic-unsupported-ai-xs-function"></a>
+
+### `unsupported-ai-xs-function`
+
+- Source: XS lint
+- Default severity: error
+- Corpus profile: active
+- Cursor action: none
+- Meaning: An XS function is known to be rejected by the AoE2 DE AI XS parser.
+
+<a id="diagnostic-xs-script-call-parameterized-function"></a>
+
+### `xs-script-call-parameterized-function`
+
+- Source: package lint
+- Default severity: warning
+- Corpus profile: active
+- Cursor action: none
+- Meaning: `xs-script-call` targets an included XS function that has one or more parameters. AI scripts can only call zero-parameter XS functions.
+
+<a id="diagnostic-unterminated-defrule"></a>
+
+### `unterminated-defrule`
+
+- Source: lint
+- Default severity: error
+- Corpus profile: active
+- Cursor action: none
+- Meaning: A new `defrule` starts before the previous one closed.
+
+<a id="diagnostic-unterminated-preprocessor-conditional"></a>
+
+### `unterminated-preprocessor-conditional`
+
+- Source: preprocessor
+- Default severity: error
+- Corpus profile: active
+- Cursor action: none
+- Meaning: A preprocessor conditional is missing its matching `#end-if`.
+
+<a id="diagnostic-up-build-place-point-coordinate-as-escrow"></a>
+
+### `up-build-place-point-coordinate-as-escrow`
+
+- Source: lint
+- Default severity: warning
+- Corpus profile: active
+- Cursor action: explain
+- Meaning: `up-build place-point` uses the current target point; its third argument is still escrow state, not a coordinate.
+
+<a id="diagnostic-up-can-build-zero-escrow"></a>
+
+### `up-can-build-zero-escrow`
+
+- Source: lint
+- Default severity: warning
+- Corpus profile: suppressed
+- Cursor action: explain
+- Meaning: `up-can-build` uses literal `0` for escrow state; project scripts should prefer a named `without-escrow` goal.
+
 ## Triage Notes
 
 - Start package triage from top-level `issue_groups` in `lint-package --json`.

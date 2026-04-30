@@ -216,8 +216,10 @@ class CursorExtensionTests(unittest.TestCase):
         self.assertIn("function loadTargetCompletions", server_source)
         self.assertIn("function labDiagnosticExplanations", server_source)
         self.assertIn("diagnostic-codes.json", server_source)
+        self.assertIn("aoe2AiScript.openDiagnosticDocsPreview", server_source)
         self.assertIn("function labRegistrySignatureHelp", server_source)
         self.assertIn("function labSignatureParameters", server_source)
+        self.assertIn("vscode_uri_1.URI.file(docsPath).with({ fragment: markdownAnchor(token) })", server_source)
         self.assertIn("codeActionProvider: true", server_source)
         self.assertIn("connection.onCodeAction", server_source)
         self.assertIn("function codeActionsForDiagnostic", server_source)
@@ -284,6 +286,8 @@ class CursorExtensionTests(unittest.TestCase):
 
     def test_local_lab_extension_packages_diagnostic_registry(self) -> None:
         root = Path(__file__).resolve().parents[1]
+        extension_root = root / "extensions" / "aoe2-aiscript-cursor-local-lab"
+        extension_source = (extension_root / "languageExtension" / "out" / "extension.js").read_text(encoding="utf-8")
         diagnostic_data = json.loads(
             (
                 root
@@ -298,6 +302,13 @@ class CursorExtensionTests(unittest.TestCase):
         self.assertIn("unsafe-set-target-object", codes)
         self.assertIn("command-typed-prefix-mismatch", codes)
         self.assertIn("missing-load-target", codes)
+        self.assertIn("function openDiagnosticDocsPreview", extension_source)
+        self.assertIn("validator-diagnostic-codes.md", extension_source)
+        self.assertIn("aoe2AiScript.openDiagnosticDocsPreview", extension_source)
+        self.assertIn(
+            '<a id="diagnostic-command-argument-mismatch"></a>',
+            (root / "docs" / "workflows" / "validator-diagnostic-codes.md").read_text(encoding="utf-8"),
+        )
 
     def test_extension_packaging_syncs_bundled_lab_runtime(self) -> None:
         root = Path(__file__).resolve().parents[1]

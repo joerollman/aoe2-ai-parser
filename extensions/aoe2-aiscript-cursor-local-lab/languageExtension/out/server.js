@@ -1187,7 +1187,12 @@ function explanationCodeAction(code, diagnostic) {
     return {
         title: "Explain " + code + ": " + explanation,
         kind: "quickfix",
-        diagnostics: diagnostic ? [diagnostic] : []
+        diagnostics: diagnostic ? [diagnostic] : [],
+        command: {
+            title: "Open diagnostic docs for " + code,
+            command: "aoe2AiScript.openDiagnosticDocsPreview",
+            arguments: [code]
+        }
     };
 }
 function lineRemovalRange(textDocument, range) {
@@ -1405,6 +1410,22 @@ function labRegistryDefinition(token, labPath) {
     if (!labRegistryHovers().has(token)) {
         return undefined;
     }
+    let docsPath = symbolReferencePath(labPath);
+    let text = "";
+    if (fs.existsSync(docsPath)) {
+        try {
+            text = fs.readFileSync(docsPath, "utf8");
+        }
+        catch (_error) {
+            text = "";
+        }
+        let escaped = token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        let match = new RegExp("^## `" + escaped + "`", "m").exec(text);
+        if (match) {
+            let tokenOffset = match.index + match[0].indexOf(token);
+            return locationForTextOffset(vscode_uri_1.URI.file(docsPath).with({ fragment: markdownAnchor(token) }).toString(), text, tokenOffset, token.length);
+        }
+    }
     let symbolPath = symbolDocPath(labPath, token);
     if (fs.existsSync(symbolPath)) {
         return {
@@ -1415,24 +1436,7 @@ function labRegistryDefinition(token, labPath) {
             }
         };
     }
-    let docsPath = symbolReferencePath(labPath);
-    if (!fs.existsSync(docsPath)) {
-        return undefined;
-    }
-    let text = "";
-    try {
-        text = fs.readFileSync(docsPath, "utf8");
-    }
-    catch (_error) {
-        return undefined;
-    }
-    let escaped = token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    let match = new RegExp("^## `" + escaped + "`", "m").exec(text);
-    if (!match) {
-        return undefined;
-    }
-    let tokenOffset = match.index + match[0].indexOf(token);
-    return locationForTextOffset(vscode_uri_1.URI.file(docsPath).with({ fragment: markdownAnchor(token) }).toString(), text, tokenOffset, token.length);
+    return undefined;
 }
 function getDefinition(params) {
     return __awaiter(this, void 0, void 0, function* () {

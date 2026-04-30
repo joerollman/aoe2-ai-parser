@@ -49,6 +49,20 @@ function renderMarkdown(registry) {
     );
   }
   lines.push("");
+  lines.push("## Code Details");
+  for (const entry of registry.codes) {
+    lines.push("");
+    lines.push(`<a id="diagnostic-${entry.code}"></a>`);
+    lines.push("");
+    lines.push(`### \`${entry.code}\``);
+    lines.push("");
+    lines.push(`- Source: ${entry.source}`);
+    lines.push(`- Default severity: ${entry.severity}`);
+    lines.push(`- Corpus profile: ${entry.corpus}`);
+    lines.push(`- Cursor action: ${entry.cursor_action}`);
+    lines.push(`- Meaning: ${entry.meaning}`);
+  }
+  lines.push("");
   lines.push("## Triage Notes");
   lines.push("");
   for (const note of registry.triage_notes) {

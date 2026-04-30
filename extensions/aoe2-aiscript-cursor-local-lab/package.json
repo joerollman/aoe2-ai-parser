@@ -24,7 +24,8 @@
 		"onCommand:aoe2AiScript.lintPackage",
 		"onCommand:aoe2AiScript.generatePackageReport",
 		"onCommand:aoe2AiScript.openLatestPackageReport",
-		"onCommand:aoe2AiScript.openSymbolDocsPreview"
+		"onCommand:aoe2AiScript.openSymbolDocsPreview",
+		"onCommand:aoe2AiScript.openDiagnosticDocsPreview"
 	],
 	"main": "./languageExtension/out/extension",
 	"categories": [
@@ -218,6 +219,10 @@
 			{
 				"command": "aoe2AiScript.openSymbolDocsPreview",
 				"title": "AoE2: Open Symbol Docs Preview"
+			},
+			{
+				"command": "aoe2AiScript.openDiagnosticDocsPreview",
+				"title": "AoE2: Open Diagnostic Docs Preview"
 			}
 		],
 		"menus": {

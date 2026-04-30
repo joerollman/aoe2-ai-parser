@@ -306,11 +306,10 @@ script symbols:
 - `.ai` and `.per` `(load "...")` / `(load-random ... "...")` string targets
   jump to the resolved `.per` file when it exists.
 - Built-in registry symbols such as commands, strategic numbers, objects, techs,
-  classes, DUC actions, and value constants use per-symbol generated Markdown
-  pages under `docs/reference/generated/symbols/` for editor definition
-  navigation. The combined local reference at
-  `docs/reference/generated/ai-symbol-reference.md` remains the browsable source
-  of truth with section-level navigation.
+  classes, DUC actions, and value constants jump to the matching anchor in the
+  combined local reference at `docs/reference/generated/ai-symbol-reference.md`.
+  Per-symbol generated Markdown pages under `docs/reference/generated/symbols/`
+  remain a compatibility fallback when the aggregate reference is unavailable.
 
 Regenerate symbol docs after completion-registry changes:
 
@@ -328,11 +327,12 @@ entry in Markdown Preview to the side. This is implemented as a client command
 because editor definition navigation itself opens source locations, not rendered
 Markdown previews. The command asks Cursor to open
 `vscode.markdown.preview.editor` in `ViewColumn.Beside`, with the built-in
-`markdown.showPreviewToSide` command as a fallback. It opens the per-symbol
-Markdown page to avoid relying on Cursor's Markdown preview anchor scrolling
-behavior. There is no default keyboard shortcut; use Cursor's built-in
-`Ctrl+Alt+Click` side-definition gesture when that is sufficient, or the hover
-link/context menu command when rendered Markdown Preview is preferred.
+`markdown.showPreviewToSide` command as a fallback. It opens the combined local
+reference with the symbol anchor fragment when present and falls back to a
+per-symbol Markdown page when necessary. There is no default keyboard shortcut;
+use Cursor's built-in `Ctrl+Alt+Click` side-definition gesture when that is
+sufficient, or the hover link/context menu command when rendered Markdown
+Preview is preferred.
 
 This workspace also sets Markdown files to open through Cursor/VS Code's
 Markdown Preview editor by default:
@@ -382,7 +382,9 @@ such as `unsafe-set-target-object`, `unscoped-duc-target`,
 `up-build-place-point-coordinate-as-escrow`, `repeat-chat`,
 `command-typed-operand-mismatch`, `command-argument-mismatch`, and
 `redundant-built-in-defconst`. These actions do not edit files; they surface
-the practical meaning of the warning in Cursor's quick-fix UI.
+the practical meaning of the warning in Cursor's quick-fix UI and open
+`docs/workflows/validator-diagnostic-codes.md` in Markdown Preview to the
+matching diagnostic-code anchor when the local docs are bundled or configured.
 
 ## Samples
 

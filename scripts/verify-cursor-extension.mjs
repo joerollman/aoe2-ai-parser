@@ -61,6 +61,7 @@ for (const command of [
   "aoe2AiScript.generatePackageReport",
   "aoe2AiScript.openLatestPackageReport",
   "aoe2AiScript.openSymbolDocsPreview",
+  "aoe2AiScript.openDiagnosticDocsPreview",
 ]) {
   assert(commands.has(command), `missing command contribution: ${command}`);
   assertIncludes(clientSource, `registerCommand("${command}"`, clientPath);
@@ -78,7 +79,12 @@ assertIncludes(clientSource, "Open in Markdown Preview", clientPath);
 assertIncludes(clientSource, "markdown.isTrusted = true", clientPath);
 assertIncludes(clientSource, "function commandUriForSymbolDocs", clientPath);
 assertIncludes(clientSource, "function symbolReferencePath", clientPath);
+assertIncludes(clientSource, "function diagnosticReferencePath", clientPath);
+assertIncludes(clientSource, "function openDiagnosticDocsPreview", clientPath);
+assertIncludes(clientSource, "function diagnosticAnchor", clientPath);
+assertIncludes(clientSource, "validator-diagnostic-codes.md", clientPath);
 assertIncludes(clientSource, "function markdownAnchor", clientPath);
+assertIncludes(clientSource, "vscode_1.Uri.file(docsPath).with({ fragment })", clientPath);
 assertIncludes(clientSource, "docs\", \"reference\", \"generated\", \"ai-symbol-reference.md", clientPath);
 assertIncludes(clientSource, "SemanticTokensLegend", clientPath);
 assertIncludes(clientSource, "registerDocumentSemanticTokensProvider", clientPath);
@@ -190,6 +196,7 @@ for (const needle of [
   "function symbolReferencePath",
   "function symbolDocPath",
   "function markdownAnchor",
+  "vscode_uri_1.URI.file(docsPath).with({ fragment: markdownAnchor(token) })",
   "docs\", \"reference\", \"generated\", \"symbols",
   "docs\", \"reference\", \"generated\", \"ai-symbol-reference.md",
   "function labRegistrySignatureHelp",
@@ -201,6 +208,7 @@ for (const needle of [
   "function explanationCodeAction",
   "labDiagnosticExplanations().get(code)",
   "title: \"Explain \" + code + \": \" + explanation",
+  "aoe2AiScript.openDiagnosticDocsPreview",
   "function closestRegistryLabels",
   "function closestRegistryLabelsByFamilies",
   "function diagnosticReplacementFamilies",
@@ -226,6 +234,8 @@ assertIncludes(symbolDocsSource, "## Table Of Contents", symbolDocsPath);
 assertIncludes(symbolDocsSource, "- [command](#section-command)", symbolDocsPath);
 assertIncludes(symbolDocsSource, "- [strategic-number](#section-strategic-number)", symbolDocsPath);
 assert(!symbolDocsSource.includes("[`up-gaia-type-count`](#symbol-up-gaia-type-count)"), "symbol reference TOC should stay section-level");
+const diagnosticDocsPath = path.join(repoRoot, "docs", "workflows", "validator-diagnostic-codes.md");
+assertIncludes(readText(diagnosticDocsPath), '<a id="diagnostic-command-argument-mismatch"></a>', diagnosticDocsPath);
 
 const diagnosticCodeLabels = new Set((diagnosticCodes.codes || []).map((entry) => entry.code));
 for (const code of ["unsafe-set-target-object", "command-typed-prefix-mismatch", "missing-load-target"]) {

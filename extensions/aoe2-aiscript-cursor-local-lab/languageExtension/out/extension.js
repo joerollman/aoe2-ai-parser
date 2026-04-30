@@ -396,12 +396,19 @@ function symbolReferencePath() {
     let settings = getLabSettings();
     return path.join(settings.labPath, "docs", "reference", "generated", "ai-symbol-reference.md");
 }
+function diagnosticReferencePath() {
+    let settings = getLabSettings();
+    return path.join(settings.labPath, "docs", "workflows", "validator-diagnostic-codes.md");
+}
 function symbolDocPath(symbol) {
     let settings = getLabSettings();
     return path.join(settings.labPath, "docs", "reference", "generated", "symbols", symbol.replace(/[^#A-Za-z0-9_-]+/g, "_") + ".md");
 }
 function markdownAnchor(symbol) {
     return "symbol-" + symbol.toLowerCase().replace(/[^#a-z0-9_-]+/g, "-");
+}
+function diagnosticAnchor(code) {
+    return "diagnostic-" + String(code || "").toLowerCase().replace(/[^a-z0-9_-]+/g, "-");
 }
 function currentToken() {
     let editor = vscode_1.window.activeTextEditor;
@@ -436,21 +443,42 @@ function openSymbolDocsPreview(token) {
         vscode_1.window.showWarningMessage("Place the cursor on an AoE2 AI symbol first.");
         return;
     }
-    let docsPath = symbolDocPath(symbol);
-    if (!fs.existsSync(docsPath)) {
-        let referencePath = symbolReferencePath();
-        if (!fs.existsSync(referencePath)) {
+    let referencePath = symbolReferencePath();
+    let docsPath = referencePath;
+    let fragment = markdownAnchor(symbol);
+    if (!fs.existsSync(referencePath)) {
+        docsPath = symbolDocPath(symbol);
+        fragment = "";
+        if (!fs.existsSync(docsPath)) {
             vscode_1.window.showWarningMessage("Generated symbol docs were not found. Run npm run generate:symbol-docs.");
             return;
         }
+    }
+    else {
         let text = fs.readFileSync(referencePath, "utf8");
         if (!new RegExp("^## `" + symbol.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "`", "m").test(text)) {
-            vscode_1.window.showWarningMessage("No local docs entry found for " + symbol + ".");
-            return;
+            docsPath = symbolDocPath(symbol);
+            fragment = "";
+            if (!fs.existsSync(docsPath)) {
+                vscode_1.window.showWarningMessage("No local docs entry found for " + symbol + ".");
+                return;
+            }
         }
-        docsPath = referencePath;
     }
-    let uri = vscode_1.Uri.file(docsPath);
+    let uri = fragment ? vscode_1.Uri.file(docsPath).with({ fragment }) : vscode_1.Uri.file(docsPath);
+    vscode_1.commands.executeCommand("vscode.openWith", uri, "vscode.markdown.preview.editor", vscode_1.ViewColumn.Beside).then(undefined, () => {
+        vscode_1.commands.executeCommand("markdown.showPreviewToSide", uri);
+    });
+}
+function openDiagnosticDocsPreview(code) {
+    let diagnosticCode = code ? String(code) : "";
+    let docsPath = diagnosticReferencePath();
+    if (!fs.existsSync(docsPath)) {
+        vscode_1.window.showWarningMessage("Diagnostic docs were not found. Run npm run generate:diagnostic-registry.");
+        return;
+    }
+    let fragment = diagnosticCode ? diagnosticAnchor(diagnosticCode) : "";
+    let uri = fragment ? vscode_1.Uri.file(docsPath).with({ fragment }) : vscode_1.Uri.file(docsPath);
     vscode_1.commands.executeCommand("vscode.openWith", uri, "vscode.markdown.preview.editor", vscode_1.ViewColumn.Beside).then(undefined, () => {
         vscode_1.commands.executeCommand("markdown.showPreviewToSide", uri);
     });
@@ -502,6 +530,7 @@ function activate(context) {
     context.subscriptions.push(vscode_1.commands.registerCommand("aoe2AiScript.generatePackageReport", generatePackageReport));
     context.subscriptions.push(vscode_1.commands.registerCommand("aoe2AiScript.openLatestPackageReport", openLatestPackageReport));
     context.subscriptions.push(vscode_1.commands.registerCommand("aoe2AiScript.openSymbolDocsPreview", openSymbolDocsPreview));
+    context.subscriptions.push(vscode_1.commands.registerCommand("aoe2AiScript.openDiagnosticDocsPreview", openDiagnosticDocsPreview));
 }
 exports.activate = activate;
 function deactivate() {
