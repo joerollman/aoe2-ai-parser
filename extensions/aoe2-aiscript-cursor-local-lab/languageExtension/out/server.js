@@ -378,6 +378,9 @@ function normalizeFsPath(filePath) {
     return path.resolve(filePath).toLowerCase();
 }
 function findNearestPackageRoot(filePath, workspacePath) {
+    if (path.extname(filePath).toLowerCase() === ".ai") {
+        return filePath;
+    }
     let current = fs.statSync(filePath).isDirectory() ? filePath : path.dirname(filePath);
     let workspaceRoot = path.resolve(workspacePath);
     while (true) {
