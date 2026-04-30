@@ -135,6 +135,8 @@ Examples:
 - `command-family-mismatch`: warning.
 - `command-role-mismatch`: error.
 - `logical-operator-arity-mismatch`: error.
+- `empty-fact`: error.
+- `empty-action`: error.
 - `unsafe-set-target-object`: warning.
 - `unscoped-duc-target`: warning.
 - `up-build-place-point-coordinate-as-escrow`: warning.

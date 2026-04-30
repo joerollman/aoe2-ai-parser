@@ -2307,6 +2307,33 @@ void debug() {
 
         self.assertEqual([finding.code for finding in findings], ["defrule-missing-arrow"])
 
+    def test_flags_rule_with_no_facts(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.per"
+            path.write_text(
+                """
+(defrule
+=>
+    (disable-self)
+)
+""".strip(),
+                encoding="utf-8",
+            )
+
+            findings = lint_file(path)
+
+        self.assertEqual([finding.code for finding in findings], ["empty-fact"])
+        self.assertEqual(findings[0].severity, "error")
+
+    def test_flags_single_line_rule_with_no_facts(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.per"
+            path.write_text("(defrule => (disable-self))", encoding="utf-8")
+
+            findings = lint_file(path)
+
+        self.assertEqual([finding.code for finding in findings], ["empty-fact"])
+
     def test_flags_literal_typed_signal_id_outside_documented_range(self) -> None:
         with TemporaryDirectory() as tmp:
             path = Path(tmp) / "sample.per"

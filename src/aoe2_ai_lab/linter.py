@@ -2804,6 +2804,16 @@ def lint_file(
                 )
             )
 
+        if not rule.facts:
+            findings.append(
+                Finding(
+                    rule.start_line,
+                    "empty-fact",
+                    "rule has no facts before =>",
+                    rule_confidence,
+                )
+            )
+
         findings.extend(apply_confidence(lint_livestock_point_default(rule), rule_confidence))
         findings.extend(apply_confidence(lint_up_build_place_point_escrow(rule), rule_confidence))
         findings.extend(apply_confidence(lint_command_roles(rule), rule_confidence))

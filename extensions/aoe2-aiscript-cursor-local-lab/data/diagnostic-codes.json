@@ -145,6 +145,14 @@
       "meaning": "A rule has no actions after `=>`."
     },
     {
+      "code": "empty-fact",
+      "source": "lint",
+      "severity": "error",
+      "corpus": "active",
+      "cursor_action": "none",
+      "meaning": "A rule has no facts before `=>`."
+    },
+    {
       "code": "livestock-default-point",
       "source": "lint",
       "severity": "warning",

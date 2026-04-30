@@ -602,6 +602,8 @@ Linter opportunities:
 
 Current linter behavior:
 
+- `empty-fact` reports rules that have no facts before `=>`.
+- `empty-action` reports rules that have no actions after `=>`.
 - `logical-operator-arity-mismatch` reports `not` with anything other than one
   direct child fact.
 - `logical-operator-arity-mismatch` reports `and`, `or`, `nand`, `nor`, `xor`,
