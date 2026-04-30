@@ -1,11 +1,12 @@
 [project]
-name = "aoe2-ai-lab"
+name = "aoe2-ai-parser"
 version = "0.1.0"
-description = "Tooling and experiments for Age of Empires II DE AI scripting"
+description = "Parser, linter, package validator, and editor tooling for Age of Empires II DE AI scripting"
 requires-python = ">=3.12"
 dependencies = []
 
 [project.scripts]
+aoe2-ai-parser = "aoe2_ai_lab.cli:main"
 aoe2-ai-lab = "aoe2_ai_lab.cli:main"
 
 [tool.setuptools]

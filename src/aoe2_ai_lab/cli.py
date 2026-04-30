@@ -120,7 +120,7 @@ def install_rms_files(rms_dir: Path, profiles_root: Path) -> list[Path]:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="aoe2-ai-lab")
+    parser = argparse.ArgumentParser(prog="aoe2-ai-parser")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     lint = subparsers.add_parser("lint", help="lint a .per AI script")
