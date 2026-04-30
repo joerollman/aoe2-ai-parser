@@ -777,6 +777,31 @@ class CliTests(unittest.TestCase):
         self.assertEqual(payload["issue_groups"][0]["source"], "lint")
         self.assertEqual(payload["issue_groups"][0]["code"], "up-build-place-point-coordinate-as-escrow")
 
+    def test_lint_package_accepts_single_ai_file_path(self) -> None:
+        with WorkspaceTempDir() as root:
+            ai_path = root / "Focused.ai"
+            ai_path.write_text('(load "Focused")\n', encoding="utf-8")
+            (root / "Focused.per").write_text(
+                """
+(defrule
+    (true)
+=>
+    (do-nothing)
+)
+""".strip(),
+                encoding="utf-8",
+            )
+            (root / "unused.per").write_text("(defconst unused 1)\n", encoding="utf-8")
+            buffer = io.StringIO()
+            with redirect_stdout(buffer):
+                code = main(["lint-package", str(ai_path), "--json"])
+
+        self.assertEqual(code, 0)
+        payload = json.loads(buffer.getvalue())
+        self.assertEqual(payload["root_count"], 1)
+        self.assertEqual(Path(payload["roots"][0]["ai_path"]).name, "Focused.ai")
+        self.assertEqual(payload["integrity"]["unreachable_per_files"], [])
+
     def test_lint_package_json_marks_error_failures(self) -> None:
         with WorkspaceTempDir() as root:
             (root / "Bad.ai").write_text('(load "Bad")\n', encoding="utf-8")
