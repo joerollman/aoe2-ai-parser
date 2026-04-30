@@ -177,8 +177,7 @@ def preprocess_source_lines(lines: list[str]) -> tuple[SourceLine, ...]:
         line_active = current_active()
         line_confidence = current_confidence()
         if line_active:
-            const_name = parse_defconst_name(raw_line)
-            if const_name is not None:
+            for const_name, _value in iter_defconst_tokens(raw_line):
                 defined.add(const_name)
 
         inline_match = LOAD_IF_DEFINED_RE.match(code) or LOAD_IF_NOT_DEFINED_RE.match(code)
@@ -202,8 +201,7 @@ def preprocess_source_lines(lines: list[str]) -> tuple[SourceLine, ...]:
             payload = code[inline_match.end() : inline_end].strip()
             payload_active = line_active and (not condition_known or condition_value)
             if payload_active and payload:
-                const_name = parse_defconst_name(payload)
-                if const_name is not None:
+                for const_name, _value in iter_defconst_tokens(payload):
                     defined.add(const_name)
             confidence = "conditional" if (line_confidence == "conditional" or not condition_known) else "definite"
             source_lines.append(
@@ -292,8 +290,7 @@ def collect_preprocessor_issues(lines: list[str]) -> tuple[PreprocessorIssue, ..
         line_active = current_active()
         line_confidence = current_confidence()
         if line_active:
-            const_name = parse_defconst_name(raw_line)
-            if const_name is not None:
+            for const_name, _value in iter_defconst_tokens(raw_line):
                 defined.add(const_name)
 
         for directive in directive_tokens(code):
@@ -643,19 +640,35 @@ def is_defrule_start(code: str) -> bool:
     return code[len("(defrule")] in {")"} or code[len("(defrule")].isspace()
 
 
-def parse_defconst(line: str) -> tuple[str, int] | None:
-    parsed = parse_defconst_token(line)
-    if parsed is None:
-        return None
-    name, value = parsed
-    try:
-        return name, int(value)
-    except ValueError:
-        return None
-
-
-def parse_defconst_token(line: str) -> tuple[str, str] | None:
+def defconst_form_spans(line: str) -> tuple[tuple[int, str], ...]:
     code = strip_comment(line)
+    spans: list[tuple[int, str]] = []
+    search_start = 0
+    while True:
+        start = code.find("(defconst", search_start)
+        if start == -1:
+            break
+        after_keyword = start + len("(defconst")
+        if after_keyword < len(code) and not code[after_keyword].isspace():
+            search_start = after_keyword
+            continue
+        in_string = False
+        for index in range(after_keyword, len(code)):
+            char = code[index]
+            if char == '"' and not is_escaped_quote(code, index):
+                in_string = not in_string
+            elif char == ")" and not in_string:
+                spans.append((start, code[start : index + 1]))
+                search_start = index + 1
+                break
+        else:
+            spans.append((start, code[start:]))
+            break
+    return tuple(spans)
+
+
+def parse_defconst_form(form: str) -> tuple[str, str] | None:
+    code = strip_comment(form).strip()
     if not code.startswith("(defconst "):
         return None
     body = code.removeprefix("(defconst ").strip()
@@ -681,14 +694,34 @@ def parse_defconst_token(line: str) -> tuple[str, str] | None:
     return name, value
 
 
+def iter_defconst_tokens(line: str) -> tuple[tuple[str, str], ...]:
+    tokens: list[tuple[str, str]] = []
+    for _start, form in defconst_form_spans(line):
+        parsed = parse_defconst_form(form)
+        if parsed is not None:
+            tokens.append(parsed)
+    return tuple(tokens)
+
+
+def parse_defconst(line: str) -> tuple[str, int] | None:
+    parsed = parse_defconst_token(line)
+    if parsed is None:
+        return None
+    name, value = parsed
+    try:
+        return name, int(value)
+    except ValueError:
+        return None
+
+
+def parse_defconst_token(line: str) -> tuple[str, str] | None:
+    tokens = iter_defconst_tokens(line)
+    return tokens[0] if tokens else None
+
+
 def parse_defconst_name(line: str) -> str | None:
-    code = strip_comment(line)
-    if not code.startswith("(defconst "):
-        return None
-    parts = code.removeprefix("(defconst ").rstrip(")").split(None, 1)
-    if len(parts) != 2:
-        return None
-    return parts[0]
+    parsed = parse_defconst_token(line)
+    return parsed[0] if parsed is not None else None
 
 
 def resolve_constant_tokens(tokens: dict[str, str]) -> dict[str, int]:
@@ -862,13 +895,9 @@ def parse_script(path: str | Path) -> Script:
         index = source_line.number
         raw_line = source_line.text
         last_line_number = index
-        const_name = parse_defconst_name(raw_line)
-        if const_name is not None:
+        for const_name, value in iter_defconst_tokens(raw_line):
             constant_names.add(const_name)
-
-        const_token = parse_defconst_token(raw_line)
-        if const_token is not None:
-            constant_tokens[const_token[0]] = const_token[1]
+            constant_tokens[const_name] = value
 
         code = strip_comment(raw_line)
         if not code:

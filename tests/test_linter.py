@@ -935,6 +935,28 @@ class LinterTests(unittest.TestCase):
 
         self.assertEqual(findings, [])
 
+    def test_allows_multiple_defconst_forms_on_one_line(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.per"
+            path.write_text(
+                """
+(defconst class-villager villager-class)(defconst goal-state 1)
+(defrule
+    (true)
+=>
+    (set-goal goal-state 2)
+)
+""".strip(),
+                encoding="utf-8",
+            )
+
+            findings = lint_file(path)
+
+        self.assertEqual(
+            [finding.code for finding in findings],
+            ["builtin-constant-alias"],
+        )
+
     def test_flags_defconst_numeric_value_outside_signed_16_bit_range(self) -> None:
         with TemporaryDirectory() as tmp:
             path = Path(tmp) / "sample.per"

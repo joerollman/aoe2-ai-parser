@@ -87,6 +87,26 @@ class ParserTests(unittest.TestCase):
         self.assertEqual(script.constant_tokens["escaped"], '"hello \\"world\\""')
         self.assertNotIn("greeting", script.constants)
 
+    def test_parses_multiple_defconst_forms_on_one_line(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.per"
+            path.write_text(
+                """
+(defconst first 1)(defconst second first)
+#load-if-defined first (defconst third 3) #end-if
+(defconst fourth "hello world")
+""".strip(),
+                encoding="utf-8",
+            )
+
+            script = parse_script(path)
+
+        self.assertEqual(script.constant_tokens["first"], "1")
+        self.assertEqual(script.constant_tokens["second"], "first")
+        self.assertEqual(script.constants["second"], 1)
+        self.assertEqual(script.constant_tokens["third"], "3")
+        self.assertEqual(script.constant_tokens["fourth"], '"hello world"')
+
     def test_parses_windows_1252_encoded_scripts(self) -> None:
         with TemporaryDirectory() as tmp:
             path = Path(tmp) / "sample.per"

@@ -488,7 +488,9 @@ real action instead of a `can-*` fact after `=>`, or adding a missing load file.
   as missing names, missing values, unterminated quoted text, or multiple
   unquoted value tokens. The validator intentionally accepts broad legacy names
   such as `1TC-4MARKET` and alias values such as
-  `(defconst food-sn sn-food-gatherer-percentage)`.
+  `(defconst food-sn sn-food-gatherer-percentage)`. Multiple compact
+  declarations on one line, such as `(defconst a 1)(defconst b 2)`, are parsed
+  as separate declarations.
 - `malformed-load-directive` and `malformed-include-directive` report load graph
   directives that cannot be resolved reliably, usually because the target path
   is not quoted.

@@ -10,7 +10,7 @@ from .parser import (
     Expression,
     active_source_lines,
     count_code_parens,
-    parse_defconst_token,
+    iter_defconst_tokens,
     parse_script,
     read_script_text,
     resolve_constant_tokens,
@@ -702,9 +702,7 @@ def lint_package_root(root: PackageRoot, *, profile: str = "corpus") -> PackageL
         if script.constant_tokens:
             constant_tokens.update(script.constant_tokens)
         for source_line in active_source_lines(file_path):
-            parsed = parse_defconst_token(source_line.text)
-            if parsed is not None:
-                name, value = parsed
+            for name, value in iter_defconst_tokens(source_line.text):
                 constant_locations[name] = (file_path, source_line.number, source_line.confidence)
                 constant_definitions.setdefault(name, []).append(
                     (value, file_path, source_line.number, source_line.confidence)

@@ -11,11 +11,12 @@ from .parser import (
     SourceSpan,
     active_source_lines,
     count_code_parens,
+    defconst_form_spans,
     first_symbol,
+    iter_defconst_tokens,
     is_escaped_quote,
     is_defrule_start,
-    parse_defconst,
-    parse_defconst_token,
+    parse_defconst_form,
     parse_script,
     preprocessor_issues,
     read_script_text,
@@ -1139,47 +1140,40 @@ def lint_builtin_defconst_shadow(path: Path) -> list[Finding]:
     for source_line in active_source_lines(path):
         index = source_line.number
         raw_line = source_line.text
-        parsed_token = parse_defconst_token(raw_line)
-        if parsed_token is None:
-            continue
-        name, value_token = parsed_token
-        parsed = parse_defconst(raw_line)
-        if parsed is None:
-            value = None
-        else:
-            _name, value = parsed
-        if name in BUILTIN_CLASS_NAMES:
-            findings.append(
-                Finding(
-                    index,
-                    "redundant-built-in-defconst",
-                    f"{name!r} is already a documented built-in class constant; prefer the built-in name directly",
+        for name, value_token in iter_defconst_tokens(raw_line):
+            value = int(value_token) if is_int_literal(value_token) else None
+            if name in BUILTIN_CLASS_NAMES:
+                findings.append(
+                    Finding(
+                        index,
+                        "redundant-built-in-defconst",
+                        f"{name!r} is already a documented built-in class constant; prefer the built-in name directly",
+                    )
                 )
-            )
-            continue
-        if not name.startswith("class-"):
-            continue
-        if value_token in BUILTIN_CLASS_NAMES:
-            findings.append(
-                Finding(
-                    index,
-                    "builtin-constant-alias",
-                    f"{name!r} aliases documented built-in class constant {value_token!r}; prefer the built-in name directly",
+                continue
+            if not name.startswith("class-"):
+                continue
+            if value_token in BUILTIN_CLASS_NAMES:
+                findings.append(
+                    Finding(
+                        index,
+                        "builtin-constant-alias",
+                        f"{name!r} aliases documented built-in class constant {value_token!r}; prefer the built-in name directly",
+                    )
                 )
-            )
-            continue
-        if value is None:
-            continue
-        builtin_names = BUILTIN_CLASS_NAMES_BY_ID.get(value, set())
-        if builtin_names:
-            preferred = sorted(builtin_names)[0]
-            findings.append(
-                Finding(
-                    index,
-                    "builtin-constant-alias",
-                    f"{name!r} redefines built-in id {value}; prefer documented built-in name {preferred!r}",
+                continue
+            if value is None:
+                continue
+            builtin_names = BUILTIN_CLASS_NAMES_BY_ID.get(value, set())
+            if builtin_names:
+                preferred = sorted(builtin_names)[0]
+                findings.append(
+                    Finding(
+                        index,
+                        "builtin-constant-alias",
+                        f"{name!r} redefines built-in id {value}; prefer documented built-in name {preferred!r}",
+                    )
                 )
-            )
     return findings
 
 
@@ -1189,24 +1183,21 @@ def lint_defconst_conflicts(path: Path) -> list[Finding]:
     for source_line in active_source_lines(path):
         if source_line.confidence != "definite":
             continue
-        parsed = parse_defconst_token(source_line.text)
-        if parsed is None:
-            continue
-        name, value = parsed
-        previous = seen.get(name)
-        if previous is None:
-            seen[name] = (value, source_line.number)
-            continue
-        previous_value, previous_line = previous
-        if previous_value == value:
-            continue
-        findings.append(
-            Finding(
-                source_line.number,
-                "duplicate-defconst-conflict",
-                f"{name!r} is defined as {previous_value!r} on line {previous_line} and {value!r} here",
+        for name, value in iter_defconst_tokens(source_line.text):
+            previous = seen.get(name)
+            if previous is None:
+                seen[name] = (value, source_line.number)
+                continue
+            previous_value, previous_line = previous
+            if previous_value == value:
+                continue
+            findings.append(
+                Finding(
+                    source_line.number,
+                    "duplicate-defconst-conflict",
+                    f"{name!r} is defined as {previous_value!r} on line {previous_line} and {value!r} here",
+                )
             )
-        )
     return findings
 
 
@@ -1214,12 +1205,9 @@ def lint_defconst_alias_cycles(path: Path) -> list[Finding]:
     tokens: dict[str, str] = {}
     locations: dict[str, tuple[int, str]] = {}
     for source_line in active_source_lines(path):
-        parsed = parse_defconst_token(source_line.text)
-        if parsed is None:
-            continue
-        name, value = parsed
-        tokens[name] = value
-        locations[name] = (source_line.number, source_line.confidence)
+        for name, value in iter_defconst_tokens(source_line.text):
+            tokens[name] = value
+            locations[name] = (source_line.number, source_line.confidence)
 
     findings: list[Finding] = []
     reported: set[tuple[str, ...]] = set()
@@ -1255,21 +1243,10 @@ def lint_malformed_defconst(path: Path) -> list[Finding]:
     findings: list[Finding] = []
     for source_line in active_source_lines(path):
         code = strip_comment(source_line.text)
-        if not code.startswith("(defconst"):
+        if "(defconst" not in code:
             continue
-        if not code.startswith("(defconst "):
-            findings.append(
-                Finding(
-                    source_line.number,
-                    "malformed-defconst",
-                    "defconst requires a symbol name and integer value",
-                    source_line.confidence,
-                )
-            )
-            continue
-        body = code.removeprefix("(defconst ").rstrip(")").strip()
-        parts = body.split(None, 1)
-        if len(parts) != 2 or not parts[0] or not parts[1].strip():
+        spans = defconst_form_spans(code)
+        if not spans and code.strip().startswith("(defconst"):
             findings.append(
                 Finding(
                     source_line.number,
@@ -1279,34 +1256,37 @@ def lint_malformed_defconst(path: Path) -> list[Finding]:
                 )
             )
             continue
-        value = parts[1].strip()
-        if value.startswith('"'):
-            closing_index = -1
-            for value_index in range(1, len(value)):
-                if value[value_index] == '"' and not is_escaped_quote(value, value_index):
-                    closing_index = value_index
-                    break
-            if closing_index == -1:
+        for _start, form in spans:
+            parsed = parse_defconst_form(form)
+            if parsed is not None:
+                continue
+            value = form.removeprefix("(defconst").rstrip(")").strip()
+            if len(value.split()) < 2:
                 findings.append(
                     Finding(
                         source_line.number,
                         "malformed-defconst",
-                        f"defconst quoted value {value!r} is missing a closing quote",
+                        "defconst requires exactly a symbol name and integer value",
                         source_line.confidence,
                     )
                 )
                 continue
-            if value[closing_index + 1 :].strip():
+            if value.startswith('"') or ' "' in value:
+                quote_count = sum(
+                    1
+                    for index, char in enumerate(value)
+                    if char == '"' and not is_escaped_quote(value, index)
+                )
+                quote_message = "missing a closing quote" if quote_count % 2 == 1 else "is malformed"
                 findings.append(
                     Finding(
                         source_line.number,
                         "malformed-defconst",
-                        f"defconst value {value!r} must be a single token or quoted text",
+                        f"defconst quoted value {value!r} {quote_message}",
                         source_line.confidence,
                     )
                 )
-            continue
-        if len(value.split()) != 1:
+                continue
             findings.append(
                 Finding(
                     source_line.number,
@@ -1337,23 +1317,20 @@ def lint_line_length(path: Path) -> list[Finding]:
 def lint_defconst_numeric_range(path: Path) -> list[Finding]:
     findings: list[Finding] = []
     for source_line in active_source_lines(path):
-        parsed_token = parse_defconst_token(source_line.text)
-        if parsed_token is None:
-            continue
-        name, value_token = parsed_token
-        if not is_int_literal(value_token):
-            continue
-        value = int(value_token)
-        if DEFCONST_MIN_VALUE <= value <= DEFCONST_MAX_VALUE:
-            continue
-        findings.append(
-            Finding(
-                source_line.number,
-                "defconst-value-out-of-range",
-                f"defconst {name!r} value {value} is outside signed 16-bit range {DEFCONST_MIN_VALUE} to {DEFCONST_MAX_VALUE}",
-                source_line.confidence,
+        for name, value_token in iter_defconst_tokens(source_line.text):
+            if not is_int_literal(value_token):
+                continue
+            value = int(value_token)
+            if DEFCONST_MIN_VALUE <= value <= DEFCONST_MAX_VALUE:
+                continue
+            findings.append(
+                Finding(
+                    source_line.number,
+                    "defconst-value-out-of-range",
+                    f"defconst {name!r} value {value} is outside signed 16-bit range {DEFCONST_MIN_VALUE} to {DEFCONST_MAX_VALUE}",
+                    source_line.confidence,
+                )
             )
-        )
     return findings
 
 
