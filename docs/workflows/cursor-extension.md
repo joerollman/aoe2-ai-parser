@@ -185,6 +185,8 @@ For `.ai` files:
   `skipped-load-random` info diagnostics.
 - Report root `.per` files loaded by multiple `.ai` files as
   `duplicate-root-target` warning diagnostics.
+- Report `.ai` files with the same case-insensitive display name as
+  `duplicate-ai-name` warning diagnostics.
 
 ## Commands
 
@@ -246,6 +248,7 @@ The language server ranks completion results by cursor context:
   For example, `(up-find-local c: ` prioritizes object/class constants,
   `(up-target-objects 0 ` prioritizes DUC actions, and
   `(up-modify-sn sn-maximum-town-size ` prioritizes math operators.
+- `(map-type ` prioritizes documented MapType values.
 - `c:` value positions prioritize objects, values, techs, strategic numbers,
   and local constants.
 - Local `(defconst ...)` names in the current document are offered as

@@ -145,6 +145,7 @@ const perFixture = fixtureWithCursors([
   "(defconst local-probe 123)",
   "(defrule",
   "    (true)",
+  "    (map-type |mapType|)",
   "=>",
   "    (up-find-local c: |findLocal|)",
   "    (up-find-local g:= villager-class c: 1)",
@@ -232,6 +233,13 @@ try {
   await sleep(100);
 
   const cases = [
+    {
+      name: "map-type argument",
+      uri: fileUri(perPath),
+      position: perFixture.positions.mapType,
+      expected: "acclivity",
+      limit: 30,
+    },
     {
       name: "up-find-local object argument",
       uri: fileUri(perPath),

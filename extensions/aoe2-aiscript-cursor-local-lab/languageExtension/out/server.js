@@ -507,6 +507,13 @@ function collectAiRootDiagnostics(textDocument, payload, currentPath) {
             let roots = (duplicate.ai_paths || []).map(aiPath => path.basename(aiPath)).join(", ");
             diagnostics.push(labFindingToDiagnostic(textDocument, "warning", "duplicate-root-target", "'" + includeName + "' is loaded as a root by multiple .ai files: " + roots, line));
         });
+        (((payload.integrity || {}).duplicate_ai_names) || []).forEach(duplicate => {
+            if (!(duplicate.ai_paths || []).some(aiPath => normalizeFsPath(aiPath) === currentPath)) {
+                return;
+            }
+            let roots = (duplicate.ai_paths || []).map(aiPath => path.basename(aiPath)).join(", ");
+            diagnostics.push(labFindingToDiagnostic(textDocument, "warning", "duplicate-ai-name", "AI display name '" + (duplicate.name || path.basename(currentPath, ".ai")) + "' is shared by multiple .ai files: " + roots, 1));
+        });
     });
     (((payload.integrity || {}).stale_ai_roots) || []).forEach(stale => {
         if (normalizeFsPath(stale.ai_path) !== currentPath) {
@@ -1008,6 +1015,9 @@ function preferredKindsForParameter(paramType) {
     if (normalized === "attackstance") {
         return new Set(["attack-stance"]);
     }
+    if (normalized === "maptype") {
+        return new Set(["map-type", "local-constant"]);
+    }
     if (normalized.indexOf("value") >= 0 || normalized.indexOf("goal") >= 0 || normalized.indexOf("option") >= 0) {
         return new Set(["value", "local-constant"]);
     }
@@ -1031,6 +1041,9 @@ function completionItemFamily(item) {
     }
     if (detail.indexOf("attackstance") >= 0 || label.indexOf("stance-") === 0) {
         return "attack-stance";
+    }
+    if (detail.indexOf("maptype") >= 0) {
+        return "map-type";
     }
     return labKind;
 }

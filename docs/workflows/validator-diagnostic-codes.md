@@ -44,6 +44,7 @@ Manual `--suppress-code <code>` can suppress any finding code for one lint run. 
 | `defconst-value-out-of-range` | lint | error | active | explain | A numeric `defconst` value is outside the documented signed 16-bit range of -32768 to 32767. |
 | `duplicate-preprocessor-else` | preprocessor | error | active | none | One `#load-if-defined` or `#load-if-not-defined` block contains more than one `#else`. |
 | `duplicate-root-target` | integrity | warning | active | none | Multiple `.ai` files resolve to the same root `.per`. This can be intentional for personalities but should be explicit. |
+| `duplicate-ai-name` | integrity | warning | active | none | Multiple `.ai` files have the same case-insensitive display name. This can confuse package users and launcher/editor selection. |
 | `duplicate-defconst-conflict` | lint | warning | suppressed | none | A definitely active file assigns two different parsed values to the same `defconst` name. |
 | `empty-action` | lint | error | active | none | A rule has no actions after `=>`. |
 | `empty-fact` | lint | error | active | none | A rule has no facts before `=>`. |
@@ -227,6 +228,16 @@ Manual `--suppress-code <code>` can suppress any finding code for one lint run. 
 - Corpus profile: active
 - Cursor action: none
 - Meaning: Multiple `.ai` files resolve to the same root `.per`. This can be intentional for personalities but should be explicit.
+
+<a id="diagnostic-duplicate-ai-name"></a>
+
+### `duplicate-ai-name`
+
+- Source: integrity
+- Default severity: warning
+- Corpus profile: active
+- Cursor action: none
+- Meaning: Multiple `.ai` files have the same case-insensitive display name. This can confuse package users and launcher/editor selection.
 
 <a id="diagnostic-duplicate-defconst-conflict"></a>
 

@@ -851,10 +851,11 @@ def package_integrity_to_json(integrity: object) -> dict[str, object]:
     severity_counts = {
         "error": len(integrity.stale_ai_roots),
         "info": len(integrity.unreachable_per_files),
-        "warning": len(integrity.duplicate_root_targets),
+        "warning": len(integrity.duplicate_root_targets) + len(integrity.duplicate_ai_names),
     }
     severity_counts = {key: value for key, value in sorted(severity_counts.items()) if value}
     code_counts = {
+        "duplicate-ai-name": len(integrity.duplicate_ai_names),
         "duplicate-root-target": len(integrity.duplicate_root_targets),
         "stale-ai-root": len(integrity.stale_ai_roots),
         "unreachable-per-file": len(integrity.unreachable_per_files),
@@ -885,6 +886,14 @@ def package_integrity_to_json(integrity: object) -> dict[str, object]:
             )
         ],
         "duplicate_root_target_count": len(integrity.duplicate_root_targets),
+        "duplicate_ai_names": [
+            {
+                "name": name,
+                "ai_paths": [str(path) for path in ai_paths],
+            }
+            for name, ai_paths in sorted(integrity.duplicate_ai_names.items())
+        ],
+        "duplicate_ai_name_count": len(integrity.duplicate_ai_names),
     }
 
 
@@ -943,6 +952,8 @@ def package_integrity_has_failure(integrity: object, fail_level: str) -> bool:
         return True
     if integrity.duplicate_root_targets and SEVERITY_ORDER["warning"] >= threshold:
         return True
+    if integrity.duplicate_ai_names and SEVERITY_ORDER["warning"] >= threshold:
+        return True
     if integrity.unreachable_per_files and SEVERITY_ORDER["info"] >= threshold:
         return True
     return False
@@ -989,6 +1000,7 @@ def package_totals_to_json(root_payloads: list[dict[str, object]], integrity_pay
         "stale_ai_root_count": integrity_payload["stale_ai_root_count"],
         "unreachable_per_file_count": integrity_payload["unreachable_per_file_count"],
         "duplicate_root_target_count": integrity_payload["duplicate_root_target_count"],
+        "duplicate_ai_name_count": integrity_payload["duplicate_ai_name_count"],
         "integrity_severity_counts": integrity_payload["severity_counts"],
         "integrity_code_counts": integrity_payload["code_counts"],
     }
@@ -1006,6 +1018,7 @@ def package_integrity_groups_to_json(integrity_payload: dict[str, object]) -> li
     specs = [
         ("stale-ai-root", "error", integrity_payload["stale_ai_roots"]),
         ("duplicate-root-target", "warning", integrity_payload["duplicate_root_targets"]),
+        ("duplicate-ai-name", "warning", integrity_payload["duplicate_ai_names"]),
         ("unreachable-per-file", "info", integrity_payload["unreachable_per_files"]),
     ]
     for code, severity, items in specs:
@@ -1031,6 +1044,18 @@ def package_integrity_groups_to_json(integrity_payload: dict[str, object]) -> li
                     "confidence": "definite",
                     "code": code,
                     "message": "loaded as a root by multiple .ai files",
+                    "ai_paths": item["ai_paths"],
+                }
+                for item in items[:5]
+            ]
+        elif code == "duplicate-ai-name":
+            examples = [
+                {
+                    "path": item["ai_paths"][0],
+                    "severity": severity,
+                    "confidence": "definite",
+                    "code": code,
+                    "message": "multiple .ai files share the same display name",
                     "ai_paths": item["ai_paths"],
                 }
                 for item in items[:5]
@@ -1176,6 +1201,7 @@ def package_report_to_markdown(payload: dict[str, object]) -> str:
         "stale-ai-root": integrity["stale_ai_roots"],
         "unreachable-per-file": integrity["unreachable_per_files"],
         "duplicate-root-target": integrity["duplicate_root_targets"],
+        "duplicate-ai-name": integrity["duplicate_ai_names"],
     }
 
     all_codes = sorted(set(findings_by_code) | {code for code, items in integrity_categories.items() if items})
@@ -1239,6 +1265,9 @@ def package_report_to_markdown(payload: dict[str, object]) -> str:
         elif code == "duplicate-root-target":
             for item in integrity_items:
                 lines.append(f"- `{item['per_path']}` referenced by `{', '.join(item['ai_paths'])}`")
+        elif code == "duplicate-ai-name":
+            for item in integrity_items:
+                lines.append(f"- `{item['name']}` used by `{', '.join(item['ai_paths'])}`")
         lines.append("")
 
     lines.extend(["## Root Manifest", ""])
@@ -1388,6 +1417,12 @@ def main(argv: list[str] | None = None) -> int:
                 for per_path, ai_paths in list(integrity.duplicate_root_targets.items())[:10]:
                     joined = ", ".join(str(path) for path in ai_paths)
                     print(f"  {per_path}: warning: duplicate-root-target: referenced by {joined}")
+            if integrity.duplicate_ai_names:
+                print("package integrity:")
+                print(f"  duplicate AI names: {len(integrity.duplicate_ai_names)}")
+                for name, ai_paths in list(integrity.duplicate_ai_names.items())[:10]:
+                    joined = ", ".join(str(path) for path in ai_paths)
+                    print(f"  {name}: warning: duplicate-ai-name: referenced by {joined}")
         return exit_code
 
     if args.command == "diagnostics":

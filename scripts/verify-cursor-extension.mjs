@@ -167,6 +167,7 @@ for (const needle of [
   "stale-ai-root",
   "skipped-load-random",
   "duplicate-root-target",
+  "duplicate-ai-name",
   "function diagnosticRangeForLine(textDocument, lineNumber, code, message, span)",
   '"lint", filePath, "--json"',
   "finding.span",
@@ -179,6 +180,7 @@ for (const needle of [
   "function currentCommandArgument",
   "function preferredKindsForParameter",
   "function completionItemFamily",
+  "\"map-type\"",
   "function localDefconstCompletions",
   "function loadTargetCompletions",
   "function labRegistryHover",
@@ -239,7 +241,7 @@ const diagnosticDocsPath = path.join(repoRoot, "docs", "workflows", "validator-d
 assertIncludes(readText(diagnosticDocsPath), '<a id="diagnostic-command-argument-mismatch"></a>', diagnosticDocsPath);
 
 const diagnosticCodeLabels = new Set((diagnosticCodes.codes || []).map((entry) => entry.code));
-for (const code of ["unsafe-set-target-object", "command-typed-prefix-mismatch", "missing-load-target"]) {
+for (const code of ["unsafe-set-target-object", "command-typed-prefix-mismatch", "missing-load-target", "duplicate-ai-name"]) {
   assert(diagnosticCodeLabels.has(code), `diagnostic registry missing ${code}`);
 }
 

@@ -964,6 +964,26 @@ class CliTests(unittest.TestCase):
         self.assertTrue(payload["failed"])
         self.assertEqual(payload["integrity"]["severity_counts"], {"warning": 1})
 
+    def test_lint_package_json_reports_duplicate_ai_names(self) -> None:
+        with WorkspaceTempDir() as root:
+            nested = root / "nested"
+            nested.mkdir()
+            (root / "Scout.ai").write_text('(load "Scout")\n', encoding="utf-8")
+            (root / "Scout.per").write_text("(defrule\n    (true)\n=>\n    (do-nothing)\n)\n", encoding="utf-8")
+            (nested / "Scout.ai").write_text('(load "Scout")\n', encoding="utf-8")
+            (nested / "Scout.per").write_text("(defrule\n    (true)\n=>\n    (do-nothing)\n)\n", encoding="utf-8")
+            buffer = io.StringIO()
+            with redirect_stdout(buffer):
+                code = main(["lint-package", str(root), "--json", "--fail-level", "warning"])
+
+        self.assertEqual(code, 1)
+        payload = json.loads(buffer.getvalue())
+        self.assertEqual(payload["integrity"]["duplicate_ai_name_count"], 1)
+        self.assertEqual(payload["integrity"]["code_counts"], {"duplicate-ai-name": 1})
+        self.assertEqual(payload["issue_groups"][0]["code"], "duplicate-ai-name")
+        self.assertEqual(payload["issue_groups"][0]["examples"][0]["code"], "duplicate-ai-name")
+        self.assertEqual(payload["totals"]["duplicate_ai_name_count"], 1)
+
     def test_lint_package_can_fail_on_integrity_info(self) -> None:
         with WorkspaceTempDir() as root:
             (root / "Good.ai").write_text('(load "Good")\n', encoding="utf-8")

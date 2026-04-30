@@ -296,6 +296,8 @@ zero-parameter XS functions.
   root.
 - duplicate root targets: multiple `.ai` files resolving to the same root
   `.per`.
+- duplicate AI names: multiple `.ai` files with the same case-insensitive stem,
+  which can confuse package users and launcher/editor selection.
 
 If one `.ai` file contains multiple plain `load` entries or positive-weight
 `load-random` entries, each resolved load is treated as a package root. This
@@ -314,9 +316,9 @@ load edge increments the depth.
 
 Stale `.ai` roots are integrity errors and fail package validation by default.
 Unreachable `.per` files are integrity info by default. Duplicate root targets
-are integrity warnings because they may be intentional personality entries.
-`--fail-level warning` fails on duplicate roots, and `--fail-level info` also
-fails on unreachable files.
+and duplicate AI names are integrity warnings because they may be intentional
+personality entries or packaging choices. `--fail-level warning` fails on those
+warnings, and `--fail-level info` also fails on unreachable files.
 
 ## JSON Output
 

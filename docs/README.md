@@ -13,6 +13,8 @@ Use this as the entry point for project notes.
 - [reference/README.md](./reference/README.md): shared scripting references.
 - [reference/command-reference.md](./reference/command-reference.md): command
   semantics and project-observed command notes.
+- [reference/map-type-evidence.md](./reference/map-type-evidence.md): local
+  evidence and validation status for AI `map-type` values.
 - [extracted/README.md](./extracted/README.md): offline imported inventories
   and raw evidence.
 - [extracted/offline-reference-map.md](./extracted/offline-reference-map.md):

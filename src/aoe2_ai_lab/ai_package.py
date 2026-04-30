@@ -102,6 +102,7 @@ class PackageIntegrityResult:
     stale_ai_roots: list[StaleAiRoot] = field(default_factory=list)
     unreachable_per_files: list[Path] = field(default_factory=list)
     duplicate_root_targets: dict[Path, list[Path]] = field(default_factory=dict)
+    duplicate_ai_names: dict[str, list[Path]] = field(default_factory=dict)
 
 
 def merge_confidence(existing: str, incoming: str) -> str:
@@ -472,7 +473,9 @@ def inspect_package_integrity(package_dir: str | Path) -> PackageIntegrityResult
 
     roots: list[PackageRoot] = []
     stale_ai_roots: list[StaleAiRoot] = []
+    ai_names: dict[str, list[Path]] = {}
     for ai_path in sorted(root.rglob("*.ai")):
+        ai_names.setdefault(ai_path.stem.lower(), []).append(ai_path)
         package_roots = resolve_ai_roots(ai_path, package_dir=root)
         if not package_roots:
             stale_ai_roots.append(
@@ -500,6 +503,11 @@ def inspect_package_integrity(package_dir: str | Path) -> PackageIntegrityResult
         for per_path, ai_paths in root_targets.items()
         if len(ai_paths) > 1
     }
+    duplicate_ai_names = {
+        name: paths
+        for name, paths in sorted(ai_names.items())
+        if len(paths) > 1
+    }
 
     return PackageIntegrityResult(
         package_dir=root,
@@ -507,6 +515,7 @@ def inspect_package_integrity(package_dir: str | Path) -> PackageIntegrityResult
         stale_ai_roots=stale_ai_roots,
         unreachable_per_files=unreachable,
         duplicate_root_targets=duplicates,
+        duplicate_ai_names=duplicate_ai_names,
     )
 
 
