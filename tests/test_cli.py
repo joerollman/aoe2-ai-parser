@@ -1030,6 +1030,33 @@ class CliTests(unittest.TestCase):
         self.assertEqual(root_payload["findings"][0]["code"], "unsupported-ai-xs-function")
         self.assertEqual(payload["totals"]["xs_file_count"], 1)
 
+    def test_lint_package_json_groups_xs_script_call_target_findings(self) -> None:
+        with WorkspaceTempDir() as root:
+            (root / "Main.ai").write_text('(load "Main")\n', encoding="utf-8")
+            (root / "Main.per").write_text(
+                """
+(include "debug.xs")
+(defrule
+    (true)
+=>
+    (xs-script-call "needsArg")
+)
+""".strip(),
+                encoding="utf-8",
+            )
+            (root / "debug.xs").write_text("void needsArg(int value = 0) {}\n", encoding="utf-8")
+            buffer = io.StringIO()
+            with redirect_stdout(buffer):
+                code = main(["lint-package", str(root), "--json"])
+
+        self.assertEqual(code, 0)
+        payload = json.loads(buffer.getvalue())
+        root_payload = payload["roots"][0]
+        self.assertEqual(root_payload["severity_counts"], {"warning": 1})
+        self.assertEqual(root_payload["finding_groups"][0]["code"], "xs-script-call-parameterized-function")
+        self.assertEqual(payload["issue_groups"][0]["code"], "xs-script-call-parameterized-function")
+        self.assertEqual(payload["issue_groups"][0]["severity_counts"], {"warning": 1})
+
 
 if __name__ == "__main__":
     unittest.main()
