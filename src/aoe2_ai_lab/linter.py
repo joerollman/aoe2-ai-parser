@@ -221,6 +221,12 @@ COMMON_DEFINED_IDENTIFIER_PREFIXES = (
     "sn-",
     "class-",
 )
+STRATEGIC_NUMBER_COMMAND_HEADS = {
+    "strategic-number",
+    "set-strategic-number",
+    "up-modify-sn",
+    "up-compare-sn",
+}
 
 IDENTIFIER_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_-]*$")
 RAW_LOAD_RE = re.compile(r"^#load\s+")
@@ -954,7 +960,7 @@ def lint_strategic_number_identifier(
     defined_constants: set[str],
 ) -> list[Finding]:
     symbol = first_symbol(expr)
-    if symbol not in {"strategic-number", "set-strategic-number", "up-modify-sn", "up-compare-sn"}:
+    if symbol not in STRATEGIC_NUMBER_COMMAND_HEADS:
         return []
 
     tokens = expression_tokens(expr)
@@ -1106,6 +1112,8 @@ def lint_common_identifier_uses(
         if token in SEARCH_ORDER_VALUES:
             continue
         if token in DUC_ACTION_VALUES:
+            continue
+        if head in STRATEGIC_NUMBER_COMMAND_HEADS and token.startswith("sn-"):
             continue
         if token.startswith(("g:", "s:", "c:")):
             continue

@@ -237,6 +237,7 @@ class LinterTests(unittest.TestCase):
             findings = lint_file(path)
 
         self.assertEqual(findings[0].code, "undefined-strategic-number")
+        self.assertNotIn("undefined-identifier", {finding.code for finding in findings})
 
     def test_allows_defined_strategic_number_constant(self) -> None:
         with TemporaryDirectory() as tmp:

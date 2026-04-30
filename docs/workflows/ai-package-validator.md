@@ -428,6 +428,9 @@ real action instead of a `can-*` fact after `=>`, or adding a missing load file.
   AIRef labels the first `up-compare-sn` argument as `GoalId`, but the command
   compares strategic numbers and its example uses `sn-maximum-town-size`, so the
   validator treats that slot as `SnId`.
+- Unknown strategic numbers in strategic-number command slots report the
+  specific `undefined-strategic-number` diagnostic without also emitting a
+  generic `undefined-identifier` for the same token.
 - Explicit command-specific argument restrictions are reported as
   `command-argument-mismatch`. For example, `up-set-placement-data` does not
   allow `any-*` or `every-*` wildcards in its `PlayerNumber` slot. The same
