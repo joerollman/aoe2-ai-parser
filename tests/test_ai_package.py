@@ -655,6 +655,37 @@ class AiPackageTests(unittest.TestCase):
         self.assertEqual(result.findings[0][0].name, "debug.xs")
         self.assertEqual(result.findings[0][1].code, "unsupported-ai-xs-function")
 
+    def test_package_lint_flags_xs_script_call_to_parameterized_function(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "Main.ai").write_text('(load "main")\n', encoding="utf-8")
+            (root / "main.per").write_text(
+                """
+(defconst max-fn "max")
+(include "debug.xs")
+(defrule
+    (xs-script-call max-fn)
+=>
+    (xs-script-call "helloWorld")
+)
+""".strip(),
+                encoding="utf-8",
+            )
+            (root / "debug.xs").write_text(
+                """
+float max(float a = 0.0, float b = 2.0) { return(a); }
+bool helloWorld() { return(true); }
+""".strip(),
+                encoding="utf-8",
+            )
+
+            result = lint_package_root(find_package_roots(root)[0], profile="default")
+
+        findings = [finding for _, finding in result.findings]
+        self.assertEqual([finding.code for finding in findings], ["xs-script-call-parameterized-function"])
+        self.assertIn("'max'", findings[0].message)
+        self.assertIn("2 parameter", findings[0].message)
+
     def test_package_lint_reports_missing_includes(self) -> None:
         with TemporaryDirectory() as tmp:
             root = Path(tmp)

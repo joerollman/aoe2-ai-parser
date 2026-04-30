@@ -78,6 +78,7 @@ Manual `--suppress-code <code>` can suppress any finding code for one lint run. 
 | `unsafe-set-target-object` | lint | warning | active | explain | `up-set-target-object` reads a search list before retained search evidence proves that list was rebuilt. |
 | `unscoped-duc-target` | lint | warning | active | explain | A DUC target command runs without retained evidence that local target objects exist. |
 | `unsupported-ai-xs-function` | XS lint | error | active | none | An XS function is known to be rejected by the AoE2 DE AI XS parser. |
+| `xs-script-call-parameterized-function` | package lint | warning | active | none | `xs-script-call` targets an included XS function that has one or more parameters. AI scripts can only call zero-parameter XS functions. |
 | `unterminated-defrule` | lint | error | active | none | A new `defrule` starts before the previous one closed. |
 | `unterminated-preprocessor-conditional` | preprocessor | error | active | none | A preprocessor conditional is missing its matching `#end-if`. |
 | `up-build-place-point-coordinate-as-escrow` | lint | warning | active | explain | `up-build place-point` uses the current target point; its third argument is still escrow state, not a coordinate. |

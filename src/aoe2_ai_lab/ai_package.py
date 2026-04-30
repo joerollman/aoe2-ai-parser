@@ -6,6 +6,8 @@ import re
 
 from .linter import Finding, lint_file
 from .parser import (
+    Atom,
+    Expression,
     active_source_lines,
     count_code_parens,
     parse_defconst_token,
@@ -24,6 +26,9 @@ LOAD_RANDOM_ENTRY_RE = re.compile(
     r'(?:(?P<weight>[+-]?\d+|\+[A-Za-z_][A-Za-z0-9_-]*|\+)\s+)?"(?P<include>[^"]+)"'
 )
 MAX_LOAD_NESTING_DEPTH = 10
+XS_FUNCTION_RE = re.compile(
+    r"^\s*(?:void|bool|int|float|string)\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(([^)]*)\)"
+)
 
 
 @dataclass(frozen=True)
@@ -514,6 +519,107 @@ def package_defconst_alias_cycle_findings(
     return findings
 
 
+def strip_xs_line_comment(line: str) -> str:
+    in_string = False
+    escaped = False
+    for index, char in enumerate(line):
+        if escaped:
+            escaped = False
+            continue
+        if char == "\\" and in_string:
+            escaped = True
+            continue
+        if char == '"':
+            in_string = not in_string
+            continue
+        if not in_string and line.startswith("//", index):
+            return line[:index]
+    return line
+
+
+def xs_function_parameter_counts(xs_files: list[Path]) -> dict[str, tuple[int, Path, int]]:
+    functions: dict[str, tuple[int, Path, int]] = {}
+    for xs_file in xs_files:
+        for line_number, raw_line in enumerate(read_script_text(xs_file).splitlines(), start=1):
+            code = strip_xs_line_comment(raw_line)
+            match = XS_FUNCTION_RE.match(code)
+            if not match:
+                continue
+            name = match.group(1)
+            params = match.group(2).strip()
+            count = 0 if not params else len([param for param in params.split(",") if param.strip()])
+            functions.setdefault(name, (count, xs_file, line_number))
+    return functions
+
+
+def quoted_token_value(value: str) -> str | None:
+    if len(value) >= 2 and value.startswith('"') and value.endswith('"'):
+        return value[1:-1].replace(r"\"", '"')
+    return None
+
+
+def xs_script_call_target(expr: Expression, constant_tokens: dict[str, str]) -> str | None:
+    if expr.head != "xs-script-call" or len(expr.args) != 1:
+        return None
+    arg = expr.args[0]
+    if not isinstance(arg, Atom):
+        return None
+    if target := quoted_token_value(arg.value):
+        return target
+    if arg.value in constant_tokens:
+        return quoted_token_value(constant_tokens[arg.value])
+    return None
+
+
+def iter_xs_script_call_exprs(script_path: Path) -> list[Expression]:
+    expressions: list[Expression] = []
+    script = parse_script(script_path)
+
+    def walk(expr: Expression) -> None:
+        if expr.head == "xs-script-call":
+            expressions.append(expr)
+        for arg in expr.args:
+            if isinstance(arg, Expression):
+                walk(arg)
+
+    for rule in script.rules:
+        for expr in (*rule.fact_exprs, *rule.action_exprs):
+            walk(expr)
+    return expressions
+
+
+def package_xs_script_call_findings(
+    files: list[Path],
+    xs_files: list[Path],
+    constant_tokens: dict[str, str],
+) -> list[tuple[Path, Finding]]:
+    xs_functions = xs_function_parameter_counts(xs_files)
+    if not xs_functions:
+        return []
+
+    findings: list[tuple[Path, Finding]] = []
+    for file_path in files:
+        for expr in iter_xs_script_call_exprs(file_path):
+            target = xs_script_call_target(expr, constant_tokens)
+            if target is None or target not in xs_functions:
+                continue
+            parameter_count, xs_file, line_number = xs_functions[target]
+            if parameter_count == 0:
+                continue
+            findings.append(
+                (
+                    file_path,
+                    Finding(
+                        expr.line,
+                        "xs-script-call-parameterized-function",
+                        f"xs-script-call target {target!r} is defined with {parameter_count} parameter(s) in {xs_file.name}:{line_number}; only zero-parameter XS functions can be called",
+                        span=expr.head_span,
+                    ),
+                )
+            )
+    return findings
+
+
 def package_defconst_conflict_findings(
     definitions: dict[str, list[tuple[str, Path, int, str]]],
 ) -> list[tuple[Path, Finding]]:
@@ -645,6 +751,7 @@ def lint_package_root(root: PackageRoot, *, profile: str = "corpus") -> PackageL
                     finding.span,
                 )
             result.findings.append((xs_file, finding))
+    result.findings.extend(package_xs_script_call_findings(files, xs_files, constant_tokens))
     for missing_load in missing:
         result.findings.append(
             (

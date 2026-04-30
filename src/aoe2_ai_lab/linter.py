@@ -49,6 +49,7 @@ WARNING_FINDING_CODES = {
     "unsafe-goal-block",
     "up-can-build-zero-escrow",
     "up-build-place-point-coordinate-as-escrow",
+    "xs-script-call-parameterized-function",
 }
 
 

@@ -263,6 +263,12 @@ Resolved `.xs` files are linted and reported under each root's `xs_files`.
 Missing include targets produce `missing-include-target` errors with candidate
 paths in JSON.
 
+When an included `.xs` file is available locally, package lint also cross-checks
+`xs-script-call` targets against visible XS function signatures. A call to a
+function with one or more parameters is reported as
+`xs-script-call-parameterized-function`, because AI scripts can only call
+zero-parameter XS functions.
+
 ## Package Integrity
 
 `lint-package` also reports package-level integrity:

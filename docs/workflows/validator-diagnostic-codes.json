@@ -409,6 +409,14 @@
       "meaning": "An XS function is known to be rejected by the AoE2 DE AI XS parser."
     },
     {
+      "code": "xs-script-call-parameterized-function",
+      "source": "package lint",
+      "severity": "warning",
+      "corpus": "active",
+      "cursor_action": "none",
+      "meaning": "`xs-script-call` targets an included XS function that has one or more parameters. AI scripts can only call zero-parameter XS functions."
+    },
+    {
       "code": "unterminated-defrule",
       "source": "lint",
       "severity": "error",

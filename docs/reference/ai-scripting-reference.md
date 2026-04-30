@@ -409,6 +409,9 @@ Project note:
   caused an AI XS parse failure, so the project linter blocks it. Prefer
   AI-specific patch notes or in-game validation before using new XS functions in
   AI scripts.
+- `xs-script-call` can only call included XS functions that take no parameters.
+  Package validation reports `xs-script-call-parameterized-function` when a
+  reachable AI script calls an included XS function that has parameters.
 
 ## Escrow Goal Arguments
 
