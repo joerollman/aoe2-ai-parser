@@ -44,6 +44,7 @@ DIAGNOSTIC_REGISTRY_PATH = (
     / "workflows"
     / "validator-diagnostic-codes.json"
 )
+DIAGNOSTIC_REGISTRY_MARKDOWN_PATH = DIAGNOSTIC_REGISTRY_PATH.with_suffix(".md")
 
 
 @dataclass(frozen=True)
@@ -1090,6 +1091,11 @@ def diagnostic_code_explanation(code: str) -> str:
     return diagnostic_code_explanations().get(code, DEFAULT_CATEGORY_EXPLANATION)
 
 
+def diagnostic_code_markdown_link(code: str) -> str:
+    anchor = re.sub(r"[^a-z0-9_-]+", "-", code.lower())
+    return f"[validator-diagnostic-codes.md#diagnostic-{anchor}]({DIAGNOSTIC_REGISTRY_MARKDOWN_PATH.as_posix()}#diagnostic-{anchor})"
+
+
 def diagnostic_registry_entries() -> list[dict[str, object]]:
     if not DIAGNOSTIC_REGISTRY_PATH.exists():
         return []
@@ -1176,6 +1182,7 @@ def package_report_to_markdown(payload: dict[str, object]) -> str:
                 "",
                 f"- Count: `{count}`",
                 f"- Explanation: {diagnostic_code_explanation(code)}",
+                f"- Documentation: {diagnostic_code_markdown_link(code)}",
             ]
         )
         suggestions = sorted({finding.get("suggestion") for finding in findings if finding.get("suggestion")})

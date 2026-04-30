@@ -1038,6 +1038,7 @@ class CliTests(unittest.TestCase):
         self.assertLess(report.index("## Issue Categories"), report.index("## Root Manifest"))
         self.assertIn("### `up-build-place-point-coordinate-as-escrow`", report)
         self.assertIn("third argument is escrow state", report)
+        self.assertIn("validator-diagnostic-codes.md#diagnostic-up-build-place-point-coordinate-as-escrow", report)
         self.assertIn("Warn.per:7", report)
 
     def test_lint_package_root_manifest_reports_skipped_load_random_entries(self) -> None:
