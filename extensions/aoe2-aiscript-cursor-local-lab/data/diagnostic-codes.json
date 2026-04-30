@@ -161,6 +161,14 @@
       "meaning": "A rule has no facts before `=>`."
     },
     {
+      "code": "include-missing-xs-extension",
+      "source": "lint",
+      "severity": "error",
+      "corpus": "active",
+      "cursor_action": "none",
+      "meaning": "An AI `include` directive has a quoted target that does not include the required `.xs` file extension."
+    },
+    {
       "code": "livestock-default-point",
       "source": "lint",
       "severity": "warning",

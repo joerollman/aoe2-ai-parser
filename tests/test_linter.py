@@ -1389,6 +1389,26 @@ class LinterTests(unittest.TestCase):
 
         self.assertEqual(findings[0].code, "malformed-include-directive")
 
+    def test_flags_include_target_without_xs_extension(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.per"
+            path.write_text(
+                """
+(include "debug")
+(defrule
+    (true)
+=>
+    (disable-self)
+)
+""".strip(),
+                encoding="utf-8",
+            )
+
+            findings = lint_file(path)
+
+        self.assertEqual(findings[0].code, "include-missing-xs-extension")
+        self.assertIn(".xs", findings[0].message)
+
     def test_allows_valid_load_and_include_directives(self) -> None:
         with TemporaryDirectory() as tmp:
             path = Path(tmp) / "sample.per"

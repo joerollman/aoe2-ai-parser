@@ -127,6 +127,7 @@ Examples:
 - `defconst-value-out-of-range`: error.
 - `malformed-load-directive`: error.
 - `malformed-include-directive`: error.
+- `include-missing-xs-extension`: error.
 - `malformed-load-random-directive`: error.
 - `load-random-plus-weight-de-behavior`: warning in `default`; suppressed in
   `corpus`.

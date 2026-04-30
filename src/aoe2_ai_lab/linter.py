@@ -1353,12 +1353,23 @@ def lint_malformed_load_directives(path: Path) -> list[Finding]:
                 )
             continue
         if re.match(r"^\s*\(?\s*include\b", code):
-            if not VALID_INCLUDE_RE.match(code):
+            match = VALID_INCLUDE_RE.match(code)
+            if not match:
                 findings.append(
                     Finding(
                         source_line.number,
                         "malformed-include-directive",
                         'include requires one quoted target, for example (include "debug.xs")',
+                        source_line.confidence,
+                    )
+                )
+                continue
+            if Path(match.group(1)).suffix.lower() != ".xs":
+                findings.append(
+                    Finding(
+                        source_line.number,
+                        "include-missing-xs-extension",
+                        'include target should include the .xs file extension, for example (include "debug.xs")',
                         source_line.confidence,
                     )
                 )
