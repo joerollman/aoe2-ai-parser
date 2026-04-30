@@ -1097,6 +1097,28 @@ class LinterTests(unittest.TestCase):
 
         self.assertEqual(findings[0].code, "split-typed-comparison")
 
+    def test_flags_source_line_longer_than_255_characters(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.per"
+            path.write_text(
+                "\n".join(
+                    [
+                        "(defrule",
+                        "    (true)",
+                        "=>",
+                        "    " + "; " + ("x" * 254),
+                        "    (disable-self)",
+                        ")",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            findings = lint_file(path)
+
+        self.assertEqual(findings[0].code, "source-line-too-long")
+        self.assertIn("255", findings[0].message)
+
     def test_flags_missing_closing_parenthesis(self) -> None:
         with TemporaryDirectory() as tmp:
             path = Path(tmp) / "sample.per"

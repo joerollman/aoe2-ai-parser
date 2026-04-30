@@ -66,6 +66,7 @@ Manual `--suppress-code <code>` can suppress any finding code for one lint run. 
 | `repeat-chat` | lint | warning | suppressed | explain | A chat action may repeat every rule pass because the rule is not disabled or guarded. |
 | `rule-too-long` | lint | error | active | none | A rule exceeds DE's 32 element limit for facts/actions/logical operators. |
 | `split-typed-comparison` | lint | error | active | none | A typed comparison was split, such as `< g:` instead of `g:<`. |
+| `source-line-too-long` | lint | error | active | none | A source line exceeds the documented 255-character AI script line limit, including comments. |
 | `stale-ai-root` | integrity | error | active | none | An `.ai` file did not resolve to any root `.per`. |
 | `unbalanced-parentheses` | lint | error | active | none | Parentheses close too early or the file is missing closing parentheses. |
 | `undefined-constant` | lint | warning | active | quick fix | A value after `c:` is not a known built-in, documented value, or reachable `defconst`. |

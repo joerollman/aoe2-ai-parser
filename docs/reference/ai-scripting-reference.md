@@ -161,7 +161,8 @@ Important limits for `sample_ai` work:
 - Defconst values are limited to signed 16-bit integer range
   (`-32768` to `32767`). The validator reports
   `defconst-value-out-of-range` for numeric constants outside this range.
-- Lines are limited to 255 characters, comments included.
+- Lines are limited to 255 characters, comments included. The validator reports
+  `source-line-too-long` for active source lines above this limit.
 - DUC local search list holds up to 240 own-unit IDs.
 - DUC remote search list holds up to 40 target IDs.
 - A script pass above roughly 20 ms can create lag.

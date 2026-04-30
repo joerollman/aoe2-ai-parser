@@ -313,6 +313,14 @@
       "meaning": "A typed comparison was split, such as `< g:` instead of `g:<`."
     },
     {
+      "code": "source-line-too-long",
+      "source": "lint",
+      "severity": "error",
+      "corpus": "active",
+      "cursor_action": "none",
+      "meaning": "A source line exceeds the documented 255-character AI script line limit, including comments."
+    },
+    {
       "code": "stale-ai-root",
       "source": "integrity",
       "severity": "error",

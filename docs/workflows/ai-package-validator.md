@@ -134,6 +134,7 @@ Examples:
 - `load-cycle`: error.
 - `load-depth-exceeded`: error.
 - `command-typed-prefix-mismatch`: error.
+- `source-line-too-long`: error.
 - `command-typed-operand-mismatch`: warning.
 - `command-family-mismatch`: warning.
 - `command-role-mismatch`: error.

@@ -252,6 +252,7 @@ RECOVERABLE_STRUCTURE_CODES = {
 }
 DEFCONST_MIN_VALUE = -32768
 DEFCONST_MAX_VALUE = 32767
+MAX_SOURCE_LINE_LENGTH = 255
 
 
 def _load_builtin_class_entries() -> tuple[set[str], dict[int, set[str]]]:
@@ -1298,6 +1299,22 @@ def lint_malformed_defconst(path: Path) -> list[Finding]:
                     source_line.confidence,
                 )
             )
+    return findings
+
+
+def lint_line_length(path: Path) -> list[Finding]:
+    findings: list[Finding] = []
+    for source_line in active_source_lines(path):
+        if len(source_line.text) <= MAX_SOURCE_LINE_LENGTH:
+            continue
+        findings.append(
+            Finding(
+                source_line.number,
+                "source-line-too-long",
+                f"line has {len(source_line.text)} characters; AI scripts allow at most {MAX_SOURCE_LINE_LENGTH} including comments",
+                source_line.confidence,
+            )
+        )
     return findings
 
 
@@ -2874,6 +2891,7 @@ def lint_file(
         )
         for issue in preprocessor_issues(script_path)
     )
+    pre_parse_findings.extend(with_line_confidence(lint_line_length(script_path)))
     pre_parse_findings.extend(with_line_confidence(lint_malformed_defconst(script_path)))
     pre_parse_findings.extend(with_line_confidence(lint_defconst_numeric_range(script_path)))
     pre_parse_findings.extend(with_line_confidence(lint_malformed_load_directives(script_path)))
