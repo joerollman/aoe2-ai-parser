@@ -600,6 +600,14 @@ def suppress_package_findings(
 
 
 def finding_span(path: Path, finding: Finding) -> dict[str, int] | None:
+    if finding.span is not None:
+        return {
+            "start_line": finding.span.start_line,
+            "start_col": finding.span.start_col,
+            "end_line": finding.span.end_line,
+            "end_col": finding.span.end_col,
+        }
+
     try:
         lines = read_script_text(path).splitlines()
     except OSError:
@@ -782,6 +790,18 @@ def package_result_to_json(
             for path in linted_files
         ],
         "file_count": len(result.files),
+        "constants": [
+            {
+                "name": constant.name,
+                "value": constant.value,
+                "resolved_value": constant.resolved_value,
+                "path": str(constant.path),
+                "line": constant.line,
+                "confidence": constant.confidence,
+            }
+            for constant in result.constants
+        ],
+        "constant_count": len(result.constants),
         "finding_count": len(result.findings),
         "severity_counts": dict(sorted(severity_counts.items())),
         "code_counts": dict(sorted(code_counts.items())),

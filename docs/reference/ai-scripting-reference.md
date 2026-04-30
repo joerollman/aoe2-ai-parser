@@ -556,6 +556,18 @@ Operator prefixes matter:
 When adding linter rules, validate arity and operator/value compatibility
 against command metadata where possible.
 
+Parser-backed diagnostics should attach exact token spans whenever a command
+argument is known. Prefer the parsed expression's command-head span for arity
+and role errors, and the argument atom span for bad parameter values. The CLI
+and editor extension use these spans for precise squiggles and fall back to
+line-text heuristics only when older checks do not provide structured spans.
+
+Direct `UnitId`, `BuildingId`, `ObjectId`, `TechId`, and `ClassId` slots are
+validated against local DE reference inventories when the argument is a literal
+symbol. Numeric IDs, reachable `defconst`s, and dynamic typed sources such as
+`g:`/`s:` operands remain valid because they cannot be resolved statically with
+the same certainty.
+
 ## Logical Operators
 
 Supported logical commands:

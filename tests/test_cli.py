@@ -741,6 +741,11 @@ class CliTests(unittest.TestCase):
         self.assertEqual(root_payload["xs_file_count"], 0)
         self.assertEqual(root_payload["xs_files"], [])
         self.assertEqual(root_payload["missing_includes"], [])
+        self.assertEqual(root_payload["constant_count"], 2)
+        self.assertEqual(
+            {constant["name"]: constant["resolved_value"] for constant in root_payload["constants"]},
+            {"house": 70, "point-x": 100},
+        )
         self.assertEqual(root_payload["severity_counts"], {"warning": 1})
         self.assertEqual(root_payload["code_counts"], {"up-build-place-point-coordinate-as-escrow": 1})
         self.assertEqual(root_payload["confidence_counts"], {"definite": 1})

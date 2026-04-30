@@ -8,6 +8,7 @@ import re
 from .parser import (
     Atom,
     Expression,
+    SourceSpan,
     active_source_lines,
     count_code_parens,
     first_symbol,
@@ -93,6 +94,7 @@ class Finding:
     code: str
     message: str
     confidence: str = "definite"
+    span: SourceSpan | None = None
 
     @property
     def severity(self) -> str:
@@ -129,6 +131,7 @@ def apply_confidence(findings: list[Finding], confidence: str) -> list[Finding]:
             code=finding.code,
             message=finding.message,
             confidence=confidence,
+            span=finding.span,
         )
         for finding in findings
     ]
@@ -230,6 +233,10 @@ FATAL_PRE_PARSE_CODES = {
     "unexpected-preprocessor-end-if",
     "unterminated-defrule",
     "unterminated-preprocessor-conditional",
+}
+RECOVERABLE_STRUCTURE_CODES = {
+    "unbalanced-parentheses",
+    "unterminated-defrule",
 }
 
 
@@ -1661,6 +1668,19 @@ def expression_arg_values(expr: Expression) -> list[str] | None:
     return values
 
 
+def expression_arg_span(expr: Expression, index: int) -> SourceSpan | None:
+    if index < 0 or index >= len(expr.args):
+        return None
+    arg = expr.args[index]
+    if not isinstance(arg, Atom):
+        return None
+    return SourceSpan(arg.line, arg.start_col, arg.line, arg.end_col)
+
+
+def finding_for_arg(expr: Expression, index: int, code: str, message: str) -> Finding:
+    return Finding(expr.line, code, message, span=expression_arg_span(expr, index))
+
+
 def iter_command_expressions(rule: object) -> list[Expression]:
     expressions: list[Expression] = []
 
@@ -1679,6 +1699,16 @@ def iter_command_expressions(rule: object) -> list[Expression]:
 
 def is_known_schema_value(value: str, valid_values: set[str], defined_constants: set[str]) -> bool:
     return value in valid_values or value in defined_constants or is_int_literal(value)
+
+
+def direct_id_values_for_parameter(parameter_name: str) -> set[str] | None:
+    if parameter_name in {"BuildingId", "ObjectId", "UnitId"}:
+        return DOCUMENTED_OBJECT_NAMES | BUILTIN_DYNAMIC_UNIT_IDS | BUILTIN_CLASS_NAMES
+    if parameter_name == "TechId":
+        return DOCUMENTED_TECH_NAMES | BUILTIN_DYNAMIC_TECH_IDS | COMPATIBILITY_TECH_IDS
+    if parameter_name == "ClassId":
+        return BUILTIN_CLASS_NAMES
+    return None
 
 
 def typed_operand_kind(value: str) -> str | None:
@@ -1712,8 +1742,9 @@ def lint_parameter_family_operand(
     actual_kind = typed_operand_kind(value)
     if expected_kind is None or actual_kind is None or expected_kind == actual_kind:
         return None
-    return Finding(
-        expr.line,
+    return finding_for_arg(
+        expr,
+        index,
         "command-family-mismatch",
         f"{expr.head} {parameter_name} argument {index + 1} uses {value!r}, which looks like a {actual_kind}; expected {expected_kind}",
     )
@@ -1773,8 +1804,9 @@ def lint_numeric_range_operand(
     minimum, maximum = numeric_range
     if minimum <= numeric_value <= maximum:
         return None
-    return Finding(
-        expr.line,
+    return finding_for_arg(
+        expr,
+        index,
         "command-numeric-range-mismatch",
         f"{expr.head} {parameter_name} argument {index + 1} uses {value!r}{resolved}; expected {minimum} to {maximum}",
     )
@@ -1804,8 +1836,9 @@ def lint_type_op_operand(
     if actual_kind is None or actual_kind == expected_kind:
         return None
     suggested_prefix = "g:" if actual_kind == "goal" else "s:"
-    return Finding(
-        expr.line,
+    return finding_for_arg(
+        expr,
+        parameter_index + 1,
         "command-typed-operand-mismatch",
         f"{expr.head} argument {parameter_index + 2} uses {operand!r}, which looks like a {actual_kind}, "
         f"but argument {parameter_index + 1} is {operator!r}; use {suggested_prefix} when reading a {actual_kind} value",
@@ -1835,6 +1868,7 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
                     expr.line,
                     "command-arity-mismatch",
                     f"{expr.head} expects {expected_count} arguments, got {len(args)}",
+                    span=expr.head_span,
                 )
             )
             continue
@@ -1848,10 +1882,25 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
             range_finding = lint_numeric_range_operand(expr, args, parameters, parameter, value, index, constant_values)
             if range_finding is not None:
                 findings.append(range_finding)
+            direct_id_values = direct_id_values_for_parameter(parameter_name)
+            if (
+                direct_id_values is not None
+                and not (index > 0 and parameters[index - 1].get("name") in {"typeOp", "mathOp", "compareOp"})
+                and not is_known_schema_value(value, direct_id_values, defined_constants)
+            ):
+                findings.append(
+                    finding_for_arg(
+                        expr,
+                        index,
+                        "command-argument-mismatch",
+                        f"{expr.head} {parameter_name} {value!r} is not documented",
+                    )
+                )
             if parameter_name == "typeOp" and value not in TYPE_OP_VALUES:
                 findings.append(
-                    Finding(
-                        expr.line,
+                    finding_for_arg(
+                        expr,
+                        index,
                         "command-typed-prefix-mismatch",
                         f"{expr.head} argument {index + 1} uses {value!r}; expected a plain typeOp like c:, g:, or s:, not a math/compare operator",
                     )
@@ -2455,6 +2504,7 @@ def lint_command_roles(rule: object) -> list[Finding]:
                         expr.line,
                         "command-role-mismatch",
                         role_mismatch_message(expr.head, command_type, "fact"),
+                        span=expr.head_span,
                     )
                 )
         for arg in expr.args:
@@ -2473,6 +2523,7 @@ def lint_command_roles(rule: object) -> list[Finding]:
                     expr.line,
                     "command-role-mismatch",
                     role_mismatch_message(symbol, command_type, "action"),
+                    span=expr.head_span,
                 )
             )
     return findings
@@ -2583,6 +2634,7 @@ def lint_file(
                 finding.code,
                 finding.message,
                 line_confidence.get(finding.line, finding.confidence),
+                finding.span,
             )
             for finding in raw_findings
         ]
@@ -2609,7 +2661,8 @@ def lint_file(
     pre_parse_findings.extend(with_line_confidence(lint_defconst_alias_cycles(script_path)))
     pre_parse_findings.extend(with_line_confidence(lint_defrule_structure(script_path)))
     pre_parse_findings.extend(with_line_confidence(lint_parenthesis_balance(script_path)))
-    if any(finding.code in FATAL_PRE_PARSE_CODES for finding in pre_parse_findings):
+    fatal_findings = [finding for finding in pre_parse_findings if finding.code in FATAL_PRE_PARSE_CODES]
+    if any(finding.code not in RECOVERABLE_STRUCTURE_CODES for finding in fatal_findings):
         findings.extend(pre_parse_findings)
         return apply_suppressions(findings)
 

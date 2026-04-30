@@ -62,6 +62,16 @@ class LoadReference:
     skipped_reason: str | None = None
 
 
+@dataclass(frozen=True)
+class PackageConstantDefinition:
+    name: str
+    value: str
+    path: Path
+    line: int
+    confidence: str = "definite"
+    resolved_value: int | None = None
+
+
 @dataclass
 class PackageLintResult:
     root: PackageRoot
@@ -71,6 +81,7 @@ class PackageLintResult:
     findings: list[tuple[Path, Finding]] = field(default_factory=list)
     missing_loads: list[MissingLoad] = field(default_factory=list)
     missing_includes: list[MissingInclude] = field(default_factory=list)
+    constants: list[PackageConstantDefinition] = field(default_factory=list)
 
 
 @dataclass(frozen=True)
@@ -542,6 +553,7 @@ def lint_package_root(root: PackageRoot, *, profile: str = "corpus") -> PackageL
     constant_tokens: dict[str, str] = {}
     constant_locations: dict[str, tuple[Path, int, str]] = {}
     constant_definitions: dict[str, list[tuple[str, Path, int, str]]] = {}
+    package_constants: list[PackageConstantDefinition] = []
     for file_path in files:
         script = parse_script(file_path)
         constant_names.update(script.constant_names)
@@ -557,7 +569,26 @@ def lint_package_root(root: PackageRoot, *, profile: str = "corpus") -> PackageL
                 )
     constant_values = resolve_constant_tokens(constant_tokens)
 
-    result = PackageLintResult(root=root, files=files, file_confidence=file_confidence, missing_loads=missing)
+    for name, definitions in sorted(constant_definitions.items()):
+        for value, file_path, line_number, confidence in definitions:
+            package_constants.append(
+                PackageConstantDefinition(
+                    name=name,
+                    value=value,
+                    path=file_path,
+                    line=line_number,
+                    confidence=confidence,
+                    resolved_value=constant_values.get(name),
+                )
+            )
+
+    result = PackageLintResult(
+        root=root,
+        files=files,
+        file_confidence=file_confidence,
+        missing_loads=missing,
+        constants=package_constants,
+    )
     result.findings.extend(graph_findings)
     if profile != "corpus":
         result.findings.extend(package_defconst_conflict_findings(constant_definitions))
@@ -597,6 +628,7 @@ def lint_package_root(root: PackageRoot, *, profile: str = "corpus") -> PackageL
                     finding.code,
                     finding.message,
                     "conditional",
+                    finding.span,
                 )
             result.findings.append((file_path, finding))
     result.xs_files = xs_files
@@ -610,6 +642,7 @@ def lint_package_root(root: PackageRoot, *, profile: str = "corpus") -> PackageL
                     finding.code,
                     finding.message,
                     "conditional",
+                    finding.span,
                 )
             result.findings.append((xs_file, finding))
     for missing_load in missing:

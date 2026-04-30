@@ -337,6 +337,17 @@ Each finding includes:
 - `suggestion`
 - `span`
 
+`span` is 0-based column data with 1-based line numbers:
+
+- `start_line`
+- `start_col`
+- `end_line`
+- `end_col`
+
+Parser-backed command diagnostics prefer exact token spans from the parsed
+expression tree. Older line-scan diagnostics may still use conservative fallback
+spans inferred from the source line.
+
 Top-level `issue_groups` is the preferred agent entry point when triaging a
 package. It combines lint findings and package-integrity issues. Each group
 contains:
@@ -352,9 +363,14 @@ contains:
 Top-level and per-root `finding_groups` contain the lint-only subset of
 `issue_groups`. Keep using `integrity` for complete root-manifest details.
 
-Each root also includes `file_summaries` with per-file confidence, finding
-counts, severity counts, and code counts. Use this to find the relevant file in
-large community packages before reading individual findings.
+Each root also includes:
+
+- `file_summaries` with per-file confidence, finding counts, severity counts,
+  and code counts. Use this to find the relevant file in large community
+  packages before reading individual findings.
+- `constants`, a package symbol table for reachable `defconst` declarations.
+  Each entry includes the name, raw value token, resolved integer value when
+  available, path, line, and preprocessor confidence.
 
 `integrity.root_manifest` lists each `.ai` root, whether it resolved or went
 stale, the resolved `.per` roots, each load entry's source (`load`, `#load`, or
@@ -373,6 +389,11 @@ real action instead of a `can-*` fact after `=>`, or adding a missing load file.
   produced from identifiers that only appear inside chat or string literals.
   Escaped quotes inside those strings are treated as string content by comment
   stripping, parenthesis balancing, expression splitting, and token scans.
+- Recoverable structure errors such as `unterminated-defrule` and
+  `unbalanced-parentheses` are still reported, but the linter continues into
+  later recoverable rules where possible so one broken block does not hide all
+  later semantic diagnostics. `defrule-missing-arrow` remains fatal because the
+  parser cannot safely classify facts and actions without the separator.
   Preprocessor directive scanning also ignores `#load-if-defined`, `#else`, and
   `#end-if` text that appears inside quoted strings.
 - `typeOp` slots accept modern `c:`, `g:`, `s:` and legacy redirect operators

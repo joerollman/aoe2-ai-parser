@@ -1,14 +1,24 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 import re
+
+
+@dataclass(frozen=True)
+class SourceSpan:
+    start_line: int
+    start_col: int
+    end_line: int
+    end_col: int
 
 
 @dataclass(frozen=True)
 class Atom:
     value: str
     line: int
+    start_col: int = field(default=0, compare=False)
+    end_col: int = field(default=0, compare=False)
 
 
 @dataclass(frozen=True)
@@ -17,6 +27,18 @@ class Expression:
     args: tuple[Atom | "Expression", ...]
     line: int
     source: str
+    start_col: int = 0
+    end_col: int = 0
+    head_start_col: int = 0
+    head_end_col: int = 0
+
+    @property
+    def span(self) -> SourceSpan:
+        return SourceSpan(self.line, self.start_col, self.line, self.end_col)
+
+    @property
+    def head_span(self) -> SourceSpan:
+        return SourceSpan(self.line, self.head_start_col, self.line, self.head_end_col)
 
 
 @dataclass(frozen=True)
@@ -441,7 +463,7 @@ def iter_expression_heads(expr: str) -> tuple[str, ...]:
     return tuple(heads)
 
 
-def tokenize_expression(expr: str, line: int) -> tuple[Atom, ...]:
+def tokenize_expression(expr: str, line: int, column_offset: int = 0) -> tuple[Atom, ...]:
     tokens: list[Atom] = []
     index = 0
     while index < len(expr):
@@ -450,7 +472,7 @@ def tokenize_expression(expr: str, line: int) -> tuple[Atom, ...]:
             index += 1
             continue
         if char in "()":
-            tokens.append(Atom(char, line))
+            tokens.append(Atom(char, line, column_offset + index, column_offset + index + 1))
             index += 1
             continue
         if char == '"':
@@ -460,17 +482,17 @@ def tokenize_expression(expr: str, line: int) -> tuple[Atom, ...]:
                 index += 1
             if index < len(expr):
                 index += 1
-            tokens.append(Atom(expr[start:index], line))
+            tokens.append(Atom(expr[start:index], line, column_offset + start, column_offset + index))
             continue
         start = index
         while index < len(expr) and not expr[index].isspace() and expr[index] not in "()":
             index += 1
-        tokens.append(Atom(expr[start:index], line))
+        tokens.append(Atom(expr[start:index], line, column_offset + start, column_offset + index))
     return tuple(tokens)
 
 
-def parse_expression(expr: str, line: int) -> Expression | None:
-    tokens = tokenize_expression(expr, line)
+def parse_expression(expr: str, line: int, column_offset: int = 0) -> Expression | None:
+    tokens = tokenize_expression(expr, line, column_offset)
 
     def parse_at(index: int) -> tuple[Expression | Atom | None, int]:
         if index >= len(tokens):
@@ -479,6 +501,7 @@ def parse_expression(expr: str, line: int) -> Expression | None:
         if token.value != "(":
             return token, index + 1
         start_line = token.line
+        start_col = token.start_col
         index += 1
         if index >= len(tokens):
             return None, index
@@ -494,6 +517,10 @@ def parse_expression(expr: str, line: int) -> Expression | None:
                         args=tuple(args),
                         line=start_line,
                         source=expr,
+                        start_col=start_col,
+                        end_col=current.end_col,
+                        head_start_col=head_token.start_col,
+                        head_end_col=head_token.end_col,
                     ),
                     index + 1,
                 )
@@ -506,6 +533,10 @@ def parse_expression(expr: str, line: int) -> Expression | None:
                 args=tuple(args),
                 line=start_line,
                 source=expr,
+                start_col=start_col,
+                end_col=tokens[index - 1].end_col if index > 0 else start_col,
+                head_start_col=head_token.start_col,
+                head_end_col=head_token.end_col,
             ),
             index,
         )
@@ -516,17 +547,22 @@ def parse_expression(expr: str, line: int) -> Expression | None:
     return None
 
 
-def parse_expressions(exprs: list[str], lines: list[int]) -> tuple[Expression, ...]:
+def parse_expressions(
+    exprs: list[str],
+    lines: list[int],
+    columns: list[int] | None = None,
+) -> tuple[Expression, ...]:
     parsed: list[Expression] = []
-    for expr, line in zip(exprs, lines):
-        expression = parse_expression(expr, line)
+    column_values = columns if columns is not None else [0] * len(exprs)
+    for expr, line, column in zip(exprs, lines, column_values):
+        expression = parse_expression(expr, line, column)
         if expression is not None:
             parsed.append(expression)
     return tuple(parsed)
 
 
-def split_top_level_expressions(code: str) -> tuple[str, ...]:
-    segments: list[str] = []
+def split_top_level_expression_spans(code: str) -> tuple[tuple[str, int], ...]:
+    segments: list[tuple[str, int]] = []
     start = 0
     last_end = 0
     balance = 0
@@ -536,24 +572,30 @@ def split_top_level_expressions(code: str) -> tuple[str, ...]:
             in_string = not in_string
         elif not in_string and char == "(":
             if balance == 0 and code[last_end:index].strip():
-                return (code,)
+                return ((code, 0),)
             if balance == 0:
                 start = index
             balance += 1
         elif not in_string and char == ")":
             balance -= 1
             if balance == 0:
-                segment = code[start:index + 1].strip()
+                raw_segment = code[start:index + 1]
+                segment = raw_segment.strip()
                 if segment:
-                    segments.append(segment)
+                    leading = len(raw_segment) - len(raw_segment.lstrip())
+                    segments.append((segment, start + leading))
                 last_end = index + 1
             if balance < 0:
-                return (code,)
+                return ((code, 0),)
     if balance != 0:
-        return (code,)
+        return ((code, 0),)
     if code[last_end:].strip():
-        return (code,)
-    return tuple(segments) if segments else (code,)
+        return ((code, 0),)
+    return tuple(segments) if segments else ((code, 0),)
+
+
+def split_top_level_expressions(code: str) -> tuple[str, ...]:
+    return tuple(segment for segment, _column in split_top_level_expression_spans(code))
 
 
 def split_rule_arrow(code: str) -> tuple[str, str] | None:
@@ -668,31 +710,47 @@ def parse_script(path: str | Path) -> Script:
     actions: list[str] = []
     fact_lines: list[int] = []
     action_lines: list[int] = []
+    fact_columns: list[int] = []
+    action_columns: list[int] = []
     target = facts
     target_lines = fact_lines
+    target_columns = fact_columns
     rule_balance = 0
     rule_confidence = "definite"
 
-    def append_segments(destination: list[str], destination_lines: list[int], code: str, line_number: int) -> None:
-        for segment in split_top_level_expressions(code):
+    def append_segments(
+        destination: list[str],
+        destination_lines: list[int],
+        destination_columns: list[int],
+        code: str,
+        line_number: int,
+        column_offset: int,
+    ) -> None:
+        for segment, segment_column in split_top_level_expression_spans(code):
             destination.append(segment)
             destination_lines.append(line_number)
+            destination_columns.append(column_offset + segment_column)
 
-    def record_rule_code(code: str, line_number: int) -> None:
-        nonlocal target, target_lines
+    def record_rule_code(code: str, line_number: int, column_offset: int = 0) -> None:
+        nonlocal target, target_lines, target_columns
         arrow_split = split_rule_arrow(code)
         if arrow_split is not None:
             before_arrow, after_arrow = arrow_split
-            before_arrow = before_arrow.strip()
-            after_arrow = after_arrow.strip()
+            before_raw = before_arrow
+            after_raw = after_arrow
+            before_arrow = before_raw.strip()
+            after_arrow = after_raw.strip()
             if before_arrow:
-                append_segments(target, target_lines, before_arrow, line_number)
+                before_offset = column_offset + len(before_raw) - len(before_raw.lstrip())
+                append_segments(target, target_lines, target_columns, before_arrow, line_number, before_offset)
             target = actions
             target_lines = action_lines
+            target_columns = action_columns
             if after_arrow:
-                append_segments(target, target_lines, after_arrow, line_number)
+                after_offset = column_offset + len(before_raw) + 2 + len(after_raw) - len(after_raw.lstrip())
+                append_segments(target, target_lines, target_columns, after_arrow, line_number, after_offset)
         elif code:
-            append_segments(target, target_lines, code, line_number)
+            append_segments(target, target_lines, target_columns, code, line_number, column_offset)
 
     def finish_rule(end_line: int) -> None:
         nonlocal in_rule, rule_balance
@@ -704,8 +762,8 @@ def parse_script(path: str | Path) -> Script:
                 actions=tuple(actions),
                 fact_lines=tuple(fact_lines),
                 action_lines=tuple(action_lines),
-                fact_exprs=parse_expressions(facts, fact_lines),
-                action_exprs=parse_expressions(actions, action_lines),
+                fact_exprs=parse_expressions(facts, fact_lines, fact_columns),
+                action_exprs=parse_expressions(actions, action_lines, action_columns),
                 confidence=rule_confidence,
             )
         )
@@ -737,15 +795,20 @@ def parse_script(path: str | Path) -> Script:
             actions = []
             fact_lines = []
             action_lines = []
+            fact_columns = []
+            action_columns = []
             target = facts
             target_lines = fact_lines
+            target_columns = fact_columns
             rule_confidence = source_line.confidence
             if code == "(defrule":
                 continue
             inline_payload = code.removeprefix("(defrule").strip()
+            inline_payload_offset = raw_line.find(inline_payload) if inline_payload else 0
             closes_rule = rule_balance == 0
             line_to_record = remove_last_code_closing_paren(inline_payload).strip() if closes_rule else inline_payload
-            record_rule_code(line_to_record, index)
+            line_to_record_offset = raw_line.find(line_to_record, inline_payload_offset) if line_to_record else inline_payload_offset
+            record_rule_code(line_to_record, index, max(line_to_record_offset, 0))
             if closes_rule:
                 finish_rule(index)
             continue
@@ -757,8 +820,9 @@ def parse_script(path: str | Path) -> Script:
         closes_rule = next_rule_balance == 0
 
         line_to_record = remove_last_code_closing_paren(code).strip() if closes_rule else code
+        line_to_record_offset = raw_line.find(line_to_record) if line_to_record else 0
 
-        record_rule_code(line_to_record, index)
+        record_rule_code(line_to_record, index, max(line_to_record_offset, 0))
 
         rule_balance = next_rule_balance
         if closes_rule:
@@ -767,15 +831,15 @@ def parse_script(path: str | Path) -> Script:
 
     if in_rule:
         rules.append(
-                Rule(
-                    start_line=start_line,
-                    end_line=last_line_number,
-                    facts=tuple(facts),
-                    actions=tuple(actions),
+            Rule(
+                start_line=start_line,
+                end_line=last_line_number,
+                facts=tuple(facts),
+                actions=tuple(actions),
                 fact_lines=tuple(fact_lines),
                 action_lines=tuple(action_lines),
-                fact_exprs=parse_expressions(facts, fact_lines),
-                action_exprs=parse_expressions(actions, action_lines),
+                fact_exprs=parse_expressions(facts, fact_lines, fact_columns),
+                action_exprs=parse_expressions(actions, action_lines, action_columns),
                 confidence=rule_confidence,
             )
         )

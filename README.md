@@ -99,6 +99,8 @@ python -m aoe2_ai_lab search-registry garrison
 - `issue_groups`: grouped errors, warnings, and info findings with explanations
   and examples
 - `roots`: each `.ai` root and the reachable `.per` files loaded by it
+- `roots[].constants`: package-level `defconst` symbol table with raw and
+  resolved values where available
 - `integrity`: package-level issues such as stale `.ai` roots, duplicate root
   targets, and unreachable `.per` files
 
@@ -110,6 +112,10 @@ Severity means:
 
 The validator is conservative. Treat warnings as review prompts unless the
 category explanation or project policy says otherwise.
+
+JSON findings include token spans when available. The editor extension uses
+those spans for precise squiggles and falls back to line heuristics for older
+diagnostic categories.
 
 ## Layout
 

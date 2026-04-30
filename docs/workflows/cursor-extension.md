@@ -170,7 +170,9 @@ For `.per` files:
 - Show visible severity in messages, for example
   `[warning] repeat-chat: ...`.
 - Prefer structured `span` data from `lint --json` and `lint-package --json`
-  for token-level squiggles.
+  for token-level squiggles. Parser-backed command diagnostics now provide
+  exact command-head or argument spans when the linter can identify the bad
+  token.
 - Fall back to local range heuristics when a finding has no structured span:
   quoted identifiers, chat commands, or the command token.
 

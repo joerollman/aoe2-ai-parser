@@ -346,6 +346,35 @@ class ParserTests(unittest.TestCase):
         assert isinstance(first_child, Expression)
         self.assertEqual(first_child.head, "taunt-detected")
         self.assertEqual(first_child.args[0], Atom("any-ally", 12))
+        self.assertEqual(expr.start_col, 0)
+        self.assertEqual(expr.head_start_col, 1)
+        self.assertEqual(expr.head_end_col, 3)
+        self.assertEqual(first_child.start_col, 4)
+        self.assertEqual(first_child.head_start_col, 5)
+        assert isinstance(first_child.args[0], Atom)
+        self.assertEqual(first_child.args[0].start_col, 20)
+        self.assertEqual(first_child.args[0].end_col, 28)
+
+    def test_parses_rule_expression_columns(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.per"
+            path.write_text(
+                """
+(defrule
+    (true) (game-time > 5)
+=>
+    (set-goal goal-opening 2) (disable-self)
+)
+""".strip(),
+                encoding="utf-8",
+            )
+
+            script = parse_script(path)
+
+        self.assertEqual([expr.head for expr in script.rules[0].fact_exprs], ["true", "game-time"])
+        self.assertEqual([expr.start_col for expr in script.rules[0].fact_exprs], [4, 11])
+        self.assertEqual([expr.head for expr in script.rules[0].action_exprs], ["set-goal", "disable-self"])
+        self.assertEqual([expr.start_col for expr in script.rules[0].action_exprs], [4, 30])
 
     def test_preprocessor_excludes_known_inactive_branch(self) -> None:
         with TemporaryDirectory() as tmp:

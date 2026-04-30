@@ -324,6 +324,27 @@ class AiPackageTests(unittest.TestCase):
         self.assertEqual(result.missing_loads, [])
         self.assertEqual([finding.code for _, finding in result.findings], ["duplicate-defconst-conflict"])
 
+    def test_package_lint_exposes_package_constant_symbol_table(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "Main.ai").write_text('(load "main")\n', encoding="utf-8")
+            (root / "main.per").write_text(
+                """
+(load "constants")
+(defconst gl-state gl-open)
+""".strip(),
+                encoding="utf-8",
+            )
+            (root / "constants.per").write_text("(defconst gl-open 7)\n", encoding="utf-8")
+
+            result = lint_package_root(find_package_roots(root)[0], profile="default")
+
+        by_name = {constant.name: constant for constant in result.constants}
+        self.assertEqual(by_name["gl-open"].value, "7")
+        self.assertEqual(by_name["gl-open"].resolved_value, 7)
+        self.assertEqual(by_name["gl-state"].value, "gl-open")
+        self.assertEqual(by_name["gl-state"].resolved_value, 7)
+
     def test_package_lint_does_not_duplicate_file_local_defconst_conflict(self) -> None:
         with TemporaryDirectory() as tmp:
             root = Path(tmp)

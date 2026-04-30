@@ -140,6 +140,44 @@ class LinterTests(unittest.TestCase):
 
         self.assertEqual(findings, [])
 
+    def test_flags_unknown_direct_unit_identifier(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.per"
+            path.write_text(
+                """
+(defrule
+    (true)
+=>
+    (train not-a-real-unit)
+)
+""".strip(),
+                encoding="utf-8",
+            )
+
+            findings = lint_file(path)
+
+        self.assertEqual(findings[0].code, "command-argument-mismatch")
+        self.assertIn("UnitId", findings[0].message)
+
+    def test_allows_defined_direct_unit_identifier(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.per"
+            path.write_text(
+                """
+(defconst custom-unit 12345)
+(defrule
+    (true)
+=>
+    (train custom-unit)
+)
+""".strip(),
+                encoding="utf-8",
+            )
+
+            findings = lint_file(path)
+
+        self.assertEqual(findings, [])
+
     def test_allows_dynamic_and_compatibility_tech_ids_without_defconst(self) -> None:
         with TemporaryDirectory() as tmp:
             path = Path(tmp) / "sample.per"
@@ -1117,6 +1155,31 @@ class LinterTests(unittest.TestCase):
             findings = lint_file(path)
 
         self.assertEqual(findings[0].code, "unterminated-defrule")
+
+    def test_linter_recovers_after_unterminated_defrule(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.per"
+            path.write_text(
+                """
+(defrule
+    (true)
+=>
+    (do-nothing)
+
+(defrule
+    (up-get-point position-self gl-point extra-token)
+=>
+    (disable-self)
+)
+""".strip(),
+                encoding="utf-8",
+            )
+
+            findings = lint_file(path)
+
+        self.assertIn("unterminated-defrule", [finding.code for finding in findings])
+        self.assertIn("unbalanced-parentheses", [finding.code for finding in findings])
+        self.assertIn("command-arity-mismatch", [finding.code for finding in findings])
 
     def test_reports_multiple_defrule_structure_errors(self) -> None:
         with TemporaryDirectory() as tmp:
