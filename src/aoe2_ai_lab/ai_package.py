@@ -733,6 +733,67 @@ def package_duplicate_include_findings(
     return findings
 
 
+def package_duplicate_per_load_findings(
+    file_path: Path,
+    loads: list[LoadReference],
+    *,
+    file_confidence: str,
+) -> list[tuple[Path, Finding]]:
+    findings: list[tuple[Path, Finding]] = []
+    first_by_target: dict[Path, LoadReference] = {}
+    for reference in loads:
+        if reference.target is None or reference.skipped_reason is not None:
+            continue
+        resolved_target = reference.target.resolve()
+        if resolved_target not in first_by_target:
+            first_by_target[resolved_target] = reference
+            continue
+        first_reference = first_by_target[resolved_target]
+        findings.append(
+            (
+                file_path,
+                Finding(
+                    reference.line,
+                    "duplicate-per-load-target",
+                    f"load target {reference.include!r} resolves to the same .per file as {first_reference.include!r} on line {first_reference.line}",
+                    merge_confidence(file_confidence, reference.confidence),
+                ),
+            )
+        )
+    return findings
+
+
+def package_load_after_include_findings(
+    file_path: Path,
+    loads: list[LoadReference],
+    includes: list[tuple[int, str, Path | None, str, tuple[Path, ...]]],
+    *,
+    file_confidence: str,
+) -> list[tuple[Path, Finding]]:
+    if not includes:
+        return []
+    first_include_line, first_include, _target, include_confidence, _candidates = min(
+        includes,
+        key=lambda item: item[0],
+    )
+    findings: list[tuple[Path, Finding]] = []
+    for reference in loads:
+        if reference.line <= first_include_line:
+            continue
+        findings.append(
+            (
+                file_path,
+                Finding(
+                    reference.line,
+                    "load-after-include",
+                    f"{reference.source} target {reference.include!r} appears after include {first_include!r} on line {first_include_line}; keep load/load-random directives before include directives",
+                    merge_confidence(file_confidence, merge_confidence(reference.confidence, include_confidence)),
+                ),
+            )
+        )
+    return findings
+
+
 def package_defconst_conflict_findings(
     definitions: dict[str, list[tuple[str, Path, int, str]]],
 ) -> list[tuple[Path, Finding]]:
@@ -816,8 +877,20 @@ def lint_package_root(root: PackageRoot, *, profile: str = "corpus") -> PackageL
             file_path,
             package_root=root.package_dir,
         )
+        loads = find_load_references(file_path, package_root=root.package_dir)
         result.findings.extend(
             package_duplicate_include_findings(file_path, includes, file_confidence=file_level_confidence)
+        )
+        result.findings.extend(
+            package_duplicate_per_load_findings(file_path, loads, file_confidence=file_level_confidence)
+        )
+        result.findings.extend(
+            package_load_after_include_findings(
+                file_path,
+                loads,
+                includes,
+                file_confidence=file_level_confidence,
+            )
         )
         for line_number, include, target, include_confidence, candidates in includes:
             child_confidence = merge_confidence(file_level_confidence, include_confidence)

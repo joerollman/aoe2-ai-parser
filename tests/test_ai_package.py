@@ -812,6 +812,47 @@ bool helloWorld() { return(true); }
         self.assertEqual(findings[0].line, 2)
         self.assertEqual(findings[0].severity, "warning")
 
+    def test_package_lint_reports_load_after_include(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "Main.ai").write_text('(load "main")\n', encoding="utf-8")
+            (root / "main.per").write_text(
+                """
+(include "debug.xs")
+(load "shared")
+""".strip(),
+                encoding="utf-8",
+            )
+            (root / "debug.xs").write_text("void debug() {}\n", encoding="utf-8")
+            (root / "shared.per").write_text("(defconst shared 1)\n", encoding="utf-8")
+
+            result = lint_package_root(find_package_roots(root)[0], profile="default")
+
+        findings = [finding for _, finding in result.findings]
+        self.assertEqual([finding.code for finding in findings], ["load-after-include"])
+        self.assertEqual(findings[0].line, 2)
+        self.assertEqual(findings[0].severity, "warning")
+
+    def test_package_lint_reports_duplicate_per_load_targets(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "Main.ai").write_text('(load "main")\n', encoding="utf-8")
+            (root / "main.per").write_text(
+                """
+(load "shared")
+(load "shared")
+""".strip(),
+                encoding="utf-8",
+            )
+            (root / "shared.per").write_text("(defconst shared 1)\n", encoding="utf-8")
+
+            result = lint_package_root(find_package_roots(root)[0], profile="default")
+
+        findings = [finding for _, finding in result.findings]
+        self.assertEqual([finding.code for finding in findings], ["duplicate-per-load-target"])
+        self.assertEqual(findings[0].line, 2)
+        self.assertEqual(findings[0].severity, "warning")
+
 
 if __name__ == "__main__":
     unittest.main()

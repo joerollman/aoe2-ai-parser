@@ -161,6 +161,14 @@
       "meaning": "One reachable `.per` file includes the same resolved `.xs` file more than once. This may be intentional when relying on top-level XS side effects, but is usually redundant."
     },
     {
+      "code": "duplicate-per-load-target",
+      "source": "package lint",
+      "severity": "warning",
+      "corpus": "active",
+      "cursor_action": "none",
+      "meaning": "One reachable `.per` file loads the same resolved `.per` file more than once. This may be intentional, but usually indicates a redundant or mistaken load directive."
+    },
+    {
       "code": "duplicate-per-name",
       "source": "integrity",
       "severity": "warning",
@@ -287,6 +295,14 @@
       "corpus": "suppressed",
       "cursor_action": "none",
       "meaning": "A `load-random` entry uses a `+` weight form. AIRef documents this as UserPatch syntax and notes uncertain or bugged DE behavior."
+    },
+    {
+      "code": "load-after-include",
+      "source": "package lint",
+      "severity": "warning",
+      "corpus": "active",
+      "cursor_action": "none",
+      "meaning": "A reachable `.per` file has a `load` or `load-random` directive after an `include` directive. AIRef documents that load directives should be placed before include directives."
     },
     {
       "code": "missing-include-target",

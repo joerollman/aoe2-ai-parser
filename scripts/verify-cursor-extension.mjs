@@ -238,7 +238,7 @@ for (const needle of [
   "function codeActionsForDiagnostic",
   "function explanationCodeAction",
   "labDiagnosticExplanations().get(code)",
-  "title: \"Explain \" + code + \": \" + explanation",
+  "title: \"Open diagnostic docs for \" + code + \": \" + explanation",
   "aoe2AiScript.openDiagnosticDocsPreview",
   "function closestRegistryLabels",
   "function closestRegistryLabelsByFamilies",

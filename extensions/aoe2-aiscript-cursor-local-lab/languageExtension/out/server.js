@@ -1263,7 +1263,7 @@ function explanationCodeAction(code, diagnostic) {
         return undefined;
     }
     return {
-        title: "Explain " + code + ": " + explanation,
+        title: "Open diagnostic docs for " + code + ": " + explanation,
         kind: "quickfix",
         diagnostics: diagnostic ? [diagnostic] : [],
         command: {

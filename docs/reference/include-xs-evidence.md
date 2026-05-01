@@ -27,6 +27,10 @@ reported as `missing-include-target` errors. Repeated includes that resolve to
 the same `.xs` file within one `.per` file are reported as
 `duplicate-include-target` warnings.
 
+Package lint also reports `load-after-include` when a reachable `.per` has a
+`load` or `load-random` directive after the first `include`. Keep all loads
+before includes.
+
 When an included XS file is visible locally, package lint parses simple XS
 function declarations and reports `xs-script-call-parameterized-function` when
 AI script calls a function that has one or more parameters.

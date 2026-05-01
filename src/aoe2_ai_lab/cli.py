@@ -22,7 +22,7 @@ from .airef_scraper import (
     scrape_xs_constants,
     scrape_xs_functions,
 )
-from .ai_package import find_load_references, inspect_package_integrity, lint_package_root
+from .ai_package import find_include_targets, find_load_references, inspect_package_integrity, lint_package_root
 from .assembler import assemble_per
 from .binary_strings import scan_strings, write_filtered_strings, write_userpatch_sections
 from .generator import (
@@ -805,6 +805,7 @@ def package_result_to_json(
             for path in linted_files
         ],
         "file_count": len(result.files),
+        "load_graph": package_load_graph_to_json(result),
         "constants": [
             {
                 "name": constant.name,
@@ -848,6 +849,46 @@ def package_result_to_json(
         "findings": finding_payloads,
         "finding_groups": finding_groups_to_json(finding_payloads),
     }
+
+
+def package_load_graph_to_json(result: object) -> list[dict[str, object]]:
+    package_root = result.root.package_dir
+    graph: list[dict[str, object]] = []
+    for file_path in result.files:
+        load_entries = [
+            {
+                "line": reference.line,
+                "include": reference.include,
+                "source": reference.source,
+                "confidence": reference.confidence,
+                "status": "skipped" if reference.skipped_reason is not None else "resolved" if reference.target is not None else "unresolved",
+                "skipped_reason": reference.skipped_reason,
+                "resolved_path": str(reference.target) if reference.target is not None else None,
+            }
+            for reference in find_load_references(file_path, package_root=package_root)
+        ]
+        include_entries = [
+            {
+                "line": line,
+                "include": include,
+                "confidence": confidence,
+                "status": "resolved" if target is not None else "unresolved",
+                "resolved_path": str(target) if target is not None else None,
+            }
+            for line, include, target, confidence, _candidates in find_include_targets(
+                file_path,
+                package_root=package_root,
+            )
+        ]
+        graph.append(
+            {
+                "path": str(file_path),
+                "confidence": result.file_confidence.get(file_path.resolve(), "definite"),
+                "loads": load_entries,
+                "includes": include_entries,
+            }
+        )
+    return graph
 
 
 def package_integrity_to_json(integrity: object) -> dict[str, object]:
@@ -1295,16 +1336,42 @@ def package_report_to_markdown(payload: dict[str, object]) -> str:
     all_codes = sorted(set(findings_by_code) | {code for code, items in integrity_categories.items() if items})
     if not all_codes:
         lines.append("No lint or package-integrity issues were reported.")
-        return "\n".join(lines) + "\n"
+    else:
+        for code in all_codes:
+            findings = findings_by_code.get(code, [])
+            integrity_items = integrity_categories.get(code, [])
+            count = len(findings) if findings else len(integrity_items)
+            unique_count = count
+            if findings:
+                unique_count = len(
+                    {
+                        (
+                            finding["path"],
+                            finding["line"],
+                            finding["severity"],
+                            finding["confidence"],
+                            finding["message"],
+                        )
+                        for finding in findings
+                    }
+                )
+            lines.extend(
+                [
+                    f"### `{code}`",
+                    "",
+                    f"- Count: `{count}`",
+                    f"- Unique occurrences: `{unique_count}`",
+                    f"- Explanation: {diagnostic_code_explanation(code)}",
+                    f"- Documentation: {diagnostic_code_markdown_link(code)}",
+                ]
+            )
+            suggestions = sorted({finding.get("suggestion") for finding in findings if finding.get("suggestion")})
+            if suggestions:
+                lines.append(f"- Suggestion: {suggestions[0]}")
+            lines.extend(["", "Occurrences:", ""])
 
-    for code in all_codes:
-        findings = findings_by_code.get(code, [])
-        integrity_items = integrity_categories.get(code, [])
-        count = len(findings) if findings else len(integrity_items)
-        unique_count = count
-        if findings:
-            unique_count = len(
-                {
+            if findings:
+                occurrence_counts = Counter(
                     (
                         finding["path"],
                         finding["line"],
@@ -1313,56 +1380,29 @@ def package_report_to_markdown(payload: dict[str, object]) -> str:
                         finding["message"],
                     )
                     for finding in findings
-                }
-            )
-        lines.extend(
-            [
-                f"### `{code}`",
-                "",
-                f"- Count: `{count}`",
-                f"- Unique occurrences: `{unique_count}`",
-                f"- Explanation: {diagnostic_code_explanation(code)}",
-                f"- Documentation: {diagnostic_code_markdown_link(code)}",
-            ]
-        )
-        suggestions = sorted({finding.get("suggestion") for finding in findings if finding.get("suggestion")})
-        if suggestions:
-            lines.append(f"- Suggestion: {suggestions[0]}")
-        lines.extend(["", "Occurrences:", ""])
-
-        if findings:
-            occurrence_counts = Counter(
-                (
-                    finding["path"],
-                    finding["line"],
-                    finding["severity"],
-                    finding["confidence"],
-                    finding["message"],
                 )
-                for finding in findings
-            )
-            for (path, line, severity, confidence, message), occurrence_count in sorted(occurrence_counts.items()):
-                repeat = f" x{occurrence_count}" if occurrence_count > 1 else ""
-                lines.append(f"- `{path}:{line}` `{severity}` `{confidence}`{repeat}: {message}")
-        elif code == "stale-ai-root":
-            for item in integrity_items:
-                lines.append(f"- `{item['ai_path']}`: {item['message']}")
-        elif code == "unreachable-per-file":
-            for path in integrity_items:
-                lines.append(f"- `{path}`")
-        elif code == "duplicate-root-target":
-            for item in integrity_items:
-                lines.append(f"- `{item['per_path']}` referenced by `{', '.join(item['ai_paths'])}`")
-        elif code == "duplicate-ai-name":
-            for item in integrity_items:
-                lines.append(f"- `{item['name']}` used by `{', '.join(item['ai_paths'])}`")
-        elif code == "duplicate-per-name":
-            for item in integrity_items:
-                lines.append(f"- `{item['name']}` used by `{', '.join(item['per_paths'])}`")
-        elif code == "duplicate-load-target":
-            for item in integrity_items:
-                lines.append(f"- `{item['ai_path']}` loads `{item['target_path']}` more than once")
-        lines.append("")
+                for (path, line, severity, confidence, message), occurrence_count in sorted(occurrence_counts.items()):
+                    repeat = f" x{occurrence_count}" if occurrence_count > 1 else ""
+                    lines.append(f"- `{path}:{line}` `{severity}` `{confidence}`{repeat}: {message}")
+            elif code == "stale-ai-root":
+                for item in integrity_items:
+                    lines.append(f"- `{item['ai_path']}`: {item['message']}")
+            elif code == "unreachable-per-file":
+                for path in integrity_items:
+                    lines.append(f"- `{path}`")
+            elif code == "duplicate-root-target":
+                for item in integrity_items:
+                    lines.append(f"- `{item['per_path']}` referenced by `{', '.join(item['ai_paths'])}`")
+            elif code == "duplicate-ai-name":
+                for item in integrity_items:
+                    lines.append(f"- `{item['name']}` used by `{', '.join(item['ai_paths'])}`")
+            elif code == "duplicate-per-name":
+                for item in integrity_items:
+                    lines.append(f"- `{item['name']}` used by `{', '.join(item['per_paths'])}`")
+            elif code == "duplicate-load-target":
+                for item in integrity_items:
+                    lines.append(f"- `{item['ai_path']}` loads `{item['target_path']}` more than once")
+            lines.append("")
 
     lines.extend(["## Root Manifest", ""])
 
@@ -1377,6 +1417,24 @@ def package_report_to_markdown(payload: dict[str, object]) -> str:
             line = load_entry.get("line")
             suffix = f", reason: `{load_entry['skipped_reason']}`" if load_entry.get("skipped_reason") else ""
             lines.append(f"  - {source} line {line}: `{include}` -> `{status}`{suffix}")
+
+    lines.extend(["", "## Load And Include Graph", ""])
+
+    for root_payload in payload["roots"]:
+        lines.append(f"### `{root_payload['per_path']}`")
+        lines.append("")
+        for graph_entry in root_payload["load_graph"]:
+            lines.append(f"- `{graph_entry['path']}` `{graph_entry['confidence']}`")
+            for load_entry in graph_entry["loads"]:
+                suffix = f", reason: `{load_entry['skipped_reason']}`" if load_entry.get("skipped_reason") else ""
+                lines.append(
+                    f"  - {load_entry['source']} line {load_entry['line']}: `{load_entry['include']}` -> `{load_entry['status']}`{suffix}"
+                )
+            for include_entry in graph_entry["includes"]:
+                lines.append(
+                    f"  - include line {include_entry['line']}: `{include_entry['include']}` -> `{include_entry['status']}`"
+                )
+        lines.append("")
 
     return "\n".join(lines) + "\n"
 

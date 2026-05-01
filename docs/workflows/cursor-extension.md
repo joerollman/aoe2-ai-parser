@@ -335,6 +335,13 @@ anchors remain in the body for definition navigation and hover-preview links,
 but the visible TOC should link to broad groups such as commands, strategic
 numbers, objects, techs, and values.
 
+## Feedback-Gated Work
+
+The extension should avoid adding new strict semantic warnings without user
+feedback or direct documentation evidence. In particular, strategic-number
+behavior warnings, legacy AI style warnings, and severity upgrades should wait
+until real packages show whether the finding is useful or noisy.
+
 Use `AoE2: Open Symbol Docs Preview` on a symbol to open the same local symbol
 entry in Markdown Preview to the side. This is implemented as a client command
 because editor definition navigation itself opens source locations, not rendered

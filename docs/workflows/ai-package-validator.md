@@ -295,6 +295,17 @@ function with one or more parameters is reported as
 `xs-script-call-parameterized-function`, because AI scripts can only call
 zero-parameter XS functions.
 
+Package lint also reports `load-after-include` when a reachable `.per` places a
+`load` or `load-random` directive after an `include`. AIRef documents that
+`load` and `load-random` directives should be kept before `include` directives.
+
+## Load Graph
+
+Each root payload includes a `load_graph` array. It lists every reachable `.per`
+file, its resolved load/load-random edges, and its include edges to `.xs` files.
+Use this when reviewing package structure before drilling into individual
+findings.
+
 ## Package Integrity
 
 `lint-package` also reports package-level integrity:

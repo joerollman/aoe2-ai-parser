@@ -228,7 +228,7 @@ class CursorExtensionTests(unittest.TestCase):
         self.assertIn("function codeActionsForDiagnostic", server_source)
         self.assertIn("function explanationCodeAction", server_source)
         self.assertIn("labDiagnosticExplanations().get(code)", server_source)
-        self.assertIn('title: "Explain " + code + ": " + explanation', server_source)
+        self.assertIn('title: "Open diagnostic docs for " + code + ": " + explanation', server_source)
         self.assertIn("function closestRegistryLabels", server_source)
         self.assertIn("function closestRegistryLabelsByFamilies", server_source)
         self.assertIn("function diagnosticReplacementFamilies", server_source)

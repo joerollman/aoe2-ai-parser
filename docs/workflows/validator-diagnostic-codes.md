@@ -47,6 +47,7 @@ Manual `--suppress-code <code>` can suppress any finding code for one lint run. 
 | `duplicate-ai-name` | integrity | warning | active | none | Multiple `.ai` files have the same case-insensitive display name. This can confuse package users and launcher/editor selection. |
 | `duplicate-load-target` | integrity | warning | active | none | One `.ai` file loads the same resolved `.per` root more than once. This may be intentional, but it usually indicates a redundant or mistaken package manifest entry. |
 | `duplicate-include-target` | package lint | warning | active | none | One reachable `.per` file includes the same resolved `.xs` file more than once. This may be intentional when relying on top-level XS side effects, but is usually redundant. |
+| `duplicate-per-load-target` | package lint | warning | active | none | One reachable `.per` file loads the same resolved `.per` file more than once. This may be intentional, but usually indicates a redundant or mistaken load directive. |
 | `duplicate-per-name` | integrity | warning | active | none | Multiple `.per` files have the same case-insensitive basename. This is legal in subfolders, but it can confuse package review, load-target completion, and human navigation. |
 | `duplicate-defconst-conflict` | lint | warning | suppressed | none | A definitely active file assigns two different parsed values to the same `defconst` name. |
 | `empty-action` | lint | error | active | none | A rule has no actions after `=>`. |
@@ -63,6 +64,7 @@ Manual `--suppress-code <code>` can suppress any finding code for one lint run. 
 | `malformed-load-directive` | lint | error | active | none | A `load` or `#load` directive is structurally invalid, usually because its target is not quoted. |
 | `malformed-load-random-directive` | lint | error | active | none | A `load-random` directive has a structurally invalid entry. Entries should be an optional weight followed by a quoted target. |
 | `load-random-plus-weight-de-behavior` | lint | warning | suppressed | none | A `load-random` entry uses a `+` weight form. AIRef documents this as UserPatch syntax and notes uncertain or bugged DE behavior. |
+| `load-after-include` | package lint | warning | active | none | A reachable `.per` file has a `load` or `load-random` directive after an `include` directive. AIRef documents that load directives should be placed before include directives. |
 | `missing-include-target` | package lint | error | active | none | An `(include "...")` target could not be resolved. |
 | `missing-load-target` | package lint | error | active | quick fix, explain | A `(load "...")` or `#load` target could not be resolved. |
 | `raw-load-in-per` | lint | error | active | none | A raw `#load` directive appears in an installed `.per`; assemble components before install. |
@@ -262,6 +264,16 @@ Manual `--suppress-code <code>` can suppress any finding code for one lint run. 
 - Cursor action: none
 - Meaning: One reachable `.per` file includes the same resolved `.xs` file more than once. This may be intentional when relying on top-level XS side effects, but is usually redundant.
 
+<a id="diagnostic-duplicate-per-load-target"></a>
+
+### `duplicate-per-load-target`
+
+- Source: package lint
+- Default severity: warning
+- Corpus profile: active
+- Cursor action: none
+- Meaning: One reachable `.per` file loads the same resolved `.per` file more than once. This may be intentional, but usually indicates a redundant or mistaken load directive.
+
 <a id="diagnostic-duplicate-per-name"></a>
 
 ### `duplicate-per-name`
@@ -421,6 +433,16 @@ Manual `--suppress-code <code>` can suppress any finding code for one lint run. 
 - Corpus profile: suppressed
 - Cursor action: none
 - Meaning: A `load-random` entry uses a `+` weight form. AIRef documents this as UserPatch syntax and notes uncertain or bugged DE behavior.
+
+<a id="diagnostic-load-after-include"></a>
+
+### `load-after-include`
+
+- Source: package lint
+- Default severity: warning
+- Corpus profile: active
+- Cursor action: none
+- Meaning: A reachable `.per` file has a `load` or `load-random` directive after an `include` directive. AIRef documents that load directives should be placed before include directives.
 
 <a id="diagnostic-missing-include-target"></a>
 

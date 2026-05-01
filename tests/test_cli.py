@@ -1202,6 +1202,55 @@ class CliTests(unittest.TestCase):
         self.assertEqual(root_payload["finding_groups"][0]["code"], "duplicate-include-target")
         self.assertEqual(payload["issue_groups"][0]["code"], "duplicate-include-target")
 
+    def test_lint_package_json_reports_load_graph_and_ordering_warnings(self) -> None:
+        with WorkspaceTempDir() as root:
+            (root / "Main.ai").write_text('(load "Main")\n', encoding="utf-8")
+            (root / "Main.per").write_text(
+                """
+(include "debug.xs")
+(load "Shared")
+(load "Shared")
+""".strip(),
+                encoding="utf-8",
+            )
+            (root / "Shared.per").write_text("(defconst shared 1)\n", encoding="utf-8")
+            (root / "debug.xs").write_text("void debug() {}\n", encoding="utf-8")
+            buffer = io.StringIO()
+            with redirect_stdout(buffer):
+                code = main(["lint-package", str(root), "--json"])
+
+        self.assertEqual(code, 0)
+        payload = json.loads(buffer.getvalue())
+        root_payload = payload["roots"][0]
+        self.assertEqual(root_payload["code_counts"], {"duplicate-per-load-target": 1, "load-after-include": 2})
+        self.assertEqual([group["code"] for group in payload["issue_groups"]], ["duplicate-per-load-target", "load-after-include"])
+        graph_by_name = {Path(entry["path"]).name: entry for entry in root_payload["load_graph"]}
+        self.assertEqual([entry["include"] for entry in graph_by_name["Main.per"]["loads"]], ["Shared", "Shared"])
+        self.assertEqual(graph_by_name["Main.per"]["includes"][0]["include"], "debug.xs")
+
+    def test_lint_package_report_includes_load_graph(self) -> None:
+        with WorkspaceTempDir() as root:
+            report_path = root / "reports" / "package.md"
+            (root / "Main.ai").write_text('(load "Main")\n', encoding="utf-8")
+            (root / "Main.per").write_text(
+                """
+(load "Shared")
+(include "debug.xs")
+""".strip(),
+                encoding="utf-8",
+            )
+            (root / "Shared.per").write_text("(defconst shared 1)\n", encoding="utf-8")
+            (root / "debug.xs").write_text("void debug() {}\n", encoding="utf-8")
+            buffer = io.StringIO()
+            with redirect_stdout(buffer):
+                code = main(["lint-package", str(root), "--report", str(report_path)])
+            report = report_path.read_text(encoding="utf-8")
+
+        self.assertEqual(code, 0)
+        self.assertIn("## Load And Include Graph", report)
+        self.assertIn("load line 1: `Shared` -> `resolved`", report)
+        self.assertIn("include line 2: `debug.xs` -> `resolved`", report)
+
 
 if __name__ == "__main__":
     unittest.main()

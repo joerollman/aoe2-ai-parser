@@ -433,7 +433,7 @@ try {
         message: "up-set-target-object uses search-local before this rule has rebuilt that search list",
         source: "aoe2-ai-lab",
       },
-      expectedPrefix: "Explain unsafe-set-target-object: `up-set-target-object` reads a search list before retained search evidence proves",
+      expectedPrefix: "Open diagnostic docs for unsafe-set-target-object: `up-set-target-object` reads a search list before retained search evidence proves",
     },
     {
       name: "DUC action argument replacement",
