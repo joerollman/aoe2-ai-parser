@@ -427,6 +427,10 @@ node --check extensions\aoe2-aiscript-cursor-local-lab\languageExtension\out\ser
 $env:PYTHONPATH='src'; python -m pytest tests -p no:cacheprovider
 ```
 
+`sync-extension-lab.mjs` excludes Python bytecode/cache directories from the
+bundled runtime. `verify-cursor-extension.mjs` scans bundled extension text files
+for this checkout path and user profile path so local machine paths do not ship.
+
 Focused extension tests:
 
 ```powershell

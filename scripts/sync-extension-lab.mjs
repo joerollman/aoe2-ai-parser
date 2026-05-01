@@ -12,7 +12,20 @@ const copyEntries = [
   [path.join("docs", "workflows", "validator-diagnostic-codes.json"), path.join("docs", "workflows", "validator-diagnostic-codes.json")],
 ];
 
+function shouldSkip(entryPath) {
+  const name = path.basename(entryPath);
+  return (
+    name === "__pycache__" ||
+    name === ".pytest_cache" ||
+    name.endsWith(".pyc") ||
+    name.endsWith(".pyo")
+  );
+}
+
 function copyRecursive(source, destination) {
+  if (shouldSkip(source)) {
+    return;
+  }
   const stat = fs.statSync(source);
   if (stat.isDirectory()) {
     fs.mkdirSync(destination, { recursive: true });

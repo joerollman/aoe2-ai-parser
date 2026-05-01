@@ -35,6 +35,25 @@ function assertIncludes(text, needle, filePath) {
   assert(text.includes(needle), `${path.relative(repoRoot, filePath)} is missing: ${needle}`);
 }
 
+function extensionTextFiles(dir) {
+  const ignoredDirs = new Set(["node_modules", ".vscode"]);
+  const ignoredExtensions = new Set([".vsix", ".png"]);
+  const files = [];
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const entryPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      if (!ignoredDirs.has(entry.name)) {
+        files.push(...extensionTextFiles(entryPath));
+      }
+      continue;
+    }
+    if (!ignoredExtensions.has(path.extname(entry.name).toLowerCase())) {
+      files.push(entryPath);
+    }
+  }
+  return files;
+}
+
 const packageData = readJson(packagePath);
 const serverSource = readText(serverPath);
 const clientSource = readText(clientPath);
@@ -282,6 +301,22 @@ for (const needle of [
   "[integrity] stale-ai-root (1)",
 ]) {
   assertIncludes(packageOutputSmokeSource, needle, packageOutputSmokePath);
+}
+
+function regexEscape(text) {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+const localPathNeedles = [
+  repoRoot,
+  repoRoot.replaceAll("\\", "/"),
+  process.env.USERPROFILE || "",
+  (process.env.USERPROFILE || "").replaceAll("\\", "/"),
+  process.env.HOME || "",
+].filter(Boolean);
+const localPathPattern = new RegExp(localPathNeedles.map(regexEscape).join("|"), "i");
+for (const filePath of extensionTextFiles(extensionRoot)) {
+  assert(!localPathPattern.test(readText(filePath)), `extension bundle contains local path text: ${path.relative(repoRoot, filePath)}`);
 }
 
 console.log(`Editor extension verified: ${packageData.name} ${packageData.version}`);
