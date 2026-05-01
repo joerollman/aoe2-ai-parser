@@ -118,6 +118,9 @@ python -m aoe2_ai_lab diagnostics command-role-mismatch
 python -m aoe2_ai_lab diagnostics command-role-mismatch --json
 ```
 
+The JSON form includes `documentation_path`, `documentation_anchor`, and
+`documentation_markdown` for editor or agent navigation.
+
 ## Editor Extension
 
 The active local VS Code/Cursor extension workflow is documented in

@@ -74,6 +74,8 @@ class CliTests(unittest.TestCase):
         payload = json.loads(buffer.getvalue())
         self.assertEqual(payload["count"], 1)
         self.assertEqual(payload["diagnostics"][0]["code"], "command-role-mismatch")
+        self.assertEqual(payload["diagnostics"][0]["documentation_anchor"], "diagnostic-command-role-mismatch")
+        self.assertIn("validator-diagnostic-codes.md", payload["diagnostics"][0]["documentation_markdown"])
 
     def test_diagnostics_cli_unknown_code_fails(self) -> None:
         stdout_buffer = io.StringIO()

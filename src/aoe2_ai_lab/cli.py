@@ -1164,6 +1164,16 @@ def matching_diagnostic_entries(code: str | None = None) -> list[dict[str, objec
     ]
 
 
+def diagnostic_entry_to_json(entry: dict[str, object]) -> dict[str, object]:
+    code = str(entry["code"])
+    return {
+        **entry,
+        "documentation_path": DIAGNOSTIC_REGISTRY_MARKDOWN_PATH.as_posix(),
+        "documentation_anchor": diagnostic_code_anchor(code),
+        "documentation_markdown": diagnostic_code_markdown_link(code),
+    }
+
+
 def format_diagnostic_entry(entry: dict[str, object]) -> str:
     return "\n".join(
         [
@@ -1438,12 +1448,13 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "diagnostics":
         entries = matching_diagnostic_entries(args.code)
         if args.json:
+            diagnostics = [diagnostic_entry_to_json(entry) for entry in entries]
             print(
                 json.dumps(
                     {
                         "code": args.code,
-                        "count": len(entries),
-                        "diagnostics": entries,
+                        "count": len(diagnostics),
+                        "diagnostics": diagnostics,
                     },
                     indent=2,
                     sort_keys=True,
