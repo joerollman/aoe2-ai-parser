@@ -411,6 +411,24 @@ function lintPackage() {
         vscode_1.window.showErrorMessage("AoE2 lint package failed. See AOE2 AI Parser output.");
     }
 }
+function lintFolder() {
+    let filePath = getActiveFilePath();
+    if (!filePath) {
+        return;
+    }
+    let folderPath = fs.statSync(filePath).isDirectory() ? filePath : path.dirname(filePath);
+    let settings = getLabSettings();
+    let result = runLabCommand(["-m", "aoe2_ai_lab", "lint-package", folderPath, "--json", "--fail-level", settings.packageFailLevel], "AoE2: Lint Folder", stdout => formatPackageIssueGroups(stdout, settings.labPath));
+    if (result.ok) {
+        vscode_1.window.showInformationMessage("AoE2 lint folder completed. See AOE2 AI Parser output.");
+    }
+    else if (result.stdout) {
+        vscode_1.window.showWarningMessage("AoE2 lint folder completed with findings.");
+    }
+    else {
+        vscode_1.window.showErrorMessage("AoE2 lint folder failed. See AOE2 AI Parser output.");
+    }
+}
 function timestampForReport() {
     return new Date().toISOString().replace(/[:.]/g, "-");
 }
@@ -592,6 +610,7 @@ function activate(context) {
     }));
     context.subscriptions.push(vscode_1.commands.registerCommand("aoe2AiScript.lintCurrentFile", lintCurrentFile));
     context.subscriptions.push(vscode_1.commands.registerCommand("aoe2AiScript.lintPackage", lintPackage));
+    context.subscriptions.push(vscode_1.commands.registerCommand("aoe2AiScript.lintFolder", lintFolder));
     context.subscriptions.push(vscode_1.commands.registerCommand("aoe2AiScript.generatePackageReport", generatePackageReport));
     context.subscriptions.push(vscode_1.commands.registerCommand("aoe2AiScript.openLatestPackageReport", openLatestPackageReport));
     context.subscriptions.push(vscode_1.commands.registerCommand("aoe2AiScript.openSymbolDocsPreview", openSymbolDocsPreview));

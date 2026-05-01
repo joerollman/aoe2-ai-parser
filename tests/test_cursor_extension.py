@@ -158,9 +158,13 @@ class CursorExtensionTests(unittest.TestCase):
 
         self.assertEqual(commands["aoe2AiScript.lintCurrentFile"], "AoE2: Lint Current File")
         self.assertEqual(commands["aoe2AiScript.lintPackage"], "AoE2: Lint Package")
+        self.assertEqual(commands["aoe2AiScript.lintFolder"], "AoE2: Lint Folder")
         self.assertEqual(commands["aoe2AiScript.generatePackageReport"], "AoE2: Generate Package Report")
         self.assertEqual(commands["aoe2AiScript.openLatestPackageReport"], "AoE2: Open Latest Package Report")
         self.assertIn("vscode_1.commands.registerCommand(\"aoe2AiScript.lintCurrentFile\"", extension_source)
+        self.assertIn("vscode_1.commands.registerCommand(\"aoe2AiScript.lintFolder\"", extension_source)
+        self.assertIn("function lintFolder", extension_source)
+        self.assertIn("folderPath, \"--json\"", extension_source)
         self.assertIn("function formatPackageIssueGroups", extension_source)
         self.assertIn("function formatPackageLoadGraph", extension_source)
         self.assertIn("payload.issue_groups || []", extension_source)

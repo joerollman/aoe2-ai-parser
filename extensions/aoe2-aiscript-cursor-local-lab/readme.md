@@ -39,6 +39,7 @@ extension.
 
 - `AoE2: Lint Current File`
 - `AoE2: Lint Package`
+- `AoE2: Lint Folder`
 - `AoE2: Generate Package Report`
 - `AoE2: Open Latest Package Report`
 - `AoE2: Open Symbol Docs Preview`
@@ -61,6 +62,11 @@ the harsh contrast of pure black and pure white.
 - `aoe2_AiScript.labPath`: optional development checkout override.
 - `aoe2_AiScript.pythonPath`: Python executable.
 - `aoe2_AiScript.updateErrorsWhen`: validate on save, on change, or never.
+
+`Lint Current File` validates only the active file. `Lint Package` uses the
+nearest `.ai` package root for the active file. `Lint Folder` validates the
+folder containing the active file, which is useful when a mod folder is too broad
+to treat as one package.
 
 ## Attribution
 

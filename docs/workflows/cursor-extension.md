@@ -204,17 +204,23 @@ Command palette entries:
 
 - `AoE2: Lint Current File`
 - `AoE2: Lint Package`
+- `AoE2: Lint Folder`
 - `AoE2: Generate Package Report`
 - `AoE2: Open Latest Package Report`
 - `AoE2: Open Symbol Docs Preview`
 
 Command output goes to the `AOE2 AI Parser` output panel.
 
-`AoE2: Lint Package` runs `lint-package --json` and formats top-level
+`AoE2: Lint Package` runs `lint-package --json` from the nearest `.ai` package
+root for the active file and formats top-level
 `issue_groups` for the output panel. This keeps the command palette view aligned
 with the Markdown report: issue categories include both lint findings and
 package-integrity issues, while live diagnostics still use the detailed per-file
 findings and integrity manifest from the same JSON payload.
+
+`AoE2: Lint Folder` runs the same package validator against the folder that
+contains the active file. This is useful for local mod layouts where the
+workspace/package root is broader than the AI folder being reviewed.
 
 Package reports are written to:
 

@@ -5,6 +5,13 @@ this file. Version numbers are given as:
 
     <major>.<minor>.<patch>
 
+## v0.1.51
+
+- Add `AoE2: Lint Folder`, which runs package validation against the folder
+  containing the active file.
+- Clarify the difference between current-file lint, package lint, and folder
+  lint in user docs.
+
 ## v0.1.50
 
 - Make command-palette lint output more visible by opening the AOE2 AI Parser

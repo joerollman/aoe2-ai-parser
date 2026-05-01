@@ -2,7 +2,7 @@
 	"name": "aoe2-ai-parser",
 	"displayName": "AOE2 AI Parser",
 	"description": "Parser diagnostics, command tooltips, syntax highlighting, and autocomplete for Age of Empires 2 AI scripts in VS Code and Cursor",
-	"version": "0.1.50",
+	"version": "0.1.51",
 	"keywords": [
 		"aoeII",
 		"age",
@@ -18,10 +18,11 @@
 		"type": "git",
 		"url": "https://github.com/joerollman/aoe2-ai-parser.git"
 	},
-	"activationEvents": [
+		"activationEvents": [
 		"onLanguage:aoe2aiscript",
 		"onCommand:aoe2AiScript.lintCurrentFile",
 		"onCommand:aoe2AiScript.lintPackage",
+		"onCommand:aoe2AiScript.lintFolder",
 		"onCommand:aoe2AiScript.generatePackageReport",
 		"onCommand:aoe2AiScript.openLatestPackageReport",
 		"onCommand:aoe2AiScript.openSymbolDocsPreview",
@@ -225,6 +226,10 @@
 			{
 				"command": "aoe2AiScript.lintPackage",
 				"title": "AoE2: Lint Package"
+			},
+			{
+				"command": "aoe2AiScript.lintFolder",
+				"title": "AoE2: Lint Folder"
 			},
 			{
 				"command": "aoe2AiScript.generatePackageReport",

@@ -37,6 +37,7 @@ Useful command palette actions:
 
 - `AoE2: Lint Current File`
 - `AoE2: Lint Package`
+- `AoE2: Lint Folder`
 - `AoE2: Generate Package Report`
 - `AoE2: Open Latest Package Report`
 - `AoE2: Open Symbol Docs Preview`
@@ -44,6 +45,11 @@ Useful command palette actions:
 
 For the most distinct syntax colors, select `AOE2 AI Parser Dark` with
 `Preferences: Color Theme`.
+
+`Lint Current File` validates only the active file. `Lint Package` starts from
+the nearest `.ai` package root for the active file. `Lint Folder` validates the
+folder containing the active file, which is useful when the workspace or local
+mods folder is broader than the AI package you want to inspect.
 
 Diagnostics run on save by default. To include info-level package findings in
 package commands and package-aware diagnostics, add this to workspace settings:
