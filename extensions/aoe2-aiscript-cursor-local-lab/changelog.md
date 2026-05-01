@@ -5,6 +5,13 @@ this file. Version numbers are given as:
 
     <major>.<minor>.<patch>
 
+## v0.1.50
+
+- Make command-palette lint output more visible by opening the AOE2 AI Parser
+  output channel in the foreground.
+- Write explicit output-channel messages when package commands cannot run
+  because no workspace, `.ai`, or `.per` package context is available.
+
 ## v0.1.49
 
 - Cap hover documentation previews so large command reference entries do not

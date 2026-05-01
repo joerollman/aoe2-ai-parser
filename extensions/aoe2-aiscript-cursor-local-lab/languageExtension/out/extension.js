@@ -192,6 +192,11 @@ function findNearestPackageRoot(filePath, workspacePath) {
 function getActiveFilePath() {
     let editor = vscode_1.window.activeTextEditor;
     if (!editor || editor.document.uri.scheme !== "file") {
+        let channel = getOutputChannel();
+        channel.clear();
+        channel.appendLine("AoE2 command did not run.");
+        channel.appendLine("Open an AoE2 .per or .ai file first.");
+        channel.show(false);
         vscode_1.window.showWarningMessage("Open an AoE2 .per or .ai file first.");
         return undefined;
     }
@@ -313,7 +318,7 @@ function runLabCommand(args, title, formatStdout) {
     channel.appendLine("labPath: " + settings.labPath);
     channel.appendLine("command: " + settings.pythonPath + " " + args.join(" "));
     channel.appendLine("");
-    channel.show(true);
+    channel.show(false);
     if (!settings.labPath || !fs.existsSync(settings.labPath)) {
         vscode_1.window.showErrorMessage("AOE2 AI Parser runtime path does not exist. Set aoe2_AiScript.labPath.");
         return { ok: false, stdout: "", stderr: "invalid labPath" };
@@ -352,11 +357,22 @@ function getCurrentPackageRoot() {
     }
     let settings = getLabSettings();
     if (!settings.workspacePath) {
+        let channel = getOutputChannel();
+        channel.clear();
+        channel.appendLine("AoE2 package command did not run.");
+        channel.appendLine("Open a workspace folder before linting a package.");
+        channel.show(false);
         vscode_1.window.showWarningMessage("Open a workspace folder before linting a package.");
         return undefined;
     }
     let packageRoot = findNearestPackageRoot(filePath, settings.workspacePath);
     if (!packageRoot) {
+        let channel = getOutputChannel();
+        channel.clear();
+        channel.appendLine("AoE2 package command did not run.");
+        channel.appendLine("No .ai package root found at or above the current file.");
+        channel.appendLine("Open a .ai file, or open a .per file inside a folder that contains an .ai root.");
+        channel.show(false);
         vscode_1.window.showWarningMessage("No .ai package root found at or above the current file.");
         return undefined;
     }
@@ -386,7 +402,7 @@ function lintPackage() {
     let settings = getLabSettings();
     let result = runLabCommand(["-m", "aoe2_ai_lab", "lint-package", packageRoot, "--json", "--fail-level", settings.packageFailLevel], "AoE2: Lint Package", stdout => formatPackageIssueGroups(stdout, settings.labPath));
     if (result.ok) {
-        vscode_1.window.showInformationMessage("AoE2 lint package completed.");
+        vscode_1.window.showInformationMessage("AoE2 lint package completed. See AOE2 AI Parser output.");
     }
     else if (result.stdout) {
         vscode_1.window.showWarningMessage("AoE2 lint package completed with findings.");
