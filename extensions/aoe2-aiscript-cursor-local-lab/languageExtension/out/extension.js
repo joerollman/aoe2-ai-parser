@@ -19,6 +19,19 @@ function getOutputChannel() {
     }
     return outputChannel;
 }
+function execFileText(command, args, options) {
+    return new Promise((resolve, reject) => {
+        child_process.execFile(command, args, options, (error, stdout, stderr) => {
+            if (error) {
+                error.stdout = stdout;
+                error.stderr = stderr;
+                reject(error);
+                return;
+            }
+            resolve(stdout || "");
+        });
+    });
+}
 function getWorkspacePath() {
     let folders = vscode_1.workspace.workspaceFolders;
     if (!folders || folders.length === 0) {
@@ -311,6 +324,7 @@ function formatPackageIssueGroups(stdout, labPath) {
     return lines.join("\n") + "\n";
 }
 function runLabCommand(args, title, formatStdout) {
+    return __awaiter(this, void 0, void 0, function* () {
     let settings = getLabSettings();
     let channel = getOutputChannel();
     channel.clear();
@@ -325,7 +339,7 @@ function runLabCommand(args, title, formatStdout) {
     }
     let env = Object.assign({}, process.env, { PYTHONPATH: path.join(settings.labPath, "src") });
     try {
-        let stdout = child_process.execFileSync(settings.pythonPath, args, {
+        let stdout = yield execFileText(settings.pythonPath, args, {
             cwd: settings.labPath,
             env,
             encoding: "utf8",
@@ -349,6 +363,7 @@ function runLabCommand(args, title, formatStdout) {
         }
         return { ok: false, stdout, stderr };
     }
+    });
 }
 function getCurrentPackageRoot() {
     let filePath = getActiveFilePath();
@@ -379,11 +394,12 @@ function getCurrentPackageRoot() {
     return packageRoot;
 }
 function lintCurrentFile() {
+    return __awaiter(this, void 0, void 0, function* () {
     let filePath = getActiveFilePath();
     if (!filePath) {
         return;
     }
-    let result = runLabCommand(["-m", "aoe2_ai_lab", "lint", filePath], "AoE2: Lint Current File");
+    let result = yield runLabCommand(["-m", "aoe2_ai_lab", "lint", filePath], "AoE2: Lint Current File");
     if (result.ok) {
         vscode_1.window.showInformationMessage("AoE2 lint current file: no findings.");
     }
@@ -393,14 +409,16 @@ function lintCurrentFile() {
     else {
         vscode_1.window.showErrorMessage("AoE2 lint current file failed. See AOE2 AI Parser output.");
     }
+    });
 }
 function lintPackage() {
+    return __awaiter(this, void 0, void 0, function* () {
     let packageRoot = getCurrentPackageRoot();
     if (!packageRoot) {
         return;
     }
     let settings = getLabSettings();
-    let result = runLabCommand(["-m", "aoe2_ai_lab", "lint-package", packageRoot, "--json", "--fail-level", settings.packageFailLevel], "AoE2: Lint Package", stdout => formatPackageIssueGroups(stdout, settings.labPath));
+    let result = yield runLabCommand(["-m", "aoe2_ai_lab", "lint-package", packageRoot, "--json", "--fail-level", settings.packageFailLevel], "AoE2: Lint Package", stdout => formatPackageIssueGroups(stdout, settings.labPath));
     if (result.ok) {
         vscode_1.window.showInformationMessage("AoE2 lint package completed. See AOE2 AI Parser output.");
     }
@@ -410,15 +428,17 @@ function lintPackage() {
     else {
         vscode_1.window.showErrorMessage("AoE2 lint package failed. See AOE2 AI Parser output.");
     }
+    });
 }
 function lintFolder() {
+    return __awaiter(this, void 0, void 0, function* () {
     let filePath = getActiveFilePath();
     if (!filePath) {
         return;
     }
     let folderPath = fs.statSync(filePath).isDirectory() ? filePath : path.dirname(filePath);
     let settings = getLabSettings();
-    let result = runLabCommand(["-m", "aoe2_ai_lab", "lint-package", folderPath, "--json", "--fail-level", settings.packageFailLevel], "AoE2: Lint Folder", stdout => formatPackageIssueGroups(stdout, settings.labPath));
+    let result = yield runLabCommand(["-m", "aoe2_ai_lab", "lint-package", folderPath, "--json", "--fail-level", settings.packageFailLevel], "AoE2: Lint Folder", stdout => formatPackageIssueGroups(stdout, settings.labPath));
     if (result.ok) {
         vscode_1.window.showInformationMessage("AoE2 lint folder completed. See AOE2 AI Parser output.");
     }
@@ -428,11 +448,13 @@ function lintFolder() {
     else {
         vscode_1.window.showErrorMessage("AoE2 lint folder failed. See AOE2 AI Parser output.");
     }
+    });
 }
 function timestampForReport() {
     return new Date().toISOString().replace(/[:.]/g, "-");
 }
 function generatePackageReport() {
+    return __awaiter(this, void 0, void 0, function* () {
     let packageRoot = getCurrentPackageRoot();
     if (!packageRoot) {
         return;
@@ -443,9 +465,12 @@ function generatePackageReport() {
     fs.mkdirSync(reportDir, { recursive: true });
     let reportName = path.basename(packageRoot) + "-" + timestampForReport() + ".md";
     let reportPath = path.join(reportDir, reportName);
-    let result = runLabCommand(["-m", "aoe2_ai_lab", "lint-package", packageRoot, "--report", reportPath, "--fail-level", settings.packageFailLevel], "AoE2: Generate Package Report");
+    let result = yield runLabCommand(["-m", "aoe2_ai_lab", "lint-package", packageRoot, "--report", reportPath, "--fail-level", settings.packageFailLevel], "AoE2: Generate Package Report");
     if (fs.existsSync(reportPath)) {
-        vscode_1.workspace.openTextDocument(reportPath).then(document => vscode_1.window.showTextDocument(document));
+        let reportUri = vscode_1.Uri.file(reportPath);
+        vscode_1.commands.executeCommand("vscode.openWith", reportUri, "vscode.markdown.preview.editor", vscode_1.ViewColumn.Beside).then(undefined, () => {
+            vscode_1.workspace.openTextDocument(reportPath).then(document => vscode_1.window.showTextDocument(document, vscode_1.ViewColumn.Beside));
+        });
         if (result.ok) {
             vscode_1.window.showInformationMessage("AoE2 package report generated.");
         }
@@ -456,6 +481,7 @@ function generatePackageReport() {
     else if (!result.ok) {
         vscode_1.window.showErrorMessage("AoE2 package report failed. See AOE2 AI Parser output.");
     }
+    });
 }
 function openLatestPackageReport() {
     let settings = getLabSettings();
@@ -473,7 +499,10 @@ function openLatestPackageReport() {
         vscode_1.window.showWarningMessage("No AoE2 package reports found.");
         return;
     }
-    vscode_1.workspace.openTextDocument(reports[0]).then(document => vscode_1.window.showTextDocument(document));
+    let reportUri = vscode_1.Uri.file(reports[0]);
+    vscode_1.commands.executeCommand("vscode.openWith", reportUri, "vscode.markdown.preview.editor", vscode_1.ViewColumn.Beside).then(undefined, () => {
+        vscode_1.workspace.openTextDocument(reports[0]).then(document => vscode_1.window.showTextDocument(document, vscode_1.ViewColumn.Beside));
+    });
 }
 function symbolReferencePath() {
     let settings = getLabSettings();
@@ -491,14 +520,7 @@ function markdownAnchor(symbol) {
     return "symbol-" + symbol.toLowerCase().replace(/[^#a-z0-9_-]+/g, "-");
 }
 function markdownHeadingFragment(symbol) {
-    let fragment = String(symbol || "")
-        .toLowerCase()
-        .replace(/`/g, "")
-        .replace(/#/g, "")
-        .replace(/[^a-z0-9 _-]+/g, "")
-        .trim()
-        .replace(/\s+/g, "-");
-    return fragment || markdownAnchor(symbol);
+    return markdownAnchor(symbol);
 }
 function diagnosticAnchor(code) {
     return "diagnostic-" + String(code || "").toLowerCase().replace(/[^a-z0-9_-]+/g, "-");

@@ -75,6 +75,7 @@ const workspaceSettings = readJson(workspaceSettingsPath);
 const language = packageData.contributes.languages[0];
 const commands = new Set(packageData.contributes.commands.map((command) => command.command));
 const themes = new Map(packageData.contributes.themes.map((theme) => [theme.label, theme]));
+const semanticColorDefaults = packageData.contributes.configurationDefaults?.["editor.semanticTokenColorCustomizations"] || {};
 const semanticTokenTypes = new Set((packageData.contributes.semanticTokenTypes || []).map((tokenType) => tokenType.id));
 const completionLabels = new Set(completions.items.map((item) => item.label));
 
@@ -88,6 +89,8 @@ assert(darkTheme.semanticHighlighting === true, "dark theme must enable semantic
 assert(lightTheme.semanticHighlighting === true, "light theme must enable semantic highlighting");
 assert(Array.isArray(darkTheme.tokenColors), "dark theme must include TextMate fallback token colors");
 assert(Array.isArray(lightTheme.tokenColors), "light theme must include TextMate fallback token colors");
+assert(semanticColorDefaults["[AOE2 AI Parser Dark]"], "dark theme semantic color defaults are missing");
+assert(semanticColorDefaults["[AOE2 AI Parser Light]"], "light theme semantic color defaults are missing");
 
 for (const command of [
   "aoe2AiScript.lintCurrentFile",
@@ -121,6 +124,12 @@ assertIncludes(clientSource, "validator-diagnostic-codes.md", clientPath);
 assertIncludes(clientSource, "function markdownAnchor", clientPath);
 assertIncludes(clientSource, "function markdownHeadingFragment", clientPath);
 assertIncludes(clientSource, "vscode_1.Uri.file(docsPath).with({ fragment })", clientPath);
+assertIncludes(clientSource, "return markdownAnchor(symbol);", clientPath);
+assertIncludes(clientSource, "function execFileText", clientPath);
+assertIncludes(clientSource, "yield execFileText(settings.pythonPath", clientPath);
+assert(!clientSource.includes("execFileSync(settings.pythonPath"), "extension commands must not block the extension host with execFileSync");
+assertIncludes(clientSource, '"vscode.markdown.preview.editor"', clientPath);
+assertIncludes(clientSource, "showTextDocument(document, vscode_1.ViewColumn.Beside)", clientPath);
 assertIncludes(clientSource, "docs\", \"reference\", \"generated\", \"ai-symbol-reference.md", clientPath);
 assertIncludes(clientSource, "SemanticTokensLegend", clientPath);
 assertIncludes(clientSource, "registerDocumentSemanticTokensProvider", clientPath);
@@ -149,6 +158,8 @@ for (const tokenType of [
   assert(lightTheme.semanticTokenColors[tokenType], `light theme missing color for ${tokenType}`);
   assert(darkTheme.semanticTokenColors[`${tokenType}:aoe2aiscript`], `dark theme missing language-scoped color for ${tokenType}`);
   assert(lightTheme.semanticTokenColors[`${tokenType}:aoe2aiscript`], `light theme missing language-scoped color for ${tokenType}`);
+  assert(semanticColorDefaults["[AOE2 AI Parser Dark]"].rules[`${tokenType}:aoe2aiscript`], `dark theme semantic default missing ${tokenType}`);
+  assert(semanticColorDefaults["[AOE2 AI Parser Light]"].rules[`${tokenType}:aoe2aiscript`], `light theme semantic default missing ${tokenType}`);
 }
 assert(
   darkTheme.semanticTokenColors.aoe2StrategicNumber !== darkTheme.semanticTokenColors.aoe2LocalConstant,
@@ -264,7 +275,8 @@ for (const needle of [
   "function symbolDocPath",
   "function markdownAnchor",
   "function markdownHeadingFragment",
-  "locationForTextOffset(vscode_uri_1.URI.file(docsPath).toString()",
+  "return markdownAnchor(token);",
+  "with({ fragment: anchor }).toString()",
   "docs\", \"reference\", \"generated\", \"symbols",
   "docs\", \"reference\", \"generated\", \"ai-symbol-reference.md",
   "function labRegistrySignatureHelp",

@@ -192,6 +192,8 @@ class CursorExtensionTests(unittest.TestCase):
         root = Path(__file__).resolve().parents[1]
         extension_root = root / "extensions" / "aoe2-aiscript-cursor-local-lab"
         package_data = json.loads((extension_root / "package.json").read_text(encoding="utf-8"))
+        defaults = package_data["contributes"]["configurationDefaults"]
+        customization_defaults = defaults["editor.semanticTokenColorCustomizations"]
         themes = {
             theme["label"]: theme
             for theme in package_data["contributes"]["themes"]
@@ -218,6 +220,8 @@ class CursorExtensionTests(unittest.TestCase):
         )
         self.assertEqual(themes["AOE2 AI Parser Dark"]["uiTheme"], "vs-dark")
         self.assertEqual(themes["AOE2 AI Parser Light"]["uiTheme"], "vs")
+        self.assertIn("[AOE2 AI Parser Dark]", customization_defaults)
+        self.assertIn("[AOE2 AI Parser Light]", customization_defaults)
 
         for label, expected_type in [
             ("AOE2 AI Parser Dark", "dark"),
@@ -233,6 +237,10 @@ class CursorExtensionTests(unittest.TestCase):
             for token in semantic_tokens:
                 self.assertIn(token, semantic_colors)
                 self.assertIn(f"{token}:aoe2aiscript", semantic_colors)
+                self.assertIn(
+                    f"{token}:aoe2aiscript",
+                    customization_defaults[f"[{label}]"]["rules"],
+                )
 
         dark_data = json.loads(
             (extension_root / "themes" / "aoe2-ai-parser-dark-color-theme.json").read_text(
@@ -282,6 +290,11 @@ class CursorExtensionTests(unittest.TestCase):
         self.assertIn('let stderr = error.stderr ? String(error.stderr) : "";', extension_source)
         self.assertIn("if (!stdout && !stderr)", extension_source)
         self.assertIn("AoE2 package report generated with findings.", extension_source)
+        self.assertIn("function execFileText", extension_source)
+        self.assertIn("yield execFileText(settings.pythonPath", extension_source)
+        self.assertNotIn("execFileSync(settings.pythonPath", extension_source)
+        self.assertIn('"vscode.markdown.preview.editor"', extension_source)
+        self.assertIn("showTextDocument(document, vscode_1.ViewColumn.Beside)", extension_source)
 
     def test_local_lab_extension_merges_registry_completions(self) -> None:
         root = Path(__file__).resolve().parents[1]
@@ -319,7 +332,8 @@ class CursorExtensionTests(unittest.TestCase):
         self.assertIn("function labRegistrySignatureHelp", server_source)
         self.assertIn("function labSignatureParameters", server_source)
         self.assertIn("function markdownHeadingFragment", server_source)
-        self.assertIn("locationForTextOffset(vscode_uri_1.URI.file(docsPath).toString()", server_source)
+        self.assertIn("return markdownAnchor(token);", server_source)
+        self.assertIn('with({ fragment: anchor }).toString()', server_source)
         self.assertIn("codeActionProvider: true", server_source)
         self.assertIn("connection.onCodeAction", server_source)
         self.assertIn("function codeActionsForDiagnostic", server_source)

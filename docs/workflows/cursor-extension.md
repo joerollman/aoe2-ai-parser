@@ -210,6 +210,10 @@ Command palette entries:
 - `AoE2: Open Symbol Docs Preview`
 
 Command output goes to the `AOE2 AI Parser` output panel.
+Package lint commands run asynchronously in the extension host. Generated
+package reports open with `vscode.markdown.preview.editor` in a side pane after
+the linter finishes, with a text-editor fallback if Markdown Preview is not
+available.
 
 `AoE2: Lint Package` runs `lint-package --json` from the nearest `.ai` package
 root for the active file and formats top-level
@@ -361,7 +365,9 @@ Cursor can color known symbols by registry role:
 
 The contributed `AOE2 AI Parser Dark` and `AOE2 AI Parser Light` themes assign
 default colors for these token types. Users can override individual colors with
-normal VS Code/Cursor settings, either globally or scoped to one parser theme:
+normal VS Code/Cursor settings, either globally or scoped to one parser theme.
+The extension contributes default entries for these theme-scoped rules so the
+editable token names are visible from settings JSON:
 
 ```json
 {

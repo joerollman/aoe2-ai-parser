@@ -50,6 +50,8 @@ For the most distinct syntax colors, select `AOE2 AI Parser Dark` or
 the nearest `.ai` package root for the active file. `Lint Folder` validates the
 folder containing the active file, which is useful when the workspace or local
 mods folder is broader than the AI package you want to inspect.
+Package-report commands open the generated Markdown report in a side preview
+after the linter finishes.
 
 For local symbol docs, VS Code's built-in definition gesture is `Ctrl+Click`.
 Cursor also supports its own side-definition gestures such as `Ctrl+Alt+Click`.
@@ -72,7 +74,8 @@ extension contributes semantic token names such as `aoe2Action`,
 override them through `editor.semanticTokenColorCustomizations`.
 
 You can override individual parser colors globally or only for one contributed
-theme:
+theme. The extension also contributes these parser-theme defaults so the keys
+are discoverable from settings JSON and can be edited directly:
 
 ```json
 {

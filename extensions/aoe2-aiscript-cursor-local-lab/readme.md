@@ -68,6 +68,8 @@ command categories remain readable in long AI files.
 nearest `.ai` package root for the active file. `Lint Folder` validates the
 folder containing the active file, which is useful when a mod folder is too broad
 to treat as one package.
+Package-report commands open the generated Markdown report in a side preview
+when the linter finishes.
 
 For local symbol docs, VS Code's built-in definition gesture is `Ctrl+Click`.
 Cursor also supports its own side-definition gestures such as `Ctrl+Alt+Click`.
@@ -90,8 +92,9 @@ names are `aoe2Action`, `aoe2Fact`, `aoe2FactAction`, `aoe2Command`,
 `aoe2StrategicNumber`, `aoe2Object`, `aoe2Tech`, `aoe2Value`, and
 `aoe2LocalConstant`.
 
-Theme-scoped overrides let each individual parser color be changed without
-affecting other themes:
+The extension contributes parser-theme defaults for these keys. Theme-scoped
+overrides let each individual parser color be changed without affecting other
+themes:
 
 ```json
 {

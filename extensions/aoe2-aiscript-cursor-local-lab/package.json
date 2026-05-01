@@ -2,7 +2,7 @@
 	"name": "aoe2-ai-parser",
 	"displayName": "AOE2 AI Parser",
 	"description": "Parser diagnostics, command tooltips, syntax highlighting, and autocomplete for Age of Empires 2 AI scripts in VS Code and Cursor",
-	"version": "0.1.56",
+	"version": "0.1.57",
 	"keywords": [
 		"aoeII",
 		"age",
@@ -148,6 +148,38 @@
 					"type": "string",
 					"default": "python",
 					"description": "Python executable used to run parser diagnostics."
+				}
+			}
+		},
+		"configurationDefaults": {
+			"editor.semanticTokenColorCustomizations": {
+				"[AOE2 AI Parser Dark]": {
+					"enabled": true,
+					"rules": {
+						"aoe2Action:aoe2aiscript": "#5DADEC",
+						"aoe2Fact:aoe2aiscript": "#C69CFF",
+						"aoe2FactAction:aoe2aiscript": "#38C2B3",
+						"aoe2Command:aoe2aiscript": "#D7A72F",
+						"aoe2StrategicNumber:aoe2aiscript": "#4CC2FF",
+						"aoe2Object:aoe2aiscript": "#F0A35E",
+						"aoe2Tech:aoe2aiscript": "#8FD694",
+						"aoe2Value:aoe2aiscript": "#D6C56F",
+						"aoe2LocalConstant:aoe2aiscript": "#57D68D"
+					}
+				},
+				"[AOE2 AI Parser Light]": {
+					"enabled": true,
+					"rules": {
+						"aoe2Action:aoe2aiscript": "#0550AE",
+						"aoe2Fact:aoe2aiscript": "#6F42C1",
+						"aoe2FactAction:aoe2aiscript": "#008B8B",
+						"aoe2Command:aoe2aiscript": "#7A5B00",
+						"aoe2StrategicNumber:aoe2aiscript": "#0A7EA4",
+						"aoe2Object:aoe2aiscript": "#B35900",
+						"aoe2Tech:aoe2aiscript": "#22863A",
+						"aoe2Value:aoe2aiscript": "#6E5A00",
+						"aoe2LocalConstant:aoe2aiscript": "#116329"
+					}
 				}
 			}
 		},

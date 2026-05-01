@@ -5,6 +5,17 @@ this file. Version numbers are given as:
 
     <major>.<minor>.<patch>
 
+## v0.1.57
+
+- Make symbol definition and Markdown preview navigation target the generated
+  `symbol-*` anchors in the combined reference.
+- Contribute default semantic-token color customization entries for both parser
+  themes so users can discover and edit individual parser token colors.
+- Run command-palette lint commands asynchronously so hover/help providers are
+  not blocked while package validation is running.
+- Open generated package reports in a side Markdown Preview when report
+  generation or latest-report lookup completes.
+
 ## v0.1.56
 
 - Add `AOE2 AI Parser Light` as a contributed color theme.

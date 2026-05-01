@@ -1573,14 +1573,7 @@ function markdownAnchor(token) {
     return "symbol-" + token.toLowerCase().replace(/[^#a-z0-9_-]+/g, "-");
 }
 function markdownHeadingFragment(token) {
-    let fragment = String(token || "")
-        .toLowerCase()
-        .replace(/`/g, "")
-        .replace(/#/g, "")
-        .replace(/[^a-z0-9 _-]+/g, "")
-        .trim()
-        .replace(/\s+/g, "-");
-    return fragment || markdownAnchor(token);
+    return markdownAnchor(token);
 }
 function labRegistryDefinition(token, labPath) {
     if (!labRegistryHovers().has(token)) {
@@ -1596,10 +1589,16 @@ function labRegistryDefinition(token, labPath) {
             text = "";
         }
         let escaped = token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-        let match = new RegExp("^## `" + escaped + "`", "m").exec(text);
+        let anchor = markdownAnchor(token);
+        let match = new RegExp('<a id="' + anchor.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + '"></a>\\r?\\n\\r?\\n## `' + escaped + "`", "m").exec(text);
+        if (!match) {
+            match = new RegExp("^## `" + escaped + "`", "m").exec(text);
+        }
         if (match) {
-            let tokenOffset = match.index + match[0].indexOf(token);
-            return locationForTextOffset(vscode_uri_1.URI.file(docsPath).toString(), text, tokenOffset, token.length);
+            let tokenIndex = match[0].indexOf(token);
+            let targetOffset = tokenIndex >= 0 ? match.index + tokenIndex : match.index;
+            let uri = vscode_uri_1.URI.file(docsPath).with({ fragment: anchor }).toString();
+            return locationForTextOffset(uri, text, targetOffset, token.length);
         }
     }
     let symbolPath = symbolDocPath(labPath, token);
