@@ -7,6 +7,15 @@ npm-debug.log
 **/.pytest_cache/**
 **/*.pyc
 **/*.pyo
+**/.env
+**/.npmrc
+**/.pypirc
+**/*.pem
+**/*.key
+**/*.pfx
+**/*.p12
+**/test/**
+**/tests/**
 languageExtension/src/**
 languageExtension/tsconfig.json
 tsconfig.json
