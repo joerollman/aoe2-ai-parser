@@ -196,6 +196,14 @@ To fail on warnings too:
 python -m aoe2_ai_lab lint-package extensions\aoe2-aiscript-cursor-local-lab\samples --fail-level warning
 ```
 
+To include informational package findings in summary output and the failing exit
+threshold, use `--fail-level info`. This is useful when looking for style or
+compatibility notes such as redundant built-in class `defconst`s:
+
+```powershell
+python -m aoe2_ai_lab lint-package "<package path>" --profile default --summary --fail-level info
+```
+
 Known noisy finding codes can be suppressed per run:
 
 ```powershell

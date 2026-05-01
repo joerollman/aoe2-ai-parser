@@ -1,42 +1,74 @@
 # AOE2 AI Parser
 
-Parser, linter, local reference data, and VS Code/Cursor extension support for
-Age of Empires II: Definitive Edition AI scripts.
+Editor diagnostics, reference lookup, autocomplete, hovers, semantic coloring,
+and package reports for Age of Empires II: Definitive Edition AI scripts.
 
-The project has two main entry points:
+Most users should install the extension from an extension marketplace and use it
+inside VS Code or Cursor. You do not need to clone this repository for normal
+editor use.
 
-- a Python CLI for parsing, linting, package validation, and local reference
-  lookup
-- a VS Code/Cursor extension that bundles the same parser and reference data for
-  editor diagnostics, hover docs, autocomplete, semantic coloring, and reports
+## Using The Extension
 
-## What Is Included
+After installing `AOE2 AI Parser`, open a folder that contains your `.ai` and
+`.per` files.
 
-- Python parser/linter for `.per`, `.ai`, and AI package validation.
-- Offline command, object, tech, strategic-number, value, RMS, and XS reference
-  inventories.
-- Generated Markdown symbol reference for editor navigation.
-- VS Code/Cursor extension with syntax highlighting, autocomplete, hover docs,
-  semantic coloring, diagnostics, quick fixes, and package reports.
-- Tests for parser, linter, package validation, reference generation, and
-  extension integration.
+The extension provides:
 
-This public repo intentionally excludes personal AI packages, downloaded
-community AI corpora, local RMS probes, logs, generated VSIX artifacts, and
-machine-specific game paths.
+- Syntax highlighting for `.per` and `.ai` files.
+- Autocomplete for commands, facts, strategic numbers, objects, techs, classes,
+  DUC actions, operators, and known values.
+- Hover documentation and go-to-reference for known symbols.
+- Go to definition for local `defconst`s and load targets.
+- Package-aware diagnostics for reachable `.per` files.
+- Markdown package reports for AI package triage.
+- Optional `AOE2 AI Parser Dark` color theme tuned for the extension's semantic
+  token categories.
 
-## Requirements
+Python must be available on your PATH because the extension runs the bundled
+validator with Python. If Python is installed somewhere else, set:
 
-- Python 3.12+
-- Node.js and npm, only needed for extension packaging and JavaScript smoke tests
-- VS Code or Cursor, only needed for the editor extension
+```json
+{
+  "aoe2_AiScript.pythonPath": "C:/path/to/python.exe"
+}
+```
 
-The CLI currently runs from a checkout by setting `PYTHONPATH=src`. A packaged
-Python distribution can be added later.
+Useful command palette actions:
 
-## Quick Start
+- `AoE2: Lint Current File`
+- `AoE2: Lint Package`
+- `AoE2: Generate Package Report`
+- `AoE2: Open Latest Package Report`
+- `AoE2: Open Symbol Docs Preview`
+- `AoE2: Open Diagnostic Docs Preview`
 
-Clone the repo, then run commands from the repo root:
+For the most distinct syntax colors, select `AOE2 AI Parser Dark` with
+`Preferences: Color Theme`.
+
+The marketplace extension identity is:
+
+```text
+aoe2-ai-scripters.aoe2-ai-parser
+```
+
+## Reading Diagnostics
+
+The validator uses three severities:
+
+- `error`: likely syntax, load, command-role, or command-schema failure.
+- `warning`: suspicious or fragile pattern that may still appear in working AIs.
+- `info`: package hygiene or compatibility signal.
+
+The validator is intentionally conservative. Treat warnings as review prompts
+unless the diagnostic explanation says the pattern is known-bad.
+
+For imported or older community AIs, some compatibility patterns are expected.
+The extension and CLI support a `corpus` profile for that kind of review.
+
+## CLI And Repository Use
+
+Clone this repo only if you want to run the parser CLI directly, develop the
+extension, update reference data, or contribute validator changes.
 
 ```powershell
 git clone https://github.com/joerollman/aoe2-ai-parser.git
@@ -48,13 +80,23 @@ python -m aoe2_ai_lab --help
 Lint one `.per` file:
 
 ```powershell
-python -m aoe2_ai_lab lint path\to\your-file.per
+python -m aoe2_ai_lab lint path\to\your-file.per --profile default
 ```
+
+Single-file lint prints every finding it detects, including `info` findings,
+and exits non-zero if any finding is present.
 
 Lint an AI package directory containing `.ai` roots and loaded `.per` files:
 
 ```powershell
 python -m aoe2_ai_lab lint-package path\to\your-ai-package --summary
+```
+
+Package lint defaults to failing on `error`. To include `info` findings in
+summary output and the exit threshold:
+
+```powershell
+python -m aoe2_ai_lab lint-package path\to\your-ai-package --summary --profile default --fail-level info
 ```
 
 Generate machine-readable package output for agents or CI:
@@ -69,15 +111,14 @@ Generate a Markdown report:
 python -m aoe2_ai_lab lint-package path\to\your-ai-package --report .tmp\lint-package\report.md
 ```
 
-Use `--profile corpus` when reviewing imported/community AI packages where some
-legacy-compatible patterns should be informational instead of noisy warnings:
+Use `--profile corpus` when reviewing imported/community AI packages where
+legacy-compatible patterns should be suppressed:
 
 ```powershell
 python -m aoe2_ai_lab lint-package path\to\community-ai --profile corpus --json
 ```
 
-Look up command, strategic number, object, class, value, RMS, or XS reference
-data locally:
+Look up local reference data:
 
 ```powershell
 python -m aoe2_ai_lab resolve-reference up-target-point
@@ -92,40 +133,9 @@ Search when you do not know the exact token:
 python -m aoe2_ai_lab search-registry garrison
 ```
 
-## Understanding Validator Output
+## Development
 
-`lint-package --json` is the most complete interface. Start with:
-
-- `issue_groups`: grouped errors, warnings, and info findings with explanations
-  and examples
-- `roots`: each `.ai` root and the reachable `.per` files loaded by it
-- `roots[].load_graph`: reachable `.per` load/load-random edges and `.xs`
-  include edges
-- `roots[].constants`: package-level `defconst` symbol table with raw and
-  resolved values where available
-- `integrity`: package-level issues such as stale `.ai` roots, duplicate root
-  targets, and unreachable `.per` files
-
-Severity means:
-
-- `error`: likely syntax, load, command-role, or command-schema failure
-- `warning`: suspicious or fragile pattern that may still appear in working AIs
-- `info`: package hygiene or compatibility signal
-
-The validator is conservative. Treat warnings as review prompts unless the
-category explanation or project policy says otherwise.
-
-JSON findings include token spans when available. The editor extension uses
-those spans for precise squiggles and falls back to line heuristics for older
-diagnostic categories.
-
-The current safe-without-user-feedback scope is intentionally bounded to
-documented syntax, package graph integrity, reference navigation, and editor
-ergonomics. Stricter semantic warnings, strategic-number behavior checks,
-legacy AI style warnings, and severity upgrades should wait for real user
-feedback from package authors.
-
-## Layout
+Repository layout:
 
 - `src/aoe2_ai_lab/`: Python parser, linter, package validator, and reference
   tooling.
@@ -137,33 +147,13 @@ feedback from package authors.
   extension package.
 - `scripts/`: generation, verification, packaging, and publishing scripts.
 
-## Development Commands
-
-Run from the repo root:
+Run focused checks while editing and the full suite before release:
 
 ```powershell
 $env:PYTHONPATH='src'
 python -m pytest tests -p no:cacheprovider
 node scripts\verify-cursor-extension.mjs
 npm run package:editor-extension
-```
-
-The extension package build may need dependencies installed in the extension
-folder first:
-
-```powershell
-cd extensions\aoe2-aiscript-cursor-local-lab
-npm install
-cd ..\..
-npm run package:editor-extension
-```
-
-## Editor Extension
-
-The extension package identity is:
-
-```text
-aoe2-ai-scripters.aoe2-ai-parser
 ```
 
 Packaging creates a VSIX under:
@@ -173,16 +163,24 @@ extensions/aoe2-aiscript-cursor-local-lab/aoe2-ai-parser-<version>.vsix
 ```
 
 The VSIX bundles the parser runtime and local reference data. Users need Python
-available, but they do not need to clone this repo for normal editor
-diagnostics.
+available, but they do not need this checkout for normal diagnostics.
 
-Useful extension commands:
+## Attribution
 
-- `AoE2: Lint Current File`
-- `AoE2: Lint Package`
-- `AoE2: Generate Package Report`
-- `AoE2: Open Latest Package Report`
-- `AoE2: Open Symbol Docs Preview`
+This extension is based on the open source AoE2 AiScript extension by Jvinniec:
+
+```text
+https://github.com/Jvinniec/aoe2-aiscript
+```
+
+AOE2 AI Parser keeps the original GPL-3.0-or-later license and adds the local
+reference registry, parser/linter integration, package validator diagnostics,
+generated documentation navigation, semantic coloring, and bundled validator
+runtime.
+
+## License
+
+AOE2 AI Parser is distributed under GPL-3.0-or-later. See [LICENSE](LICENSE).
 
 ## More Documentation
 

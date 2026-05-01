@@ -8,15 +8,13 @@ import unittest
 class CursorExtensionTests(unittest.TestCase):
     def test_completion_data_contains_core_ai_tokens(self) -> None:
         root = Path(__file__).resolve().parents[1]
-        subprocess.run(
-            ["node", "extensions/aoe2-aiscript-cursor/scripts/build-completions.mjs"],
-            cwd=root,
-            check=True,
-            capture_output=True,
-            text=True,
+        data_path = (
+            root
+            / "extensions"
+            / "aoe2-aiscript-cursor-local-lab"
+            / "data"
+            / "completions.json"
         )
-
-        data_path = root / "extensions" / "aoe2-aiscript-cursor" / "data" / "completions.json"
         data = json.loads(data_path.read_text(encoding="utf-8"))
         labels = {item["label"] for item in data["items"]}
 
@@ -138,7 +136,7 @@ class CursorExtensionTests(unittest.TestCase):
         self.assertIn("function labSetupDiagnostic", server_source)
         self.assertIn("pythonPath:", server_source)
         self.assertIn("labPath:", server_source)
-        self.assertIn("aoe2-ai-lab-setup", server_source)
+        self.assertIn("aoe2-ai-parser-setup", server_source)
         self.assertIn("function bundledLabPath", server_source)
         self.assertIn('PYTHONPATH: path.join(labPath, "src")', server_source)
         self.assertIn("*.vsix", ignore_text)
@@ -173,6 +171,20 @@ class CursorExtensionTests(unittest.TestCase):
         self.assertIn("AOE2 AI Parser", extension_source)
         self.assertIn("function bundledLabPath", extension_source)
         self.assertIn('PYTHONPATH: path.join(settings.labPath, "src")', extension_source)
+
+    def test_lab_extension_contributes_dark_theme_for_custom_tokens(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        extension_root = root / "extensions" / "aoe2-aiscript-cursor-local-lab"
+        package_data = json.loads((extension_root / "package.json").read_text(encoding="utf-8"))
+        theme_path = extension_root / "themes" / "aoe2-ai-parser-dark-color-theme.json"
+        theme_data = json.loads(theme_path.read_text(encoding="utf-8"))
+
+        self.assertEqual(package_data["contributes"]["themes"][0]["label"], "AOE2 AI Parser Dark")
+        self.assertEqual(package_data["contributes"]["themes"][0]["path"], "./themes/aoe2-ai-parser-dark-color-theme.json")
+        self.assertTrue(theme_data["semanticHighlighting"])
+        self.assertEqual(theme_data["semanticTokenColors"]["aoe2Action"], "#79C0FF")
+        self.assertIn("aoe2StrategicNumber", theme_data["semanticTokenColors"])
+        self.assertIn("tokenColors", theme_data)
 
     def test_lab_extension_does_not_print_generic_command_failed_when_stdout_exists(self) -> None:
         root = Path(__file__).resolve().parents[1]

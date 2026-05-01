@@ -54,7 +54,7 @@ function bundledLabPath() {
 function loadLabRegistryItems() {
     let completionsPath = labRegistryPath();
     if (!fs.existsSync(completionsPath)) {
-        connection.console.log("aoe2-ai-lab completions not found: " + completionsPath);
+        connection.console.log("AOE2 AI Parser completions not found: " + completionsPath);
         return [];
     }
     try {
@@ -62,7 +62,7 @@ function loadLabRegistryItems() {
         return payload.items || [];
     }
     catch (error) {
-        connection.console.error("could not load aoe2-ai-lab completions: " + String(error.message || error));
+        connection.console.error("could not load AOE2 AI Parser completions: " + String(error.message || error));
         return [];
     }
 }
@@ -201,7 +201,7 @@ function labDiagnosticExplanations() {
     labDiagnosticExplanationMap = new Map();
     let registryPath = labDiagnosticRegistryPath();
     if (!fs.existsSync(registryPath)) {
-        connection.console.log("aoe2-ai-lab diagnostic registry not found: " + registryPath);
+        connection.console.log("AOE2 AI Parser diagnostic registry not found: " + registryPath);
         return labDiagnosticExplanationMap;
     }
     try {
@@ -213,7 +213,7 @@ function labDiagnosticExplanations() {
         });
     }
     catch (error) {
-        connection.console.error("could not load aoe2-ai-lab diagnostic registry: " + String(error.message || error));
+        connection.console.error("could not load AOE2 AI Parser diagnostic registry: " + String(error.message || error));
     }
     return labDiagnosticExplanationMap;
 }
@@ -469,19 +469,19 @@ function labFindingToDiagnostic(textDocument, severity, code, message, line, spa
         code: severity + ":" + code,
         range: diagnosticRangeForLine(textDocument, line, code, message, span),
         message: "[" + severity + "] " + code + ": " + message,
-        source: "aoe2-ai-lab"
+        source: "aoe2-ai-parser"
     };
 }
 function labSetupDiagnostic(message, labPath, pythonPath, commandArgs) {
     return [{
             severity: vscode_languageserver_1.DiagnosticSeverity.Error,
-            code: "error:aoe2-ai-lab-setup",
+            code: "error:aoe2-ai-parser-setup",
             range: {
                 start: { line: 0, character: 0 },
                 end: { line: 0, character: 1 }
             },
-            message: "[error] aoe2-ai-lab setup: " + message.trim() + "\npythonPath: " + pythonPath + "\nlabPath: " + labPath + "\ncommand: " + pythonPath + " " + commandArgs.join(" "),
-            source: "aoe2-ai-lab"
+            message: "[error] AOE2 AI Parser setup: " + message.trim() + "\npythonPath: " + pythonPath + "\nlabPath: " + labPath + "\ncommand: " + pythonPath + " " + commandArgs.join(" "),
+            source: "aoe2-ai-parser"
         }];
 }
 function collectAiRootDiagnostics(textDocument, payload, currentPath) {
@@ -616,7 +616,7 @@ function runLabLinter(textDocument, settings, workspaceFolder) {
     let workspacePath = vscode_uri_1.URI.parse(workspaceFolder).fsPath;
     let env = Object.assign({}, process.env, { PYTHONPATH: path.join(labPath, "src") });
     if (!fs.existsSync(labPath)) {
-        return labSetupDiagnostic("aoe2-ai-lab runtime does not exist. Reinstall the extension or set aoe2_AiScript.labPath to an aoe2-ai-lab checkout.", labPath, pythonPath, ["-m", "aoe2_ai_lab", "lint", filePath]);
+        return labSetupDiagnostic("AOE2 AI Parser runtime does not exist. Reinstall the extension or set aoe2_AiScript.labPath to an AOE2 AI Parser checkout.", labPath, pythonPath, ["-m", "aoe2_ai_lab", "lint", filePath]);
     }
     let packageDiagnostics = runLabPackageLinter(textDocument, settings, labPath, pythonPath, env, workspacePath, filePath);
     if (packageDiagnostics !== null) {

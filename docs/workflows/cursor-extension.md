@@ -3,7 +3,8 @@
 The patched local VS Code/Cursor extension lives at
 `extensions/aoe2-aiscript-cursor-local-lab`.
 
-It is a local fork of the AoE2 AiScript extension with aoe2-ai-lab integration.
+It is a local fork of the AoE2 AiScript extension with AOE2 AI Parser
+integration.
 The folder name is historical; the packaged extension is editor-neutral and can
 be installed in VS Code or Cursor.
 Patch the compiled JavaScript files directly unless the TypeScript source is
@@ -127,7 +128,7 @@ Users only need to set `labPath` when they are developing against a local
 checkout of this repo:
 
 ```json
-"aoe2_AiScript.labPath": "C:/path/to/aoe2-ai-lab",
+"aoe2_AiScript.labPath": "C:/path/to/aoe2-ai-parser",
 "aoe2_AiScript.pythonPath": "python"
 ```
 
@@ -230,16 +231,38 @@ completions from:
 extensions/aoe2-aiscript-cursor-local-lab/data/completions.json
 ```
 
-The source generator is:
+This packaged completion data is owned by
+`extensions/aoe2-aiscript-cursor-local-lab`. It includes the original extension
+completion surface plus local registry entries for commands, strategic numbers,
+objects, techs, classes/value families, and other enumerated values.
 
-```powershell
-node extensions\aoe2-aiscript-cursor\scripts\build-completions.mjs
-Copy-Item extensions\aoe2-aiscript-cursor\data\completions.json extensions\aoe2-aiscript-cursor-local-lab\data\completions.json -Force
+## Color Theme
+
+The extension contributes `AOE2 AI Parser Dark` from:
+
+```text
+extensions/aoe2-aiscript-cursor-local-lab/themes/aoe2-ai-parser-dark-color-theme.json
 ```
 
-The generated completion data is built from local inventories under
-`docs/extracted/inventories` and includes commands, strategic numbers, objects,
-techs, classes/value families, and other enumerated values.
+The theme defines both semantic token colors and TextMate fallback colors. The
+palette follows dark-mode accessibility guidance: use a dark gray editor
+surface instead of pure black, avoid pure white for normal text, and keep
+syntax colors moderately saturated so categories are distinguishable without
+glare. Semantic token mappings should stay aligned with the language server's
+custom token types:
+
+- `aoe2Action`
+- `aoe2Fact`
+- `aoe2FactAction`
+- `aoe2Command`
+- `aoe2StrategicNumber`
+- `aoe2Object`
+- `aoe2Tech`
+- `aoe2Value`
+- `aoe2LocalConstant`
+
+When changing token colors, test both semantic highlighting and TextMate fallback
+scopes with `samples/semantic_coloring_sample.per`.
 
 ## Context-Aware Completions
 
@@ -378,7 +401,7 @@ original signature-help data.
 
 ## Code Actions
 
-The language server offers quick fixes for selected aoe2-ai-lab diagnostics:
+The language server offers quick fixes for selected AOE2 AI Parser diagnostics:
 
 - `missing-load-target`: replace the unresolved `.ai` load target with a nearby
   reachable `.per` load target.

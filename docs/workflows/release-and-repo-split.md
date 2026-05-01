@@ -7,7 +7,7 @@ scripting, not the place where one personal AI has to live forever.
 
 Recommended split:
 
-- `aoe2-ai-lab`: public tooling repo. Owns the parser, linter, package
+- `aoe2-ai-parser`: public tooling repo. Owns the parser, linter, package
   validator, local reference inventories, generated Markdown docs, editor
   extension, tests, and release scripts.
 - AI package repo: private or public gameplay AI repo. Owns actual `.ai`,
@@ -18,12 +18,12 @@ Recommended split:
   with the public release unless license/redistribution is clear.
 
 The AI package repo can use this tooling through the editor extension and, for
-CLI work, either a checked-out sibling `aoe2-ai-lab` repo or a future published
+CLI work, either a checked-out sibling `aoe2-ai-parser` repo or a future published
 Python package.
 
 ## Shared Reference Data
 
-The local docs and JSON inventories remain owned by `aoe2-ai-lab`:
+The local docs and JSON inventories remain owned by `aoe2-ai-parser`:
 
 - `docs/extracted/inventories/`
 - `docs/reference/generated/`
@@ -103,7 +103,7 @@ publish it through marketplace tooling.
 
 After the marketplace release path works:
 
-- Publish `aoe2-ai-lab` as a Python package so CLI users can install it without
+- Publish `aoe2-ai-parser` as a Python package so CLI users can install it without
   cloning the full repo.
 - Consider porting the validator core to TypeScript so the extension no longer
   depends on a local Python install.

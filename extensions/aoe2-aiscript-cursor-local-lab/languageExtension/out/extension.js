@@ -311,7 +311,7 @@ function runLabCommand(args, title, formatStdout) {
     channel.appendLine("");
     channel.show(true);
     if (!settings.labPath || !fs.existsSync(settings.labPath)) {
-        vscode_1.window.showErrorMessage("aoe2-ai-lab path does not exist. Set aoe2_AiScript.labPath.");
+        vscode_1.window.showErrorMessage("AOE2 AI Parser runtime path does not exist. Set aoe2_AiScript.labPath.");
         return { ok: false, stdout: "", stderr: "invalid labPath" };
     }
     let env = Object.assign({}, process.env, { PYTHONPATH: path.join(settings.labPath, "src") });

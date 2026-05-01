@@ -9,25 +9,25 @@
   "editor.semanticTokenColorCustomizations": {
     "enabled": true,
     "rules": {
-      "aoe2Action": "#569CD6",
-      "aoe2Fact": "#C586C0",
-      "aoe2FactAction": "#4EC9B0",
-      "aoe2Command": "#DCDCAA",
-      "aoe2StrategicNumber": "#4BA3FF",
-      "aoe2Object": "#CE9178",
-      "aoe2Tech": "#B5CEA8",
-      "aoe2Value": "#D7BA7D",
+      "aoe2Action": "#79C0FF",
+      "aoe2Fact": "#D2A8FF",
+      "aoe2FactAction": "#56D4C2",
+      "aoe2Command": "#E3B341",
+      "aoe2StrategicNumber": "#58A6FF",
+      "aoe2Object": "#F2A65A",
+      "aoe2Tech": "#A5D6A7",
+      "aoe2Value": "#F0C674",
       "aoe2LocalConstant": {
         "foreground": "#7EE787"
       },
-      "aoe2Action:aoe2aiscript": "#569CD6",
-      "aoe2Fact:aoe2aiscript": "#C586C0",
-      "aoe2FactAction:aoe2aiscript": "#4EC9B0",
-      "aoe2Command:aoe2aiscript": "#DCDCAA",
-      "aoe2StrategicNumber:aoe2aiscript": "#4BA3FF",
-      "aoe2Object:aoe2aiscript": "#CE9178",
-      "aoe2Tech:aoe2aiscript": "#B5CEA8",
-      "aoe2Value:aoe2aiscript": "#D7BA7D",
+      "aoe2Action:aoe2aiscript": "#79C0FF",
+      "aoe2Fact:aoe2aiscript": "#D2A8FF",
+      "aoe2FactAction:aoe2aiscript": "#56D4C2",
+      "aoe2Command:aoe2aiscript": "#E3B341",
+      "aoe2StrategicNumber:aoe2aiscript": "#58A6FF",
+      "aoe2Object:aoe2aiscript": "#F2A65A",
+      "aoe2Tech:aoe2aiscript": "#A5D6A7",
+      "aoe2Value:aoe2aiscript": "#F0C674",
       "aoe2LocalConstant:aoe2aiscript": {
         "foreground": "#7EE787"
       }
@@ -38,43 +38,43 @@
       {
         "scope": "entity.name.function.aoe2aiscript.action",
         "settings": {
-          "foreground": "#569CD6"
+          "foreground": "#79C0FF"
         }
       },
       {
         "scope": "entity.name.function.aoe2aiscript.fact",
         "settings": {
-          "foreground": "#C586C0"
+          "foreground": "#D2A8FF"
         }
       },
       {
         "scope": "support.constant.strategic-number.aoe2aiscript",
         "settings": {
-          "foreground": "#4BA3FF"
+          "foreground": "#58A6FF"
         }
       },
       {
         "scope": "constant.other.object.aoe2aiscript",
         "settings": {
-          "foreground": "#CE9178"
+          "foreground": "#F2A65A"
         }
       },
       {
         "scope": "aoe2aiscript.tech",
         "settings": {
-          "foreground": "#B5CEA8"
+          "foreground": "#A5D6A7"
         }
       },
       {
         "scope": "constant.other.value.aoe2aiscript",
         "settings": {
-          "foreground": "#D7BA7D"
+          "foreground": "#F0C674"
         }
       },
       {
         "scope": "variable.other.aoe2aiscript.resource",
         "settings": {
-          "foreground": "#D7BA7D"
+          "foreground": "#F0C674"
         }
       },
       {

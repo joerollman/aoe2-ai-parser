@@ -1,6 +1,7 @@
 {
   "name": "aoe2-ai-parser-tools",
   "private": true,
+  "license": "GPL-3.0-or-later",
   "type": "module",
   "scripts": {
     "lint:rms": "node scripts/lint-rms.mjs",

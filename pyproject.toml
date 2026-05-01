@@ -2,6 +2,8 @@
 name = "aoe2-ai-parser"
 version = "0.1.0"
 description = "Parser, linter, package validator, and editor tooling for Age of Empires II DE AI scripting"
+license = "GPL-3.0-or-later"
+license-files = ["LICENSE"]
 requires-python = ">=3.12"
 dependencies = []
 

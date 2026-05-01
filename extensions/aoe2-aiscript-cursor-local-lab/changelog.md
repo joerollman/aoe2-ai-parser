@@ -5,6 +5,14 @@ this file. Version numbers are given as:
 
     <major>.<minor>.<patch>
 
+## v0.1.47
+
+- Add the `AOE2 AI Parser Dark` color theme with semantic-token colors and
+  TextMate fallback colors for parser-specific token categories.
+- Replace the extension icon with a simple text logo for AOE2 AI Parser.
+- Remove stale upstream extension snapshot files from the parser repository.
+- Reframe README guidance for marketplace users first.
+
 ## v0.1.46
 
 - Harden extension packaging so common local credential files, key material, and

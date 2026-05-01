@@ -1,0 +1,123 @@
+{
+  "$schema": "vscode://schemas/color-theme",
+  "name": "AOE2 AI Parser Dark",
+  "type": "dark",
+  "semanticHighlighting": true,
+  "colors": {
+    "editor.background": "#0D1117",
+    "editor.foreground": "#C9D1D9",
+    "editorLineNumber.foreground": "#6E7681",
+    "editorLineNumber.activeForeground": "#C9D1D9",
+    "editorCursor.foreground": "#F0F6FC",
+    "editor.selectionBackground": "#264F78",
+    "editor.inactiveSelectionBackground": "#1F3A52",
+    "editor.lineHighlightBackground": "#161B22",
+    "editorWhitespace.foreground": "#30363D",
+    "editorIndentGuide.background1": "#30363D",
+    "editorIndentGuide.activeBackground1": "#6E7681"
+  },
+  "semanticTokenColors": {
+    "aoe2Action": "#79C0FF",
+    "aoe2Fact": "#D2A8FF",
+    "aoe2FactAction": "#56D4C2",
+    "aoe2Command": "#E3B341",
+    "aoe2StrategicNumber": "#58A6FF",
+    "aoe2Object": "#F2A65A",
+    "aoe2Tech": "#A5D6A7",
+    "aoe2Value": "#F0C674",
+    "aoe2LocalConstant": "#7EE787",
+    "aoe2Action:aoe2aiscript": "#79C0FF",
+    "aoe2Fact:aoe2aiscript": "#D2A8FF",
+    "aoe2FactAction:aoe2aiscript": "#56D4C2",
+    "aoe2Command:aoe2aiscript": "#E3B341",
+    "aoe2StrategicNumber:aoe2aiscript": "#58A6FF",
+    "aoe2Object:aoe2aiscript": "#F2A65A",
+    "aoe2Tech:aoe2aiscript": "#A5D6A7",
+    "aoe2Value:aoe2aiscript": "#F0C674",
+    "aoe2LocalConstant:aoe2aiscript": "#7EE787"
+  },
+  "tokenColors": [
+    {
+      "scope": [
+        "comment.line.semicolon",
+        "comment.line.double-slash"
+      ],
+      "settings": {
+        "foreground": "#8B949E",
+        "fontStyle": "italic"
+      }
+    },
+    {
+      "scope": "string.quoted.double.aoe2aiscript",
+      "settings": {
+        "foreground": "#C9D1D9"
+      }
+    },
+    {
+      "scope": "constant.numeric.aoe2aiscript",
+      "settings": {
+        "foreground": "#B8C0CC"
+      }
+    },
+    {
+      "scope": [
+        "storage.type.aoe2aiscript.def.rule",
+        "storage.type.aoe2aiscript.def.const",
+        "keyword.control.aoe2aiscript.control",
+        "keyword.control.aoe2aiscript.load.if",
+        "keyword.control.aoe2aiscript.load.elseend",
+        "keyword.control.aoe2aiscript.load.file",
+        "support.type.aoe2aiscript.yields"
+      ],
+      "settings": {
+        "foreground": "#E3B341"
+      }
+    },
+    {
+      "scope": "entity.name.function.aoe2aiscript.action",
+      "settings": {
+        "foreground": "#79C0FF"
+      }
+    },
+    {
+      "scope": "entity.name.function.aoe2aiscript.fact",
+      "settings": {
+        "foreground": "#D2A8FF"
+      }
+    },
+    {
+      "scope": "support.constant.strategic-number.aoe2aiscript",
+      "settings": {
+        "foreground": "#58A6FF"
+      }
+    },
+    {
+      "scope": "constant.other.object.aoe2aiscript",
+      "settings": {
+        "foreground": "#F2A65A"
+      }
+    },
+    {
+      "scope": "aoe2aiscript.tech",
+      "settings": {
+        "foreground": "#A5D6A7"
+      }
+    },
+    {
+      "scope": [
+        "constant.other.value.aoe2aiscript",
+        "variable.other.aoe2aiscript.resource",
+        "constant.language.aoe2aiscript.truefalse"
+      ],
+      "settings": {
+        "foreground": "#F0C674"
+      }
+    },
+    {
+      "scope": "variable.other.constant.aoe2aiscript",
+      "settings": {
+        "foreground": "#7EE787"
+      }
+    }
+  ]
+}
