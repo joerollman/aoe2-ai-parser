@@ -94,7 +94,7 @@ function verifyInstalledExtension() {
     "function formatPackageIssueGroups",
     "function bundledLabPath",
     "payload.issue_groups || []",
-    '"lint-package", packageRoot, "--json", "--fail-level", "error"',
+    '"lint-package", packageRoot, "--json", "--fail-level", settings.packageFailLevel',
   ]) {
     assert(clientSource.includes(needle), `installed extension is missing: ${needle}`);
   }

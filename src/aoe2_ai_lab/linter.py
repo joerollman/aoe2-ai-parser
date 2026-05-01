@@ -55,6 +55,7 @@ WARNING_FINDING_CODES = {
     "up-build-place-point-coordinate-as-escrow",
     "xs-script-call-parameterized-function",
 }
+SUPPRESSION_MARKER = "aoe2-ai-parser-disable"
 
 
 def finding_severity(code: str) -> str:
@@ -115,6 +116,46 @@ class Finding:
 
     def format(self, path: Path) -> str:
         return f"{path}:{self.line}: {self.severity}: {self.code}: {self.message}"
+
+
+def _line_comment_text(line: str) -> str:
+    in_string = False
+    for index, char in enumerate(line):
+        if char == '"' and not is_escaped_quote(line, index):
+            in_string = not in_string
+        elif char == ";" and not in_string:
+            return line[index + 1 :]
+    return ""
+
+
+def _suppression_codes(comment: str, directive: str) -> set[str]:
+    match = re.search(rf"\b{re.escape(directive)}\b(?P<codes>.*)", comment, flags=re.IGNORECASE)
+    if not match:
+        return set()
+    codes = {
+        token.strip().lower()
+        for token in re.split(r"[\s,]+", match.group("codes").strip())
+        if token.strip()
+    }
+    return codes or {"all"}
+
+
+def source_suppression_map(path: str | Path) -> dict[int, set[str]]:
+    suppressions: dict[int, set[str]] = {}
+    for line_number, raw_line in enumerate(read_script_text(path).splitlines(), start=1):
+        comment = _line_comment_text(raw_line)
+        line_codes = _suppression_codes(comment, f"{SUPPRESSION_MARKER}-line")
+        next_line_codes = _suppression_codes(comment, f"{SUPPRESSION_MARKER}-next-line")
+        if line_codes:
+            suppressions.setdefault(line_number, set()).update(line_codes)
+        if next_line_codes:
+            suppressions.setdefault(line_number + 1, set()).update(next_line_codes)
+    return suppressions
+
+
+def source_suppresses_finding(suppressions: dict[int, set[str]], finding: Finding) -> bool:
+    codes = suppressions.get(finding.line, set())
+    return "all" in codes or finding.code.lower() in codes
 
 
 @dataclass(frozen=True)
@@ -2954,15 +2995,19 @@ def lint_file(
     profile: str = "default",
     suppress_codes: set[str] | None = None,
 ) -> list[Finding]:
+    script_path = Path(path)
+    source_suppressions = source_suppression_map(script_path)
+
     def apply_suppressions(raw_findings: list[Finding]) -> list[Finding]:
         suppressed = set(LINT_PROFILE_SUPPRESSIONS.get(profile, set()))
         if suppress_codes:
             suppressed.update(suppress_codes)
-        if not suppressed:
-            return raw_findings
-        return [finding for finding in raw_findings if finding.code not in suppressed]
+        return [
+            finding
+            for finding in raw_findings
+            if finding.code not in suppressed and not source_suppresses_finding(source_suppressions, finding)
+        ]
 
-    script_path = Path(path)
     line_confidence = {
         source_line.number: source_line.confidence
         for source_line in active_source_lines(script_path)

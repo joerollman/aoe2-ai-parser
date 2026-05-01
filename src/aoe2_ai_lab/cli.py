@@ -44,6 +44,33 @@ DIAGNOSTIC_REGISTRY_PATH = (
     / "workflows"
     / "validator-diagnostic-codes.json"
 )
+
+
+def suppression_comment(code: str, *, next_line: bool = False) -> str:
+    directive = "aoe2-ai-parser-disable-next-line" if next_line else "aoe2-ai-parser-disable-line"
+    return f"; {directive} {code}"
+
+
+def suppress_finding_in_file(path: Path, line: int, code: str, *, next_line: bool = False) -> None:
+    if line < 1:
+        raise ValueError("line must be 1 or greater")
+    lines = path.read_text(encoding="utf-8").splitlines()
+    comment = suppression_comment(code, next_line=next_line)
+    if next_line:
+        insert_index = min(line - 1, len(lines))
+        if insert_index > 0:
+            previous_indent = re.match(r"\s*", lines[insert_index - 1]).group(0)
+        elif insert_index < len(lines):
+            previous_indent = re.match(r"\s*", lines[insert_index]).group(0)
+        else:
+            previous_indent = ""
+        lines.insert(insert_index, f"{previous_indent}{comment}")
+    else:
+        if line > len(lines):
+            raise ValueError(f"line {line} is beyond end of file")
+        if comment not in lines[line - 1]:
+            lines[line - 1] = f"{lines[line - 1]} {comment}"
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 DIAGNOSTIC_REGISTRY_MARKDOWN_PATH = DIAGNOSTIC_REGISTRY_PATH.with_suffix(".md")
 
 
@@ -197,6 +224,18 @@ def build_parser() -> argparse.ArgumentParser:
         action="append",
         default=[],
         help="suppress a finding code for this package run; may be provided multiple times",
+    )
+
+    suppress = subparsers.add_parser(
+        "suppress-finding", help="insert an inline suppression comment for one diagnostic"
+    )
+    suppress.add_argument("path", type=Path)
+    suppress.add_argument("line", type=int)
+    suppress.add_argument("code", help="diagnostic code to suppress, or 'all'")
+    suppress.add_argument(
+        "--next-line",
+        action="store_true",
+        help="insert a suppression comment before the target line instead of appending to it",
     )
 
     diagnostics = subparsers.add_parser(
@@ -1590,6 +1629,15 @@ def main(argv: list[str] | None = None) -> int:
                         f"loads {duplicate.target_path} more than once"
                     )
         return exit_code
+
+    if args.command == "suppress-finding":
+        try:
+            suppress_finding_in_file(args.path, args.line, args.code, next_line=args.next_line)
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
+            return 2
+        print(f"inserted suppression for {args.code} in {args.path}:{args.line}")
+        return 0
 
     if args.command == "diagnostics":
         entries = matching_diagnostic_entries(args.code)

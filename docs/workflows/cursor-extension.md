@@ -88,8 +88,8 @@ Important settings:
 
 - `aoe2_AiScript.useLabLinter`: default `true`.
 - `aoe2_AiScript.usePackageLint`: default `true`.
-- `aoe2_AiScript.packageFailLevel`: default `error`; set to `warning` or
-  `info` to surface lower-severity package findings in command output,
+- `aoe2_AiScript.packageFailLevel`: default `info`; set to `warning` or
+  `error` to suppress lower-severity package findings in command output,
   generated reports, and package-aware diagnostics.
 - `aoe2_AiScript.labPath`: optional path to a development checkout of this
   repo. Empty means use the validator/reference runtime bundled with the
@@ -233,14 +233,36 @@ extension treats stdout/report output as useful output, not as a hard command
 failure. A generated report with findings should show a warning notification,
 not a generic `Command failed` message.
 
-The fail threshold comes from `aoe2_AiScript.packageFailLevel`. For example,
-use this workspace setting to include info-level package hygiene findings:
+The fail threshold comes from `aoe2_AiScript.packageFailLevel`, which defaults
+to `info` for extension users. For example, use this workspace setting to show
+only warnings and errors:
 
 ```json
 {
-  "aoe2_AiScript.packageFailLevel": "info"
+  "aoe2_AiScript.packageFailLevel": "warning"
 }
 ```
+
+## Suppression Quick Fixes
+
+Diagnostics expose a quick fix named `Suppress <code> on this line`. It inserts
+a source comment that the CLI and extension both honor:
+
+```lisp
+(defconst villager-class 904) ; aoe2-ai-parser-disable-line redundant-built-in-defconst
+```
+
+The parser also supports a preceding-line form:
+
+```lisp
+; aoe2-ai-parser-disable-next-line repeat-chat
+(chat-to-all "debug")
+```
+
+These suppressions apply only to source lint findings attached to that line.
+Package-integrity findings such as stale `.ai` roots should normally be fixed
+or filtered with package scope/profile choices rather than hidden in a source
+file.
 
 ## Registry Completions
 
@@ -336,13 +358,28 @@ Cursor can color known symbols by registry role:
 - `aoe2Value`: DUC actions, operators, resources, and other enumerated values.
 - `aoe2LocalConstant`: local `defconst` declarations.
 
-The workspace `.vscode/settings.json` enables semantic highlighting and assigns
-default colors for these token types. Users can override them with
-`editor.semanticTokenColorCustomizations`. The workspace also includes
-TextMate fallback color rules for the grammar scopes used by commands, facts,
-strategic numbers, object-ish tokens, value tokens, resources, and local
-constants. These fallback rules help Cursor themes that do not visibly apply
-custom semantic token types.
+The contributed `AOE2 AI Parser Dark` theme assigns default colors for these
+token types. Users can override them with normal VS Code/Cursor settings:
+
+```json
+{
+  "editor.semanticTokenColorCustomizations": {
+    "enabled": true,
+    "rules": {
+      "aoe2Action:aoe2aiscript": "#79C0FF",
+      "aoe2Fact:aoe2aiscript": "#D2A8FF",
+      "aoe2StrategicNumber:aoe2aiscript": "#58A6FF",
+      "aoe2Object:aoe2aiscript": "#F2A65A",
+      "aoe2LocalConstant:aoe2aiscript": "#7EE787"
+    }
+  }
+}
+```
+
+The workspace also includes TextMate fallback color rules for the grammar scopes
+used by commands, facts, strategic numbers, object-ish tokens, value tokens,
+resources, and local constants. These fallback rules help Cursor themes that do
+not visibly apply custom semantic token types.
 
 Use `samples/semantic_coloring_sample.per` as the visual check file after
 changing grammar scopes or color settings. It is intentionally lint-clean while

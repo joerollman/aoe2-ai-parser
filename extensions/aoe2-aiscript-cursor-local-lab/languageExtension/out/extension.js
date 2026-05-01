@@ -39,9 +39,9 @@ function getLabSettings() {
     let configuredLabPath = config.get("labPath") || "";
     let labPath = configuredLabPath || bundledLabPath() || workspacePath;
     let pythonPath = config.get("pythonPath") || "python";
-    let packageFailLevel = config.get("packageFailLevel") || "error";
+    let packageFailLevel = config.get("packageFailLevel") || "info";
     if (!["error", "warning", "info"].includes(packageFailLevel)) {
-        packageFailLevel = "error";
+        packageFailLevel = "info";
     }
     return { labPath, pythonPath, workspacePath, configuredLabPath, packageFailLevel };
 }

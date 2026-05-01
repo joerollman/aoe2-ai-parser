@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 import re
 
-from .linter import Finding, lint_file
+from .linter import Finding, lint_file, source_suppression_map, source_suppresses_finding
 from .parser import (
     Atom,
     Expression,
@@ -964,4 +964,12 @@ def lint_package_root(root: PackageRoot, *, profile: str = "corpus") -> PackageL
                 ),
             )
         )
+    suppression_cache: dict[Path, dict[int, set[str]]] = {}
+    filtered_findings: list[tuple[Path, Finding]] = []
+    for file_path, finding in result.findings:
+        suppression_key = file_path.resolve()
+        suppressions = suppression_cache.setdefault(suppression_key, source_suppression_map(file_path))
+        if not source_suppresses_finding(suppressions, finding):
+            filtered_findings.append((file_path, finding))
+    result.findings = filtered_findings
     return result

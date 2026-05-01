@@ -709,6 +709,33 @@ class CliTests(unittest.TestCase):
         self.assertEqual(payload["roots"][0]["findings"], [])
         self.assertEqual(payload["totals"]["finding_count"], 0)
 
+    def test_suppress_finding_command_appends_inline_suppression(self) -> None:
+        with WorkspaceTempDir() as root:
+            path = root / "Warn.per"
+            path.write_text(
+                """
+(defconst villager-class 904)
+(defrule
+    (true)
+=>
+    (do-nothing)
+)
+""".strip(),
+                encoding="utf-8",
+            )
+            buffer = io.StringIO()
+            with redirect_stdout(buffer):
+                code = main(["suppress-finding", str(path), "1", "redundant-built-in-defconst"])
+            lint_buffer = io.StringIO()
+            with redirect_stdout(lint_buffer):
+                lint_code = main(["lint", str(path)])
+            text = path.read_text(encoding="utf-8")
+
+        self.assertEqual(code, 0)
+        self.assertIn("aoe2-ai-parser-disable-line redundant-built-in-defconst", text)
+        self.assertEqual(lint_code, 0)
+        self.assertEqual(lint_buffer.getvalue(), "")
+
     def test_lint_package_json_reports_structured_results(self) -> None:
         with WorkspaceTempDir() as root:
             (root / "Warn.ai").write_text('(load "Warn")\n', encoding="utf-8")

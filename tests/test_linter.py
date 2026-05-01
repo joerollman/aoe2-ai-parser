@@ -1045,6 +1045,45 @@ class LinterTests(unittest.TestCase):
 
         self.assertEqual(findings, [])
 
+    def test_inline_disable_line_suppresses_one_finding_code(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.per"
+            path.write_text(
+                """
+(defconst villager-class 904) ; aoe2-ai-parser-disable-line redundant-built-in-defconst
+(defrule
+    (true)
+=>
+    (do-nothing)
+)
+""".strip(),
+                encoding="utf-8",
+            )
+
+            findings = lint_file(path)
+
+        self.assertEqual(findings, [])
+
+    def test_inline_disable_next_line_suppresses_one_finding_code(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.per"
+            path.write_text(
+                """
+; aoe2-ai-parser-disable-next-line redundant-built-in-defconst
+(defconst villager-class 904)
+(defrule
+    (true)
+=>
+    (do-nothing)
+)
+""".strip(),
+                encoding="utf-8",
+            )
+
+            findings = lint_file(path)
+
+        self.assertEqual(findings, [])
+
     def test_flags_low_goal_for_search_state_writer(self) -> None:
         with TemporaryDirectory() as tmp:
             path = Path(tmp) / "sample.per"

@@ -51,14 +51,20 @@ the nearest `.ai` package root for the active file. `Lint Folder` validates the
 folder containing the active file, which is useful when the workspace or local
 mods folder is broader than the AI package you want to inspect.
 
-Diagnostics run on save by default. To include info-level package findings in
-package commands and package-aware diagnostics, add this to workspace settings:
+Diagnostics run on save by default. Package commands and package-aware
+diagnostics surface info-level findings by default. To make package lint less
+strict, change the fail level in workspace settings:
 
 ```json
 {
-  "aoe2_AiScript.packageFailLevel": "info"
+  "aoe2_AiScript.packageFailLevel": "warning"
 }
 ```
+
+Syntax colors can be customized with normal VS Code/Cursor settings. The
+extension contributes semantic token names such as `aoe2Action`,
+`aoe2Fact`, `aoe2StrategicNumber`, `aoe2Object`, and `aoe2LocalConstant`;
+override them through `editor.semanticTokenColorCustomizations`.
 
 The marketplace extension identity is:
 
@@ -79,6 +85,20 @@ unless the diagnostic explanation says the pattern is known-bad.
 
 For imported or older community AIs, some compatibility patterns are expected.
 The extension and CLI support a `corpus` profile for that kind of review.
+You can suppress a reviewed finding inline:
+
+```lisp
+(defconst villager-class 904) ; aoe2-ai-parser-disable-line redundant-built-in-defconst
+; aoe2-ai-parser-disable-next-line repeat-chat
+(chat-to-all "debug")
+```
+
+Editor diagnostics include a quick fix to insert the line suppression. The CLI
+can also insert it:
+
+```powershell
+python -m aoe2_ai_lab suppress-finding path\to\your-file.per 42 repeat-chat
+```
 
 ## CLI And Repository Use
 
@@ -107,8 +127,8 @@ Lint an AI package directory containing `.ai` roots and loaded `.per` files:
 python -m aoe2_ai_lab lint-package path\to\your-ai-package --summary
 ```
 
-Package lint defaults to failing on `error`. To include `info` findings in
-summary output and the exit threshold:
+Package lint defaults to failing on `error` in the CLI. To include `info`
+findings in summary output and the exit threshold:
 
 ```powershell
 python -m aoe2_ai_lab lint-package path\to\your-ai-package --summary --profile default --fail-level info
@@ -131,6 +151,12 @@ legacy-compatible patterns should be suppressed:
 
 ```powershell
 python -m aoe2_ai_lab lint-package path\to\community-ai --profile corpus --json
+```
+
+Suppress a known noisy code for one run:
+
+```powershell
+python -m aoe2_ai_lab lint-package path\to\community-ai --suppress-code repeat-chat
 ```
 
 Look up local reference data:

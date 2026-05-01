@@ -2,7 +2,7 @@
 	"name": "aoe2-ai-parser",
 	"displayName": "AOE2 AI Parser",
 	"description": "Parser diagnostics, command tooltips, syntax highlighting, and autocomplete for Age of Empires 2 AI scripts in VS Code and Cursor",
-	"version": "0.1.51",
+	"version": "0.1.52",
 	"keywords": [
 		"aoeII",
 		"age",
@@ -134,7 +134,7 @@
 						"warning",
 						"info"
 					],
-					"default": "error",
+					"default": "info",
 					"description": "Minimum package-lint severity surfaced by package commands and package-aware diagnostics. Use 'info' to include hygiene notes such as redundant built-in defconsts."
 				},
 				"aoe2_AiScript.labPath": {

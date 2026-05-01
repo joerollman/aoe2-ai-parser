@@ -5,12 +5,21 @@ this file. Version numbers are given as:
 
     <major>.<minor>.<patch>
 
+## v0.1.52
+
+- Add inline suppression support with `aoe2-ai-parser-disable-line` and
+  `aoe2-ai-parser-disable-next-line` comments.
+- Add editor quick fixes that suppress a diagnostic on the current line.
+- Add the `suppress-finding` CLI helper for inserting suppression comments.
+
 ## v0.1.51
 
 - Add `AoE2: Lint Folder`, which runs package validation against the folder
   containing the active file.
+- Make package/folder lint default to info-level findings in the extension.
 - Clarify the difference between current-file lint, package lint, and folder
   lint in user docs.
+- Document semantic-token color customization for VS Code/Cursor users.
 
 ## v0.1.50
 

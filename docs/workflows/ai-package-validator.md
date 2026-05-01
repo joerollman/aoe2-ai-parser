@@ -212,6 +212,27 @@ python -m aoe2_ai_lab lint-package "<package path>" --suppress-code repeat-chat
 
 Use suppression for explicit triage decisions, not as a default import step.
 
+Reviewed source findings can also be suppressed inline:
+
+```lisp
+(defconst villager-class 904) ; aoe2-ai-parser-disable-line redundant-built-in-defconst
+; aoe2-ai-parser-disable-next-line repeat-chat
+(chat-to-all "debug")
+```
+
+Use `all` only when the entire line has been reviewed and the specific finding
+code is not stable enough:
+
+```lisp
+; aoe2-ai-parser-disable-next-line all
+```
+
+The CLI can insert a same-line suppression:
+
+```powershell
+python -m aoe2_ai_lab suppress-finding "<file.per>" 42 repeat-chat
+```
+
 ## Confidence
 
 Findings also have preprocessor confidence:

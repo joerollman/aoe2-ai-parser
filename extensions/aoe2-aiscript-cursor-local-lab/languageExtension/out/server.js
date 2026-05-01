@@ -284,7 +284,7 @@ const defaultSettings = {
     aiDirectory: "",
     useLabLinter: true,
     usePackageLint: true,
-    packageFailLevel: "error",
+    packageFailLevel: "info",
     labPath: "",
     pythonPath: "python"
 };
@@ -560,7 +560,7 @@ function runLabPackageLinter(textDocument, settings, labPath, pythonPath, env, w
         return null;
     }
     let stdout = "";
-    let packageFailLevel = ["error", "warning", "info"].includes(settings.packageFailLevel) ? settings.packageFailLevel : "error";
+    let packageFailLevel = ["error", "warning", "info"].includes(settings.packageFailLevel) ? settings.packageFailLevel : "info";
     try {
         stdout = child_process_1.execFileSync(pythonPath, ["-m", "aoe2_ai_lab", "lint-package", packageRoot, "--json", "--fail-level", packageFailLevel], {
             cwd: labPath,
@@ -1264,6 +1264,38 @@ function replacementCodeAction(title, uri, range, newText, diagnostic) {
         }
     };
 }
+function endOfLinePosition(textDocument, line) {
+    let lineText = textDocument.getText({
+        start: { line, character: 0 },
+        end: { line, character: 10000 }
+    });
+    return { line, character: lineText.length };
+}
+function suppressionCodeAction(textDocument, diagnostic, code) {
+    let line = diagnostic.range.start.line;
+    let insertPosition = endOfLinePosition(textDocument, line);
+    let lineText = textDocument.getText({
+        start: { line, character: 0 },
+        end: insertPosition
+    });
+    let marker = "; aoe2-ai-parser-disable-line " + code;
+    if (lineText.indexOf(marker) >= 0) {
+        return undefined;
+    }
+    return {
+        title: "Suppress " + code + " on this line",
+        kind: "quickfix",
+        diagnostics: [diagnostic],
+        edit: {
+            changes: {
+                [textDocument.uri]: [{
+                        range: { start: insertPosition, end: insertPosition },
+                        newText: " " + marker
+                    }]
+            }
+        }
+    };
+}
 function explanationCodeAction(code, diagnostic) {
     let explanation = labDiagnosticExplanations().get(code);
     if (!explanation) {
@@ -1330,6 +1362,10 @@ function codeActionsForDiagnostic(textDocument, diagnostic) {
     let explanation = explanationCodeAction(code, diagnostic);
     if (explanation && !actions.some(action => action && action.title === explanation.title)) {
         actions.push(explanation);
+    }
+    let suppression = suppressionCodeAction(textDocument, diagnostic, code);
+    if (suppression) {
+        actions.push(suppression);
     }
     return actions.filter(action => action !== undefined);
 }

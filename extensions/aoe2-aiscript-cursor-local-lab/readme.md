@@ -58,7 +58,7 @@ the harsh contrast of pure black and pure white.
 - `aoe2_AiScript.usePackageLint`: prefer package-aware diagnostics.
 - `aoe2_AiScript.packageFailLevel`: minimum package-lint severity surfaced by
   package commands and package-aware diagnostics (`error`, `warning`, or
-  `info`).
+  `info`). Default is `info`.
 - `aoe2_AiScript.labPath`: optional development checkout override.
 - `aoe2_AiScript.pythonPath`: Python executable.
 - `aoe2_AiScript.updateErrorsWhen`: validate on save, on change, or never.
@@ -67,6 +67,22 @@ the harsh contrast of pure black and pure white.
 nearest `.ai` package root for the active file. `Lint Folder` validates the
 folder containing the active file, which is useful when a mod folder is too broad
 to treat as one package.
+
+Reviewed findings can be suppressed inline with comments:
+
+```lisp
+; aoe2-ai-parser-disable-next-line repeat-chat
+(chat-to-all "debug")
+```
+
+Diagnostics expose a quick fix named `Suppress <code> on this line`, which
+inserts `; aoe2-ai-parser-disable-line <code>`.
+
+You can customize parser-specific colors with standard VS Code/Cursor
+`editor.semanticTokenColorCustomizations` settings. The main semantic token
+names are `aoe2Action`, `aoe2Fact`, `aoe2FactAction`, `aoe2Command`,
+`aoe2StrategicNumber`, `aoe2Object`, `aoe2Tech`, `aoe2Value`, and
+`aoe2LocalConstant`.
 
 ## Attribution
 
