@@ -330,6 +330,8 @@ class CursorExtensionTests(unittest.TestCase):
         self.assertIn("function labRegistryHover", server_source)
         self.assertIn("hover = labRegistryHover(hover_txt);", server_source)
         self.assertIn("return hover;", server_source)
+        self.assertIn("maxHoverDocumentationLength", server_source)
+        self.assertIn("documentation.slice(0, maxHoverDocumentationLength)", server_source)
         self.assertIn("Syntax:", by_label["up-find-local"]["documentation"])
         self.assertIn("SN", by_label["sn-maximum-town-size"]["detail"])
 

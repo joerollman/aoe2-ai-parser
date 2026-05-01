@@ -38,6 +38,7 @@ let labCommandParameterMap = undefined;
 let labCommandItemMap = undefined;
 let labRegistryItemsByKindMap = undefined;
 let labDiagnosticExplanationMap = undefined;
+const maxHoverDocumentationLength = 1600;
 function labRegistryPath() {
     return path.resolve(__dirname, "..", "..", "data", "completions.json");
 }
@@ -179,7 +180,11 @@ function labRegistryHovers() {
             parts.push("**" + item.label + "**");
         }
         if (item.documentation) {
-            parts.push(item.documentation);
+            let documentation = String(item.documentation);
+            if (documentation.length > maxHoverDocumentationLength) {
+                documentation = documentation.slice(0, maxHoverDocumentationLength).replace(/\s+\S*$/, "") + "\n\n...";
+            }
+            parts.push(documentation);
         }
         labRegistryHoverMap.set(item.label, parts.join("\n\n"));
     });

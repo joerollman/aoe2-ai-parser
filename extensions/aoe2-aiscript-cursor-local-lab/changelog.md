@@ -5,6 +5,12 @@ this file. Version numbers are given as:
 
     <major>.<minor>.<patch>
 
+## v0.1.49
+
+- Cap hover documentation previews so large command reference entries do not
+  leave VS Code/Cursor hover popups stuck loading. Full documentation remains
+  available through Markdown Preview links.
+
 ## v0.1.48
 
 - Add `aoe2_AiScript.packageFailLevel` so package commands, generated reports,
