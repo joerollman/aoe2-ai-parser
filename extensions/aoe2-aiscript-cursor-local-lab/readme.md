@@ -15,7 +15,9 @@ VS Code and Cursor support for Age of Empires II AI scripts.
 - Package-aware diagnostics from the bundled parser/linter.
 - Command palette actions for linting the current file, linting an AI package,
   and generating package reports.
-- Quick fixes and explanation actions for common validator diagnostics.
+- Compact package graph output for reachable `.per` loads and `.xs` includes.
+- Quick fixes and diagnostic documentation actions for common validator
+  diagnostics.
 
 ## Requirements
 
@@ -35,6 +37,7 @@ to test parser or reference-data changes without repackaging the extension.
 - `AoE2: Generate Package Report`
 - `AoE2: Open Latest Package Report`
 - `AoE2: Open Symbol Docs Preview`
+- `AoE2: Open Diagnostic Docs Preview`
 
 ## Settings
 
