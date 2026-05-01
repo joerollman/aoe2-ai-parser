@@ -39,7 +39,11 @@ function getLabSettings() {
     let configuredLabPath = config.get("labPath") || "";
     let labPath = configuredLabPath || bundledLabPath() || workspacePath;
     let pythonPath = config.get("pythonPath") || "python";
-    return { labPath, pythonPath, workspacePath, configuredLabPath };
+    let packageFailLevel = config.get("packageFailLevel") || "error";
+    if (!["error", "warning", "info"].includes(packageFailLevel)) {
+        packageFailLevel = "error";
+    }
+    return { labPath, pythonPath, workspacePath, configuredLabPath, packageFailLevel };
 }
 let labRegistryLabelSet;
 let labRegistryKindMap;
@@ -380,7 +384,7 @@ function lintPackage() {
         return;
     }
     let settings = getLabSettings();
-    let result = runLabCommand(["-m", "aoe2_ai_lab", "lint-package", packageRoot, "--json", "--fail-level", "error"], "AoE2: Lint Package", stdout => formatPackageIssueGroups(stdout, settings.labPath));
+    let result = runLabCommand(["-m", "aoe2_ai_lab", "lint-package", packageRoot, "--json", "--fail-level", settings.packageFailLevel], "AoE2: Lint Package", stdout => formatPackageIssueGroups(stdout, settings.labPath));
     if (result.ok) {
         vscode_1.window.showInformationMessage("AoE2 lint package completed.");
     }
@@ -405,7 +409,7 @@ function generatePackageReport() {
     fs.mkdirSync(reportDir, { recursive: true });
     let reportName = path.basename(packageRoot) + "-" + timestampForReport() + ".md";
     let reportPath = path.join(reportDir, reportName);
-    let result = runLabCommand(["-m", "aoe2_ai_lab", "lint-package", packageRoot, "--report", reportPath, "--fail-level", "error"], "AoE2: Generate Package Report");
+    let result = runLabCommand(["-m", "aoe2_ai_lab", "lint-package", packageRoot, "--report", reportPath, "--fail-level", settings.packageFailLevel], "AoE2: Generate Package Report");
     if (fs.existsSync(reportPath)) {
         vscode_1.workspace.openTextDocument(reportPath).then(document => vscode_1.window.showTextDocument(document));
         if (result.ok) {

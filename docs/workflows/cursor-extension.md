@@ -88,10 +88,15 @@ Important settings:
 
 - `aoe2_AiScript.useLabLinter`: default `true`.
 - `aoe2_AiScript.usePackageLint`: default `true`.
+- `aoe2_AiScript.packageFailLevel`: default `error`; set to `warning` or
+  `info` to surface lower-severity package findings in command output,
+  generated reports, and package-aware diagnostics.
 - `aoe2_AiScript.labPath`: optional path to a development checkout of this
   repo. Empty means use the validator/reference runtime bundled with the
   extension.
 - `aoe2_AiScript.pythonPath`: Python executable, default `python`.
+- `aoe2_AiScript.updateErrorsWhen`: default `onSave`; set to `onChange` for
+  live diagnostics or `never` to disable automatic diagnostics.
 
 If Python, the bundled runtime, `labPath`, or import setup fails, the extension reports an
 `aoe2-ai-lab-setup` diagnostic with the exact command, `pythonPath`, and
@@ -221,6 +226,15 @@ Package reports are written to:
 extension treats stdout/report output as useful output, not as a hard command
 failure. A generated report with findings should show a warning notification,
 not a generic `Command failed` message.
+
+The fail threshold comes from `aoe2_AiScript.packageFailLevel`. For example,
+use this workspace setting to include info-level package hygiene findings:
+
+```json
+{
+  "aoe2_AiScript.packageFailLevel": "info"
+}
+```
 
 ## Registry Completions
 

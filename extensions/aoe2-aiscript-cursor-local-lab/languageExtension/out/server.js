@@ -279,6 +279,7 @@ const defaultSettings = {
     aiDirectory: "",
     useLabLinter: true,
     usePackageLint: true,
+    packageFailLevel: "error",
     labPath: "",
     pythonPath: "python"
 };
@@ -554,8 +555,9 @@ function runLabPackageLinter(textDocument, settings, labPath, pythonPath, env, w
         return null;
     }
     let stdout = "";
+    let packageFailLevel = ["error", "warning", "info"].includes(settings.packageFailLevel) ? settings.packageFailLevel : "error";
     try {
-        stdout = child_process_1.execFileSync(pythonPath, ["-m", "aoe2_ai_lab", "lint-package", packageRoot, "--json", "--fail-level", "error"], {
+        stdout = child_process_1.execFileSync(pythonPath, ["-m", "aoe2_ai_lab", "lint-package", packageRoot, "--json", "--fail-level", packageFailLevel], {
             cwd: labPath,
             env,
             encoding: "utf8",

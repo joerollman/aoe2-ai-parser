@@ -79,7 +79,8 @@ class CursorExtensionTests(unittest.TestCase):
 
         server_source = server_path.read_text(encoding="utf-8")
 
-        self.assertIn('"lint-package", packageRoot, "--json", "--fail-level", "error"', server_source)
+        self.assertIn('"lint-package", packageRoot, "--json", "--fail-level", packageFailLevel', server_source)
+        self.assertIn('packageFailLevel: "error"', server_source)
         self.assertIn("findNearestPackageRoot(filePath, workspacePath)", server_source)
         self.assertIn("currentFileIsReachable", server_source)
         self.assertIn("return null;", server_source)
@@ -171,6 +172,8 @@ class CursorExtensionTests(unittest.TestCase):
         self.assertIn("AOE2 AI Parser", extension_source)
         self.assertIn("function bundledLabPath", extension_source)
         self.assertIn('PYTHONPATH: path.join(settings.labPath, "src")', extension_source)
+        self.assertIn('config.get("packageFailLevel") || "error"', extension_source)
+        self.assertIn('"--fail-level", settings.packageFailLevel', extension_source)
 
     def test_lab_extension_contributes_dark_theme_for_custom_tokens(self) -> None:
         root = Path(__file__).resolve().parents[1]
@@ -185,6 +188,21 @@ class CursorExtensionTests(unittest.TestCase):
         self.assertEqual(theme_data["semanticTokenColors"]["aoe2Action"], "#79C0FF")
         self.assertIn("aoe2StrategicNumber", theme_data["semanticTokenColors"])
         self.assertIn("tokenColors", theme_data)
+
+    def test_lab_extension_exposes_package_fail_level_setting(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        package_data = json.loads(
+            (
+                root
+                / "extensions"
+                / "aoe2-aiscript-cursor-local-lab"
+                / "package.json"
+            ).read_text(encoding="utf-8")
+        )
+        setting = package_data["contributes"]["configuration"]["properties"]["aoe2_AiScript.packageFailLevel"]
+
+        self.assertEqual(setting["default"], "error")
+        self.assertEqual(setting["enum"], ["error", "warning", "info"])
 
     def test_lab_extension_does_not_print_generic_command_failed_when_stdout_exists(self) -> None:
         root = Path(__file__).resolve().parents[1]

@@ -45,6 +45,15 @@ Useful command palette actions:
 For the most distinct syntax colors, select `AOE2 AI Parser Dark` with
 `Preferences: Color Theme`.
 
+Diagnostics run on save by default. To include info-level package findings in
+package commands and package-aware diagnostics, add this to workspace settings:
+
+```json
+{
+  "aoe2_AiScript.packageFailLevel": "info"
+}
+```
+
 The marketplace extension identity is:
 
 ```text

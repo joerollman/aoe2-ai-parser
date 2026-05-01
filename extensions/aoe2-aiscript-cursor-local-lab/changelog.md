@@ -5,6 +5,14 @@ this file. Version numbers are given as:
 
     <major>.<minor>.<patch>
 
+## v0.1.48
+
+- Add `aoe2_AiScript.packageFailLevel` so package commands, generated reports,
+  and package-aware diagnostics can surface `error`, `warning`, or `info`
+  findings.
+- Document lint-on-save behavior and package fail-level settings for editor
+  users.
+
 ## v0.1.47
 
 - Add the `AOE2 AI Parser Dark` color theme with semantic-token colors and

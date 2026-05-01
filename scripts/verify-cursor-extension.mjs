@@ -139,7 +139,8 @@ for (const needle of [
   "payload.issue_groups || []",
   "root.load_graph || []",
   "documentation_markdown",
-  '"lint-package", packageRoot, "--json", "--fail-level", "error"',
+  '"lint-package", packageRoot, "--json", "--fail-level", settings.packageFailLevel',
+  'config.get("packageFailLevel") || "error"',
   'path.extname(filePath).toLowerCase() === ".ai"',
   'path.extname(filePath).toLowerCase() === ".per"',
   "return isPerFile ? filePath : undefined;",
@@ -182,7 +183,8 @@ for (const needle of [
 
 for (const needle of [
   "function runLabPackageLinter",
-  '"lint-package", packageRoot, "--json", "--fail-level", "error"',
+  '"lint-package", packageRoot, "--json", "--fail-level", packageFailLevel',
+  'packageFailLevel: "error"',
   'path.extname(filePath).toLowerCase() === ".ai"',
   'path.extname(filePath).toLowerCase() === ".per"',
   "return isPerFile ? filePath : null;",

@@ -55,6 +55,9 @@ the harsh contrast of pure black and pure white.
 
 - `aoe2_AiScript.useLabLinter`: use bundled AOE2 AI Parser diagnostics.
 - `aoe2_AiScript.usePackageLint`: prefer package-aware diagnostics.
+- `aoe2_AiScript.packageFailLevel`: minimum package-lint severity surfaced by
+  package commands and package-aware diagnostics (`error`, `warning`, or
+  `info`).
 - `aoe2_AiScript.labPath`: optional development checkout override.
 - `aoe2_AiScript.pythonPath`: Python executable.
 - `aoe2_AiScript.updateErrorsWhen`: validate on save, on change, or never.
