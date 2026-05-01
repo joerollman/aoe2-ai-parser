@@ -755,6 +755,9 @@ def finding_groups_to_json(findings: list[dict[str, object]]) -> list[dict[str, 
                 "severity_counts": dict(sorted(severity_counts.items())),
                 "confidence_counts": dict(sorted(confidence_counts.items())),
                 "explanation": diagnostic_code_explanation(code),
+                "documentation_path": DIAGNOSTIC_REGISTRY_MARKDOWN_PATH.as_posix(),
+                "documentation_anchor": diagnostic_code_anchor(code),
+                "documentation_markdown": diagnostic_code_markdown_link(code),
                 "examples": examples,
             }
         )
@@ -1079,6 +1082,9 @@ def package_integrity_groups_to_json(integrity_payload: dict[str, object]) -> li
                 "severity_counts": {severity: len(items)},
                 "confidence_counts": {"definite": len(items)},
                 "explanation": diagnostic_code_explanation(code),
+                "documentation_path": DIAGNOSTIC_REGISTRY_MARKDOWN_PATH.as_posix(),
+                "documentation_anchor": diagnostic_code_anchor(code),
+                "documentation_markdown": diagnostic_code_markdown_link(code),
                 "examples": examples,
             }
         )
@@ -1127,9 +1133,13 @@ def diagnostic_code_explanation(code: str) -> str:
     return diagnostic_code_explanations().get(code, DEFAULT_CATEGORY_EXPLANATION)
 
 
+def diagnostic_code_anchor(code: str) -> str:
+    return f"diagnostic-{re.sub(r'[^a-z0-9_-]+', '-', code.lower())}"
+
+
 def diagnostic_code_markdown_link(code: str) -> str:
-    anchor = re.sub(r"[^a-z0-9_-]+", "-", code.lower())
-    return f"[validator-diagnostic-codes.md#diagnostic-{anchor}]({DIAGNOSTIC_REGISTRY_MARKDOWN_PATH.as_posix()}#diagnostic-{anchor})"
+    anchor = diagnostic_code_anchor(code)
+    return f"[validator-diagnostic-codes.md#{anchor}]({DIAGNOSTIC_REGISTRY_MARKDOWN_PATH.as_posix()}#{anchor})"
 
 
 def diagnostic_registry_entries() -> list[dict[str, object]]:

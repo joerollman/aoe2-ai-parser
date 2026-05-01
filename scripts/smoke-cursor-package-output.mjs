@@ -111,6 +111,7 @@ for (const needle of [
   "[integrity] stale-ai-root (1)",
   "[integrity] duplicate-root-target (1)",
   "[integrity] unreachable-per-file (2)",
+  "docs: [validator-diagnostic-codes.md#diagnostic-command-role-mismatch]",
   "extensions\\aoe2-aiscript-cursor-local-lab\\samples\\lab_diagnostics_sample.per:25",
 ]) {
   assert(formatted.includes(needle), `formatted package output is missing: ${needle}`);

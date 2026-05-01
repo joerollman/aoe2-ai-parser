@@ -389,6 +389,9 @@ contains:
 - `severity_counts`
 - `confidence_counts`
 - `explanation`
+- `documentation_path`
+- `documentation_anchor`
+- `documentation_markdown`
 - up to five representative `examples`
 
 Top-level and per-root `finding_groups` contain the lint-only subset of

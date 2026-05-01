@@ -778,6 +778,11 @@ class CliTests(unittest.TestCase):
         self.assertEqual(payload["issue_groups"][0]["source"], "lint")
         self.assertEqual(payload["issue_groups"][0]["code"], "up-build-place-point-coordinate-as-escrow")
         self.assertEqual(payload["issue_groups"][0]["unique_occurrence_count"], 1)
+        self.assertEqual(
+            payload["issue_groups"][0]["documentation_anchor"],
+            "diagnostic-up-build-place-point-coordinate-as-escrow",
+        )
+        self.assertIn("validator-diagnostic-codes.md", payload["issue_groups"][0]["documentation_markdown"])
 
     def test_lint_package_accepts_single_ai_file_path(self) -> None:
         with WorkspaceTempDir() as root:
@@ -981,6 +986,7 @@ class CliTests(unittest.TestCase):
         self.assertEqual(payload["integrity"]["duplicate_ai_name_count"], 1)
         self.assertEqual(payload["integrity"]["code_counts"], {"duplicate-ai-name": 1})
         self.assertEqual(payload["issue_groups"][0]["code"], "duplicate-ai-name")
+        self.assertEqual(payload["issue_groups"][0]["documentation_anchor"], "diagnostic-duplicate-ai-name")
         self.assertEqual(payload["issue_groups"][0]["examples"][0]["code"], "duplicate-ai-name")
         self.assertEqual(payload["totals"]["duplicate_ai_name_count"], 1)
 

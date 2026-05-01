@@ -115,6 +115,7 @@ for (const needle of [
   "function formatPackageIssueGroups",
   "stdout.indexOf(\"{\")",
   "payload.issue_groups || []",
+  "documentation_markdown",
   '"lint-package", packageRoot, "--json", "--fail-level", "error"',
   'path.extname(filePath).toLowerCase() === ".ai"',
   'path.extname(filePath).toLowerCase() === ".per"',

@@ -251,6 +251,9 @@ function formatPackageIssueGroups(stdout, labPath) {
         if (group.explanation) {
             lines.push("    " + group.explanation);
         }
+        if (group.documentation_markdown) {
+            lines.push("    docs: " + group.documentation_markdown);
+        }
         (group.examples || []).slice(0, 5).forEach(example => {
             let location = relativeDisplayPath(example.path || example.ai_path || example.per_path, labPath);
             if (example.line) {

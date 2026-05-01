@@ -162,6 +162,7 @@ class CursorExtensionTests(unittest.TestCase):
         self.assertIn("vscode_1.commands.registerCommand(\"aoe2AiScript.lintCurrentFile\"", extension_source)
         self.assertIn("function formatPackageIssueGroups", extension_source)
         self.assertIn("payload.issue_groups || []", extension_source)
+        self.assertIn("documentation_markdown", extension_source)
         self.assertIn("\"-m\", \"aoe2_ai_lab\", \"lint-package\", packageRoot, \"--json\"", extension_source)
         self.assertIn("exports._test", extension_source)
         self.assertIn("\"-m\", \"aoe2_ai_lab\", \"lint-package\", packageRoot, \"--report\"", extension_source)
