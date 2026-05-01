@@ -134,8 +134,10 @@ for (const tokenType of [
 
 for (const needle of [
   "function formatPackageIssueGroups",
+  "function formatPackageLoadGraph",
   "stdout.indexOf(\"{\")",
   "payload.issue_groups || []",
+  "root.load_graph || []",
   "documentation_markdown",
   '"lint-package", packageRoot, "--json", "--fail-level", "error"',
   'path.extname(filePath).toLowerCase() === ".ai"',
@@ -311,6 +313,7 @@ for (const needle of [
   "--json",
   "Package summary:",
   "Issue categories:",
+  "Load graph:",
   "[integrity] stale-ai-root (1)",
 ]) {
   assertIncludes(packageOutputSmokeSource, needle, packageOutputSmokePath);

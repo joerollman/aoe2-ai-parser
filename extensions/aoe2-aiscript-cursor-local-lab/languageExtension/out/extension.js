@@ -213,6 +213,40 @@ function relativeDisplayPath(filePath, labPath) {
     }
     return filePath;
 }
+function formatPackageLoadGraph(roots, labPath) {
+    let lines = [];
+    let graphEntries = [];
+    (roots || []).forEach(root => {
+        (root.load_graph || []).forEach(entry => {
+            graphEntries.push(entry);
+        });
+    });
+    if (graphEntries.length === 0) {
+        return lines;
+    }
+    lines.push("");
+    lines.push("Load graph:");
+    graphEntries.slice(0, 12).forEach(entry => {
+        let filePath = relativeDisplayPath(entry.path, labPath);
+        let loads = entry.loads || [];
+        let includes = entry.includes || [];
+        lines.push("  " + filePath + " (" + loads.length + " loads, " + includes.length + " includes)");
+        loads.slice(0, 4).forEach(load => {
+            let suffix = load.skipped_reason ? ", " + load.skipped_reason : "";
+            lines.push("    - " + load.source + " line " + load.line + ": " + load.include + " -> " + load.status + suffix);
+        });
+        includes.slice(0, 4).forEach(include => {
+            lines.push("    - include line " + include.line + ": " + include.include + " -> " + include.status);
+        });
+        if (loads.length + includes.length > 8) {
+            lines.push("    - ...");
+        }
+    });
+    if (graphEntries.length > 12) {
+        lines.push("  ...");
+    }
+    return lines;
+}
 function formatPackageIssueGroups(stdout, labPath) {
     let payload;
     let jsonText = stdout;
@@ -238,6 +272,7 @@ function formatPackageIssueGroups(stdout, labPath) {
     lines.push("");
     if (issueGroups.length === 0) {
         lines.push("Issue categories: none");
+        lines.push(...formatPackageLoadGraph(payload.roots || [], labPath));
         return lines.join("\n") + "\n";
     }
     lines.push("Issue categories:");
@@ -263,6 +298,7 @@ function formatPackageIssueGroups(stdout, labPath) {
             lines.push("    - " + location + (message ? ": " + message : ""));
         });
     });
+    lines.push(...formatPackageLoadGraph(payload.roots || [], labPath));
     return lines.join("\n") + "\n";
 }
 function runLabCommand(args, title, formatStdout) {

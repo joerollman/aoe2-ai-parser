@@ -1228,6 +1228,33 @@ class CliTests(unittest.TestCase):
         self.assertEqual([entry["include"] for entry in graph_by_name["Main.per"]["loads"]], ["Shared", "Shared"])
         self.assertEqual(graph_by_name["Main.per"]["includes"][0]["include"], "debug.xs")
 
+    def test_lint_package_json_marks_ordering_warnings_conditional(self) -> None:
+        with WorkspaceTempDir() as root:
+            (root / "Main.ai").write_text('(load "Main")\n', encoding="utf-8")
+            (root / "Main.per").write_text(
+                '#load-if-defined UNKNOWN (load "MaybeActive") #end-if\n',
+                encoding="utf-8",
+            )
+            (root / "MaybeActive.per").write_text(
+                """
+(include "debug.xs")
+(load "Shared")
+(load "Shared")
+""".strip(),
+                encoding="utf-8",
+            )
+            (root / "Shared.per").write_text("(defconst shared 1)\n", encoding="utf-8")
+            (root / "debug.xs").write_text("void debug() {}\n", encoding="utf-8")
+            buffer = io.StringIO()
+            with redirect_stdout(buffer):
+                code = main(["lint-package", str(root), "--json"])
+
+        self.assertEqual(code, 0)
+        payload = json.loads(buffer.getvalue())
+        self.assertEqual(payload["roots"][0]["confidence_counts"], {"conditional": 3})
+        self.assertEqual({finding["confidence"] for finding in payload["roots"][0]["findings"]}, {"conditional"})
+        self.assertEqual(payload["roots"][0]["file_confidence_counts"], {"conditional": 3, "definite": 1})
+
     def test_lint_package_report_includes_load_graph(self) -> None:
         with WorkspaceTempDir() as root:
             report_path = root / "reports" / "package.md"

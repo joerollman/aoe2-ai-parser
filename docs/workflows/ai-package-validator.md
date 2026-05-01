@@ -304,7 +304,8 @@ Package lint also reports `load-after-include` when a reachable `.per` places a
 Each root payload includes a `load_graph` array. It lists every reachable `.per`
 file, its resolved load/load-random edges, and its include edges to `.xs` files.
 Use this when reviewing package structure before drilling into individual
-findings.
+findings. The Cursor/VS Code extension's package-lint output includes a compact
+version of the same graph.
 
 ## Package Integrity
 

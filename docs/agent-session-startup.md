@@ -70,7 +70,8 @@ Use local sources in this order:
   [workflows/ai-package-validator.md](./workflows/ai-package-validator.md).
   Prefer `lint-package --json` for agent/CI consumption. Start package triage
   with top-level `issue_groups`, then drill into `integrity.root_manifest` or
-  per-root `findings` only when a grouped issue needs line-level context.
+  per-root `load_graph` and `findings` only when a grouped issue needs graph or
+  line-level context.
 - VS Code/Cursor extension behavior is documented in
   [workflows/cursor-extension.md](./workflows/cursor-extension.md). Its package
   lint command formats the same `issue_groups` that agents should use.

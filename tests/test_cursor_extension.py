@@ -163,7 +163,9 @@ class CursorExtensionTests(unittest.TestCase):
         self.assertEqual(commands["aoe2AiScript.openLatestPackageReport"], "AoE2: Open Latest Package Report")
         self.assertIn("vscode_1.commands.registerCommand(\"aoe2AiScript.lintCurrentFile\"", extension_source)
         self.assertIn("function formatPackageIssueGroups", extension_source)
+        self.assertIn("function formatPackageLoadGraph", extension_source)
         self.assertIn("payload.issue_groups || []", extension_source)
+        self.assertIn("root.load_graph || []", extension_source)
         self.assertIn("documentation_markdown", extension_source)
         self.assertIn("\"-m\", \"aoe2_ai_lab\", \"lint-package\", packageRoot, \"--json\"", extension_source)
         self.assertIn("exports._test", extension_source)
@@ -259,6 +261,7 @@ class CursorExtensionTests(unittest.TestCase):
         self.assertIn("formatPackageIssueGroups", package_output_smoke_source)
         self.assertIn("Package summary:", package_output_smoke_source)
         self.assertIn("Issue categories:", package_output_smoke_source)
+        self.assertIn("Load graph:", package_output_smoke_source)
         self.assertIn("[integrity] stale-ai-root (1)", package_output_smoke_source)
 
     def test_lab_extension_surfaces_package_integrity_ai_diagnostics(self) -> None:

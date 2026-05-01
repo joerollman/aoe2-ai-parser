@@ -462,7 +462,9 @@ required sample files.
 The package-output smoke test runs `lint-package --json` on the extension
 sample package, formats it through the extension's `issue_groups` formatter,
 and asserts that the output panel shape starts with `Package summary:` and
-`Issue categories:` instead of the old `--summary` output.
+`Issue categories:` instead of the old `--summary` output. The formatter also
+prints a compact `Load graph:` section from `roots[].load_graph` so package
+structure is visible without opening the full JSON or Markdown report.
 
 The completion smoke test forks the language server over LSP IPC, opens small
 temporary `.per` and `.ai` documents, and checks that context-ranked completions

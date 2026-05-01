@@ -107,6 +107,8 @@ for (const needle of [
   "  reachable files: 7",
   "  lint findings: 11",
   "Issue categories:",
+  "Load graph:",
+  "lab_diagnostics_sample.per (0 loads, 0 includes)",
   "[lint] command-role-mismatch (2)",
   "[integrity] stale-ai-root (1)",
   "[integrity] duplicate-root-target (1)",

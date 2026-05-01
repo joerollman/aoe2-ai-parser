@@ -99,6 +99,8 @@ python -m aoe2_ai_lab search-registry garrison
 - `issue_groups`: grouped errors, warnings, and info findings with explanations
   and examples
 - `roots`: each `.ai` root and the reachable `.per` files loaded by it
+- `roots[].load_graph`: reachable `.per` load/load-random edges and `.xs`
+  include edges
 - `roots[].constants`: package-level `defconst` symbol table with raw and
   resolved values where available
 - `integrity`: package-level issues such as stale `.ai` roots, duplicate root
@@ -116,6 +118,12 @@ category explanation or project policy says otherwise.
 JSON findings include token spans when available. The editor extension uses
 those spans for precise squiggles and falls back to line heuristics for older
 diagnostic categories.
+
+The current safe-without-user-feedback scope is intentionally bounded to
+documented syntax, package graph integrity, reference navigation, and editor
+ergonomics. Stricter semantic warnings, strategic-number behavior checks,
+legacy AI style warnings, and severity upgrades should wait for real user
+feedback from package authors.
 
 ## Layout
 
