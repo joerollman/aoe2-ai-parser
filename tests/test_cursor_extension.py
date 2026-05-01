@@ -142,6 +142,8 @@ class CursorExtensionTests(unittest.TestCase):
         self.assertIn("function bundledLabPath", server_source)
         self.assertIn('PYTHONPATH: path.join(labPath, "src")', server_source)
         self.assertIn("*.vsix", ignore_text)
+        self.assertIn("**/__pycache__/**", ignore_text)
+        self.assertIn("**/*.pyc", ignore_text)
         self.assertIn("languageExtension/src/**", ignore_text)
         self.assertNotIn("lab/**", ignore_text)
 

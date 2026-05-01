@@ -3,6 +3,10 @@
 *.vsix
 **/*.vsix
 npm-debug.log
+**/__pycache__/**
+**/.pytest_cache/**
+**/*.pyc
+**/*.pyo
 languageExtension/src/**
 languageExtension/tsconfig.json
 tsconfig.json

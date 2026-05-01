@@ -9,6 +9,7 @@ const clientPath = path.join(extensionRoot, "languageExtension", "out", "extensi
 const completionsPath = path.join(extensionRoot, "data", "completions.json");
 const diagnosticCodesPath = path.join(extensionRoot, "data", "diagnostic-codes.json");
 const grammarPath = path.join(extensionRoot, "syntaxes", "aoe2aiscript.tmLanguage.json");
+const vscodeIgnorePath = path.join(extensionRoot, ".vscodeignore");
 const workspaceSettingsPath = path.join(repoRoot, ".vscode", "settings.json");
 const installScriptPath = path.join(repoRoot, "scripts", "install-cursor-extension.mjs");
 const syncLabScriptPath = path.join(repoRoot, "scripts", "sync-extension-lab.mjs");
@@ -65,6 +66,7 @@ const symbolDocsSource = readText(symbolDocsPath);
 const completions = readJson(completionsPath);
 const diagnosticCodes = readJson(diagnosticCodesPath);
 const grammarSource = readText(grammarPath);
+const vscodeIgnoreSource = readText(vscodeIgnorePath);
 const workspaceSettings = readJson(workspaceSettingsPath);
 const language = packageData.contributes.languages[0];
 const commands = new Set(packageData.contributes.commands.map((command) => command.command));
@@ -301,6 +303,10 @@ for (const needle of [
   "[integrity] stale-ai-root (1)",
 ]) {
   assertIncludes(packageOutputSmokeSource, needle, packageOutputSmokePath);
+}
+
+for (const needle of ["**/__pycache__/**", "**/.pytest_cache/**", "**/*.pyc", "**/*.pyo"]) {
+  assertIncludes(vscodeIgnoreSource, needle, vscodeIgnorePath);
 }
 
 function regexEscape(text) {
