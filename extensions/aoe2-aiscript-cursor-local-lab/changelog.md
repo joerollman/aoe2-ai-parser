@@ -5,6 +5,11 @@ this file. Version numbers are given as:
 
     <major>.<minor>.<patch>
 
+## v0.1.46
+
+- Harden extension packaging so common local credential files, key material, and
+  dependency test fixtures are excluded from the VSIX.
+
 ## v0.1.45
 
 - Add package graph output for reachable `.per` load/load-random edges and
