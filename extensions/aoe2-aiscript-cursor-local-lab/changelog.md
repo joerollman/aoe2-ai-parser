@@ -5,6 +5,11 @@ this file. Version numbers are given as:
 
     <major>.<minor>.<patch>
 
+## v0.1.58
+
+- Fix command-palette lint commands in the packaged JavaScript by using native
+  `async` functions instead of a missing TypeScript `__awaiter` helper.
+
 ## v0.1.57
 
 - Make symbol definition and Markdown preview navigation target the generated
