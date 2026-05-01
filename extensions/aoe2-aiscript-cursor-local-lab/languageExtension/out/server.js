@@ -191,13 +191,19 @@ function labRegistryHovers() {
     return labRegistryHoverMap;
 }
 function labRegistryHover(hoverText) {
-    let value = labRegistryHovers().get(hoverText);
-    if (!value) {
+    try {
+        let value = labRegistryHovers().get(hoverText);
+        if (!value) {
+            return undefined;
+        }
+        return {
+            contents: { kind: 'markdown', value }
+        };
+    }
+    catch (error) {
+        connection.console.error("AOE2 AI Parser hover failed: " + String(error && error.message ? error.message : error));
         return undefined;
     }
-    return {
-        contents: { kind: 'markdown', value }
-    };
 }
 function labDiagnosticExplanations() {
     if (labDiagnosticExplanationMap !== undefined) {
@@ -551,127 +557,144 @@ function collectAiRootDiagnostics(textDocument, payload, currentPath) {
     });
     return { currentFileIsAiRoot, diagnostics };
 }
-function runLabPackageLinter(textDocument, settings, labPath, pythonPath, env, workspacePath, filePath) {
-    if (settings.usePackageLint === false) {
-        return null;
-    }
-    let packageRoot = findNearestPackageRoot(filePath, workspacePath);
-    if (!packageRoot) {
-        return null;
-    }
-    let stdout = "";
-    let packageFailLevel = ["error", "warning", "info"].includes(settings.packageFailLevel) ? settings.packageFailLevel : "info";
-    try {
-        stdout = child_process_1.execFileSync(pythonPath, ["-m", "aoe2_ai_lab", "lint-package", packageRoot, "--json", "--fail-level", packageFailLevel], {
-            cwd: labPath,
-            env,
-            encoding: "utf8",
-            windowsHide: true
+function execFileText(command, args, options) {
+    return new Promise((resolve, reject) => {
+        child_process_1.execFile(command, args, options, (error, stdout, stderr) => {
+            if (error) {
+                error.stdout = stdout;
+                error.stderr = stderr;
+                reject(error);
+                return;
+            }
+            resolve(stdout || "");
         });
-    }
-    catch (error) {
-        stdout = error.stdout ? String(error.stdout) : "";
-        if (!stdout) {
+    });
+}
+function runLabPackageLinter(textDocument, settings, labPath, pythonPath, env, workspacePath, filePath) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (settings.usePackageLint === false) {
             return null;
         }
-    }
-    let payload;
-    try {
-        payload = JSON.parse(stdout);
-    }
-    catch (_error) {
-        return null;
-    }
-    let currentPath = normalizeFsPath(filePath);
-    let diagnostics = [];
-    let aiRootDiagnostics = collectAiRootDiagnostics(textDocument, payload, currentPath);
-    if (aiRootDiagnostics.currentFileIsAiRoot) {
-        return aiRootDiagnostics.diagnostics;
-    }
-    let currentFileIsReachable = false;
-    (payload.roots || []).forEach(root => {
-        (root.file_summaries || []).forEach(summary => {
-            if (normalizeFsPath(summary.path) === currentPath) {
-                currentFileIsReachable = true;
+        let packageRoot = findNearestPackageRoot(filePath, workspacePath);
+        if (!packageRoot) {
+            return null;
+        }
+        let stdout = "";
+        let packageFailLevel = ["error", "warning", "info"].includes(settings.packageFailLevel) ? settings.packageFailLevel : "info";
+        try {
+            stdout = yield execFileText(pythonPath, ["-m", "aoe2_ai_lab", "lint-package", packageRoot, "--json", "--fail-level", packageFailLevel], {
+                cwd: labPath,
+                env,
+                encoding: "utf8",
+                windowsHide: true
+            });
+        }
+        catch (error) {
+            stdout = error.stdout ? String(error.stdout) : "";
+            if (!stdout) {
+                return null;
             }
+        }
+        let payload;
+        try {
+            payload = JSON.parse(stdout);
+        }
+        catch (_error) {
+            return null;
+        }
+        let currentPath = normalizeFsPath(filePath);
+        let diagnostics = [];
+        let aiRootDiagnostics = collectAiRootDiagnostics(textDocument, payload, currentPath);
+        if (aiRootDiagnostics.currentFileIsAiRoot) {
+            return aiRootDiagnostics.diagnostics;
+        }
+        let currentFileIsReachable = false;
+        (payload.roots || []).forEach(root => {
+            (root.file_summaries || []).forEach(summary => {
+                if (normalizeFsPath(summary.path) === currentPath) {
+                    currentFileIsReachable = true;
+                }
+            });
+            (root.findings || []).forEach(finding => {
+                if (normalizeFsPath(finding.path) !== currentPath) {
+                    return;
+                }
+                currentFileIsReachable = true;
+                diagnostics.push(labFindingToDiagnostic(textDocument, finding.severity, finding.code, finding.message, finding.line, finding.span));
+            });
         });
-        (root.findings || []).forEach(finding => {
-            if (normalizeFsPath(finding.path) !== currentPath) {
+        (((payload.integrity || {}).duplicate_per_names) || []).forEach(duplicate => {
+            if (!(duplicate.per_paths || []).some(perPath => normalizeFsPath(perPath) === currentPath)) {
                 return;
             }
             currentFileIsReachable = true;
-            diagnostics.push(labFindingToDiagnostic(textDocument, finding.severity, finding.code, finding.message, finding.line, finding.span));
+            let files = (duplicate.per_paths || []).map(perPath => path.basename(perPath)).join(", ");
+            diagnostics.push(labFindingToDiagnostic(textDocument, "warning", "duplicate-per-name", ".per basename '" + (duplicate.name || path.basename(currentPath, ".per")) + "' is shared by multiple files: " + files, 1));
         });
-    });
-    (((payload.integrity || {}).duplicate_per_names) || []).forEach(duplicate => {
-        if (!(duplicate.per_paths || []).some(perPath => normalizeFsPath(perPath) === currentPath)) {
-            return;
+        if (!currentFileIsReachable) {
+            return null;
         }
-        currentFileIsReachable = true;
-        let files = (duplicate.per_paths || []).map(perPath => path.basename(perPath)).join(", ");
-        diagnostics.push(labFindingToDiagnostic(textDocument, "warning", "duplicate-per-name", ".per basename '" + (duplicate.name || path.basename(currentPath, ".per")) + "' is shared by multiple files: " + files, 1));
+        return diagnostics;
     });
-    if (!currentFileIsReachable) {
-        return null;
-    }
-    return diagnostics;
 }
 function runLabLinter(textDocument, settings, workspaceFolder) {
-    let labPath = settings.labPath || bundledLabPath() || vscode_uri_1.URI.parse(workspaceFolder).fsPath;
-    let pythonPath = settings.pythonPath || "python";
-    let filePath = vscode_uri_1.URI.parse(textDocument.uri).fsPath;
-    let workspacePath = vscode_uri_1.URI.parse(workspaceFolder).fsPath;
-    let env = Object.assign({}, process.env, { PYTHONPATH: path.join(labPath, "src") });
-    if (!fs.existsSync(labPath)) {
-        return labSetupDiagnostic("AOE2 AI Parser runtime does not exist. Reinstall the extension or set aoe2_AiScript.labPath to an AOE2 AI Parser checkout.", labPath, pythonPath, ["-m", "aoe2_ai_lab", "lint", filePath]);
-    }
-    let packageDiagnostics = runLabPackageLinter(textDocument, settings, labPath, pythonPath, env, workspacePath, filePath);
-    if (packageDiagnostics !== null) {
-        if (settings.maxErrorsReported >= 0) {
-            return packageDiagnostics.slice(0, settings.maxErrorsReported);
+    return __awaiter(this, void 0, void 0, function* () {
+        let labPath = settings.labPath || bundledLabPath() || vscode_uri_1.URI.parse(workspaceFolder).fsPath;
+        let pythonPath = settings.pythonPath || "python";
+        let filePath = vscode_uri_1.URI.parse(textDocument.uri).fsPath;
+        let workspacePath = vscode_uri_1.URI.parse(workspaceFolder).fsPath;
+        let env = Object.assign({}, process.env, { PYTHONPATH: path.join(labPath, "src") });
+        if (!fs.existsSync(labPath)) {
+            return labSetupDiagnostic("AOE2 AI Parser runtime does not exist. Reinstall the extension or set aoe2_AiScript.labPath to an AOE2 AI Parser checkout.", labPath, pythonPath, ["-m", "aoe2_ai_lab", "lint", filePath]);
         }
-        return packageDiagnostics;
-    }
-    let stdout = "";
-    let lintArgs = ["-m", "aoe2_ai_lab", "lint", filePath, "--json"];
-    try {
-        stdout = child_process_1.execFileSync(pythonPath, lintArgs, {
-            cwd: labPath,
-            env,
-            encoding: "utf8",
-            windowsHide: true
-        });
-    }
-    catch (error) {
-        stdout = error.stdout ? String(error.stdout) : "";
-        if (!stdout) {
-            let message = error.stderr ? String(error.stderr) : String(error.message || error);
-            return labSetupDiagnostic("linter failed before producing diagnostics. " + message, labPath, pythonPath, lintArgs);
-        }
-    }
-    let diagnostics = [];
-    try {
-        let payload = JSON.parse(stdout);
-        (payload.findings || []).forEach(finding => {
-            diagnostics.push(labFindingToDiagnostic(textDocument, finding.severity, finding.code, finding.message, finding.line, finding.span));
-        });
-    }
-    catch (_error) {
-        let pattern = /^(.+?):(\d+):\s+(error|warning|info):\s+([^:]+):\s+(.+)$/;
-        stdout.split(/\r?\n/).forEach(line => {
-            let match = pattern.exec(line);
-            if (!match) {
-                return;
+        let packageDiagnostics = yield runLabPackageLinter(textDocument, settings, labPath, pythonPath, env, workspacePath, filePath);
+        if (packageDiagnostics !== null) {
+            if (settings.maxErrorsReported >= 0) {
+                return packageDiagnostics.slice(0, settings.maxErrorsReported);
             }
-            let labSeverity = match[3];
-            let labCode = match[4];
-            diagnostics.push(labFindingToDiagnostic(textDocument, labSeverity, labCode, match[5], match[2]));
-        });
-    }
-    if (settings.maxErrorsReported >= 0) {
-        diagnostics = diagnostics.slice(0, settings.maxErrorsReported);
-    }
-    return diagnostics;
+            return packageDiagnostics;
+        }
+        let stdout = "";
+        let lintArgs = ["-m", "aoe2_ai_lab", "lint", filePath, "--json"];
+        try {
+            stdout = yield execFileText(pythonPath, lintArgs, {
+                cwd: labPath,
+                env,
+                encoding: "utf8",
+                windowsHide: true
+            });
+        }
+        catch (error) {
+            stdout = error.stdout ? String(error.stdout) : "";
+            if (!stdout) {
+                let message = error.stderr ? String(error.stderr) : String(error.message || error);
+                return labSetupDiagnostic("linter failed before producing diagnostics. " + message, labPath, pythonPath, lintArgs);
+            }
+        }
+        let diagnostics = [];
+        try {
+            let payload = JSON.parse(stdout);
+            (payload.findings || []).forEach(finding => {
+                diagnostics.push(labFindingToDiagnostic(textDocument, finding.severity, finding.code, finding.message, finding.line, finding.span));
+            });
+        }
+        catch (_error) {
+            let pattern = /^(.+?):(\d+):\s+(error|warning|info):\s+([^:]+):\s+(.+)$/;
+            stdout.split(/\r?\n/).forEach(line => {
+                let match = pattern.exec(line);
+                if (!match) {
+                    return;
+                }
+                let labSeverity = match[3];
+                let labCode = match[4];
+                diagnostics.push(labFindingToDiagnostic(textDocument, labSeverity, labCode, match[5], match[2]));
+            });
+        }
+        if (settings.maxErrorsReported >= 0) {
+            diagnostics = diagnostics.slice(0, settings.maxErrorsReported);
+        }
+        return diagnostics;
+    });
 }
 /**********************************************************************/ /**
  * Evaluates a given text document for errors
@@ -690,7 +713,7 @@ function validateTextDocument(textDocument) {
         let folders = yield connection.workspace.getWorkspaceFolders();
         let workspaceFolder = folders[0].uri;
         if (settings.useLabLinter) {
-            diagnostics = runLabLinter(textDocument, settings, workspaceFolder);
+            diagnostics = yield runLabLinter(textDocument, settings, workspaceFolder);
             connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
             return;
         }
@@ -1549,6 +1572,16 @@ function symbolDocPath(labPath, token) {
 function markdownAnchor(token) {
     return "symbol-" + token.toLowerCase().replace(/[^#a-z0-9_-]+/g, "-");
 }
+function markdownHeadingFragment(token) {
+    let fragment = String(token || "")
+        .toLowerCase()
+        .replace(/`/g, "")
+        .replace(/#/g, "")
+        .replace(/[^a-z0-9 _-]+/g, "")
+        .trim()
+        .replace(/\s+/g, "-");
+    return fragment || markdownAnchor(token);
+}
 function labRegistryDefinition(token, labPath) {
     if (!labRegistryHovers().has(token)) {
         return undefined;
@@ -1566,7 +1599,7 @@ function labRegistryDefinition(token, labPath) {
         let match = new RegExp("^## `" + escaped + "`", "m").exec(text);
         if (match) {
             let tokenOffset = match.index + match[0].indexOf(token);
-            return locationForTextOffset(vscode_uri_1.URI.file(docsPath).with({ fragment: markdownAnchor(token) }).toString(), text, tokenOffset, token.length);
+            return locationForTextOffset(vscode_uri_1.URI.file(docsPath).toString(), text, tokenOffset, token.length);
         }
     }
     let symbolPath = symbolDocPath(labPath, token);
@@ -1656,85 +1689,33 @@ connection.onHover((textDocPos) => {
  **************************************************************************/
 function getHover(textDocPos) {
     return __awaiter(this, void 0, void 0, function* () {
-        // Make sure hover text is requested
-        let settings = yield getDocumentSettings(textDocPos.textDocument.uri);
-        if (settings.enableHoverHelp === false) {
-            return undefined;
-        }
-        // Need to get the word that we're hovering over
-        let hoverWord = "**Line:** " + textDocPos.position.line + "\n";
-        "**Char:** " + textDocPos.position.character;
-        // Define the signature to be returned
-        let hover = undefined;
-        // Get the document position
-        let line = textDocPos.position.line;
-        let col = textDocPos.position.character;
-        // Get the range of the current line
-        let line_range = {
-            start: { line: line, character: 0 },
-            end: { line: line, character: 10000 }
-        };
-        // An AiScript command is defined as: (commandName par1 par2 <etc...>)
-        // We need to get all of the text back to the nearest '(' and up to the
-        // cursor position
-        let text = documents.get(textDocPos.textDocument.uri);
-        let line_text = text.getText(line_range).trimRight();
-        // Skip if we're hovering inside a comment
-        let comment_regex = /;/g;
-        if (comment_regex.test(line_text.substr(0, col))) {
-            hover = undefined;
-        }
-        // ... otherwise get the string
-        else {
-            // Loop until we have the end of the current command/parameter name.
-            // This helps to identify what command or parameter we're looking at
-            let word_end = /(\s+|\(|\)|\n|;)$/g;
-            while ((!word_end.test(line_text.substr(0, ++col))) && (col <= line_text.length)) {
-                // If there are a rediculous number of characters, there's a problem
-                if (col > 1000) {
-                    connection.console.error("Command is unreasonably long...");
-                    return undefined;
-                }
-            }
-            // Update the text
-            line_text = line_text.substr(0, col - 1);
-            // Now get only the text from the closest '(' until the end
-            //let word_begin      = /(\s|\()[a-zA-Z0-9-:<>*\/+]+(\s|\)|\n|;)$/g;
-            let word_begin = /(\(|\s|^)[^\(\s]+$/g;
-            let hover_txt_array = word_begin.exec(line_text);
-            let hover_txt = "";
-            // Handle the case where the object doesn't begin with a '('
-            if (hover_txt_array === null) {
+        try {
+            let settings = yield getDocumentSettings(textDocPos.textDocument.uri);
+            if (settings.enableHoverHelp === false) {
                 return undefined;
             }
-            else {
-                hover_txt = hover_txt_array[0];
-                if (/(\(|\s)/g.test(hover_txt))
-                    hover_txt = hover_txt.substr(1);
+            let text = documents.get(textDocPos.textDocument.uri);
+            if (!text) {
+                return undefined;
             }
-            hover = labRegistryHover(hover_txt);
-            if (hover !== undefined) {
-                return hover;
-            }
-            // Search for command
-            let hover_par = undefined;
-            Object.keys(aiScriptTypes).forEach(typekey => {
-                if (hover_par === undefined) {
-                    hover_par = aiScriptTypes[typekey].values[hover_txt];
-                }
+            let line = text.getText({
+                start: { line: textDocPos.position.line, character: 0 },
+                end: { line: textDocPos.position.line, character: 10000 }
             });
-            if (hover_par !== undefined) {
-                // Generate the output hover text
-                let hover_str = "(" + hover_par.section + ") " + hover_par.label +
-                    "\n\n" + hover_par.description;
-                // Initialize the signature object
-                hover = {
-                    contents: { kind: 'markdown', value: hover_str }
-                };
+            let commentIndex = line.indexOf(";");
+            if (commentIndex >= 0 && textDocPos.position.character > commentIndex) {
+                return undefined;
             }
+            let token = wordAtPosition(text, textDocPos.position);
+            if (!token) {
+                return undefined;
+            }
+            return labRegistryHover(token);
         }
-        // Return the signature
-        return hover;
+        catch (error) {
+            connection.console.error("AOE2 AI Parser hover request failed: " + String(error && error.message ? error.message : error));
+            return undefined;
+        }
     });
 }
 /**********************************************************************/ /**

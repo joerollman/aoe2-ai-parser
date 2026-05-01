@@ -1,40 +1,40 @@
 {
   "$schema": "vscode://schemas/color-theme",
-  "name": "AOE2 AI Parser Dark",
-  "type": "dark",
+  "name": "AOE2 AI Parser Light",
+  "type": "light",
   "semanticHighlighting": true,
   "colors": {
-    "editor.background": "#101418",
-    "editor.foreground": "#D7DEE8",
-    "editorLineNumber.foreground": "#69727D",
-    "editorLineNumber.activeForeground": "#B8C0CC",
-    "editorCursor.foreground": "#F6F8FA",
-    "editor.selectionBackground": "#28476A",
-    "editor.inactiveSelectionBackground": "#1E334A",
-    "editor.lineHighlightBackground": "#161C23",
-    "editorWhitespace.foreground": "#343B44",
-    "editorIndentGuide.background1": "#2A313A",
-    "editorIndentGuide.activeBackground1": "#6F7A86"
+    "editor.background": "#FAFBFC",
+    "editor.foreground": "#24292F",
+    "editorLineNumber.foreground": "#8C959F",
+    "editorLineNumber.activeForeground": "#57606A",
+    "editorCursor.foreground": "#24292F",
+    "editor.selectionBackground": "#BBDFFF",
+    "editor.inactiveSelectionBackground": "#DDEEFF",
+    "editor.lineHighlightBackground": "#F1F5F9",
+    "editorWhitespace.foreground": "#D0D7DE",
+    "editorIndentGuide.background1": "#D8DEE4",
+    "editorIndentGuide.activeBackground1": "#8C959F"
   },
   "semanticTokenColors": {
-    "aoe2Action": "#5DADEC",
-    "aoe2Fact": "#C69CFF",
-    "aoe2FactAction": "#38C2B3",
-    "aoe2Command": "#D7A72F",
-    "aoe2StrategicNumber": "#4CC2FF",
-    "aoe2Object": "#F0A35E",
-    "aoe2Tech": "#8FD694",
-    "aoe2Value": "#D6C56F",
-    "aoe2LocalConstant": "#57D68D",
-    "aoe2Action:aoe2aiscript": "#5DADEC",
-    "aoe2Fact:aoe2aiscript": "#C69CFF",
-    "aoe2FactAction:aoe2aiscript": "#38C2B3",
-    "aoe2Command:aoe2aiscript": "#D7A72F",
-    "aoe2StrategicNumber:aoe2aiscript": "#4CC2FF",
-    "aoe2Object:aoe2aiscript": "#F0A35E",
-    "aoe2Tech:aoe2aiscript": "#8FD694",
-    "aoe2Value:aoe2aiscript": "#D6C56F",
-    "aoe2LocalConstant:aoe2aiscript": "#57D68D"
+    "aoe2Action": "#0550AE",
+    "aoe2Fact": "#6F42C1",
+    "aoe2FactAction": "#008B8B",
+    "aoe2Command": "#7A5B00",
+    "aoe2StrategicNumber": "#0A7EA4",
+    "aoe2Object": "#B35900",
+    "aoe2Tech": "#22863A",
+    "aoe2Value": "#6E5A00",
+    "aoe2LocalConstant": "#116329",
+    "aoe2Action:aoe2aiscript": "#0550AE",
+    "aoe2Fact:aoe2aiscript": "#6F42C1",
+    "aoe2FactAction:aoe2aiscript": "#008B8B",
+    "aoe2Command:aoe2aiscript": "#7A5B00",
+    "aoe2StrategicNumber:aoe2aiscript": "#0A7EA4",
+    "aoe2Object:aoe2aiscript": "#B35900",
+    "aoe2Tech:aoe2aiscript": "#22863A",
+    "aoe2Value:aoe2aiscript": "#6E5A00",
+    "aoe2LocalConstant:aoe2aiscript": "#116329"
   },
   "tokenColors": [
     {
@@ -43,20 +43,20 @@
         "comment.line.double-slash"
       ],
       "settings": {
-        "foreground": "#87919D",
+        "foreground": "#6E7781",
         "fontStyle": "italic"
       }
     },
     {
       "scope": "string.quoted.double.aoe2aiscript",
       "settings": {
-        "foreground": "#D7DEE8"
+        "foreground": "#24292F"
       }
     },
     {
       "scope": "constant.numeric.aoe2aiscript",
       "settings": {
-        "foreground": "#B8C0CC"
+        "foreground": "#57606A"
       }
     },
     {
@@ -70,37 +70,37 @@
         "support.type.aoe2aiscript.yields"
       ],
       "settings": {
-        "foreground": "#D7A72F"
+        "foreground": "#7A5B00"
       }
     },
     {
       "scope": "entity.name.function.aoe2aiscript.action",
       "settings": {
-        "foreground": "#5DADEC"
+        "foreground": "#0550AE"
       }
     },
     {
       "scope": "entity.name.function.aoe2aiscript.fact",
       "settings": {
-        "foreground": "#C69CFF"
+        "foreground": "#6F42C1"
       }
     },
     {
       "scope": "support.constant.strategic-number.aoe2aiscript",
       "settings": {
-        "foreground": "#4CC2FF"
+        "foreground": "#0A7EA4"
       }
     },
     {
       "scope": "constant.other.object.aoe2aiscript",
       "settings": {
-        "foreground": "#F0A35E"
+        "foreground": "#B35900"
       }
     },
     {
       "scope": "aoe2aiscript.tech",
       "settings": {
-        "foreground": "#8FD694"
+        "foreground": "#22863A"
       }
     },
     {
@@ -110,13 +110,13 @@
         "constant.language.aoe2aiscript.truefalse"
       ],
       "settings": {
-        "foreground": "#D6C56F"
+        "foreground": "#6E5A00"
       }
     },
     {
       "scope": "variable.other.constant.aoe2aiscript",
       "settings": {
-        "foreground": "#57D68D"
+        "foreground": "#116329"
       }
     }
   ]

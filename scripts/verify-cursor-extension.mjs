@@ -9,6 +9,8 @@ const clientPath = path.join(extensionRoot, "languageExtension", "out", "extensi
 const completionsPath = path.join(extensionRoot, "data", "completions.json");
 const diagnosticCodesPath = path.join(extensionRoot, "data", "diagnostic-codes.json");
 const grammarPath = path.join(extensionRoot, "syntaxes", "aoe2aiscript.tmLanguage.json");
+const darkThemePath = path.join(extensionRoot, "themes", "aoe2-ai-parser-dark-color-theme.json");
+const lightThemePath = path.join(extensionRoot, "themes", "aoe2-ai-parser-light-color-theme.json");
 const vscodeIgnorePath = path.join(extensionRoot, ".vscodeignore");
 const workspaceSettingsPath = path.join(repoRoot, ".vscode", "settings.json");
 const installScriptPath = path.join(repoRoot, "scripts", "install-cursor-extension.mjs");
@@ -66,15 +68,26 @@ const symbolDocsSource = readText(symbolDocsPath);
 const completions = readJson(completionsPath);
 const diagnosticCodes = readJson(diagnosticCodesPath);
 const grammarSource = readText(grammarPath);
+const darkTheme = readJson(darkThemePath);
+const lightTheme = readJson(lightThemePath);
 const vscodeIgnoreSource = readText(vscodeIgnorePath);
 const workspaceSettings = readJson(workspaceSettingsPath);
 const language = packageData.contributes.languages[0];
 const commands = new Set(packageData.contributes.commands.map((command) => command.command));
+const themes = new Map(packageData.contributes.themes.map((theme) => [theme.label, theme]));
 const semanticTokenTypes = new Set((packageData.contributes.semanticTokenTypes || []).map((tokenType) => tokenType.id));
 const completionLabels = new Set(completions.items.map((item) => item.label));
 
 assert(language.extensions.includes(".per"), "extension must register .per files");
 assert(language.extensions.includes(".ai"), "extension must register .ai files");
+assert(themes.get("AOE2 AI Parser Dark")?.path === "./themes/aoe2-ai-parser-dark-color-theme.json", "dark theme contribution is missing");
+assert(themes.get("AOE2 AI Parser Light")?.path === "./themes/aoe2-ai-parser-light-color-theme.json", "light theme contribution is missing");
+assert(themes.get("AOE2 AI Parser Dark")?.uiTheme === "vs-dark", "dark theme must use vs-dark");
+assert(themes.get("AOE2 AI Parser Light")?.uiTheme === "vs", "light theme must use vs");
+assert(darkTheme.semanticHighlighting === true, "dark theme must enable semantic highlighting");
+assert(lightTheme.semanticHighlighting === true, "light theme must enable semantic highlighting");
+assert(Array.isArray(darkTheme.tokenColors), "dark theme must include TextMate fallback token colors");
+assert(Array.isArray(lightTheme.tokenColors), "light theme must include TextMate fallback token colors");
 
 for (const command of [
   "aoe2AiScript.lintCurrentFile",
@@ -106,6 +119,7 @@ assertIncludes(clientSource, "function openDiagnosticDocsPreview", clientPath);
 assertIncludes(clientSource, "function diagnosticAnchor", clientPath);
 assertIncludes(clientSource, "validator-diagnostic-codes.md", clientPath);
 assertIncludes(clientSource, "function markdownAnchor", clientPath);
+assertIncludes(clientSource, "function markdownHeadingFragment", clientPath);
 assertIncludes(clientSource, "vscode_1.Uri.file(docsPath).with({ fragment })", clientPath);
 assertIncludes(clientSource, "docs\", \"reference\", \"generated\", \"ai-symbol-reference.md", clientPath);
 assertIncludes(clientSource, "SemanticTokensLegend", clientPath);
@@ -131,7 +145,19 @@ for (const tokenType of [
   "aoe2LocalConstant",
 ]) {
   assert(semanticTokenTypes.has(tokenType), `missing semantic token type ${tokenType}`);
+  assert(darkTheme.semanticTokenColors[tokenType], `dark theme missing color for ${tokenType}`);
+  assert(lightTheme.semanticTokenColors[tokenType], `light theme missing color for ${tokenType}`);
+  assert(darkTheme.semanticTokenColors[`${tokenType}:aoe2aiscript`], `dark theme missing language-scoped color for ${tokenType}`);
+  assert(lightTheme.semanticTokenColors[`${tokenType}:aoe2aiscript`], `light theme missing language-scoped color for ${tokenType}`);
 }
+assert(
+  darkTheme.semanticTokenColors.aoe2StrategicNumber !== darkTheme.semanticTokenColors.aoe2LocalConstant,
+  "dark theme must visually distinguish strategic numbers from local constants",
+);
+assert(
+  lightTheme.semanticTokenColors.aoe2StrategicNumber !== lightTheme.semanticTokenColors.aoe2LocalConstant,
+  "light theme must visually distinguish strategic numbers from local constants",
+);
 
 for (const needle of [
   "function formatPackageIssueGroups",
@@ -185,6 +211,9 @@ for (const needle of [
 
 for (const needle of [
   "function runLabPackageLinter",
+  "function execFileText",
+  "stdout = yield execFileText(pythonPath",
+  "diagnostics = yield runLabLinter",
   '"lint-package", packageRoot, "--json", "--fail-level", packageFailLevel',
   'packageFailLevel: "info"',
   'path.extname(filePath).toLowerCase() === ".ai"',
@@ -216,7 +245,8 @@ for (const needle of [
   "function localDefconstCompletions",
   "function loadTargetCompletions",
   "function labRegistryHover",
-  "hover = labRegistryHover(hover_txt);",
+  "return labRegistryHover(token);",
+  "AOE2 AI Parser hover request failed",
   "function labDiagnosticRegistryPath",
   "function labDiagnosticExplanations",
   "data\", \"diagnostic-codes.json",
@@ -233,7 +263,8 @@ for (const needle of [
   "function symbolReferencePath",
   "function symbolDocPath",
   "function markdownAnchor",
-  "vscode_uri_1.URI.file(docsPath).with({ fragment: markdownAnchor(token) })",
+  "function markdownHeadingFragment",
+  "locationForTextOffset(vscode_uri_1.URI.file(docsPath).toString()",
   "docs\", \"reference\", \"generated\", \"symbols",
   "docs\", \"reference\", \"generated\", \"ai-symbol-reference.md",
   "function labRegistrySignatureHelp",

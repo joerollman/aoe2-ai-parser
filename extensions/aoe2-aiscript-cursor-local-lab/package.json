@@ -2,7 +2,7 @@
 	"name": "aoe2-ai-parser",
 	"displayName": "AOE2 AI Parser",
 	"description": "Parser diagnostics, command tooltips, syntax highlighting, and autocomplete for Age of Empires 2 AI scripts in VS Code and Cursor",
-	"version": "0.1.52",
+	"version": "0.1.56",
 	"keywords": [
 		"aoeII",
 		"age",
@@ -163,6 +163,11 @@
 				"label": "AOE2 AI Parser Dark",
 				"uiTheme": "vs-dark",
 				"path": "./themes/aoe2-ai-parser-dark-color-theme.json"
+			},
+			{
+				"label": "AOE2 AI Parser Light",
+				"uiTheme": "vs",
+				"path": "./themes/aoe2-ai-parser-light-color-theme.json"
 			}
 		],
 		"snippets": [

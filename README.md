@@ -21,8 +21,8 @@ The extension provides:
 - Go to definition for local `defconst`s and load targets.
 - Package-aware diagnostics for reachable `.per` files.
 - Markdown package reports for AI package triage.
-- Optional `AOE2 AI Parser Dark` color theme tuned for the extension's semantic
-  token categories.
+- Optional `AOE2 AI Parser Dark` and `AOE2 AI Parser Light` color themes tuned
+  for the extension's semantic token categories.
 
 Python must be available on your PATH because the extension runs the bundled
 validator with Python. If Python is installed somewhere else, set:
@@ -43,13 +43,18 @@ Useful command palette actions:
 - `AoE2: Open Symbol Docs Preview`
 - `AoE2: Open Diagnostic Docs Preview`
 
-For the most distinct syntax colors, select `AOE2 AI Parser Dark` with
-`Preferences: Color Theme`.
+For the most distinct syntax colors, select `AOE2 AI Parser Dark` or
+`AOE2 AI Parser Light` with `Preferences: Color Theme`.
 
 `Lint Current File` validates only the active file. `Lint Package` starts from
 the nearest `.ai` package root for the active file. `Lint Folder` validates the
 folder containing the active file, which is useful when the workspace or local
 mods folder is broader than the AI package you want to inspect.
+
+For local symbol docs, VS Code's built-in definition gesture is `Ctrl+Click`.
+Cursor also supports its own side-definition gestures such as `Ctrl+Alt+Click`.
+Use the hover link, right-click `AoE2: Open Symbol Docs Preview`, or the command
+palette action when you want the rendered Markdown Preview beside the script.
 
 Diagnostics run on save by default. Package commands and package-aware
 diagnostics surface info-level findings by default. To make package lint less
@@ -65,6 +70,32 @@ Syntax colors can be customized with normal VS Code/Cursor settings. The
 extension contributes semantic token names such as `aoe2Action`,
 `aoe2Fact`, `aoe2StrategicNumber`, `aoe2Object`, and `aoe2LocalConstant`;
 override them through `editor.semanticTokenColorCustomizations`.
+
+You can override individual parser colors globally or only for one contributed
+theme:
+
+```json
+{
+  "editor.semanticTokenColorCustomizations": {
+    "[AOE2 AI Parser Dark]": {
+      "enabled": true,
+      "rules": {
+        "aoe2Action:aoe2aiscript": "#5DADEC",
+        "aoe2StrategicNumber:aoe2aiscript": "#4CC2FF",
+        "aoe2LocalConstant:aoe2aiscript": "#57D68D"
+      }
+    },
+    "[AOE2 AI Parser Light]": {
+      "enabled": true,
+      "rules": {
+        "aoe2Action:aoe2aiscript": "#0550AE",
+        "aoe2StrategicNumber:aoe2aiscript": "#0A7EA4",
+        "aoe2LocalConstant:aoe2aiscript": "#116329"
+      }
+    }
+  }
+}
+```
 
 The marketplace extension identity is:
 

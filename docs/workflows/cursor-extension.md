@@ -280,18 +280,19 @@ objects, techs, classes/value families, and other enumerated values.
 
 ## Color Theme
 
-The extension contributes `AOE2 AI Parser Dark` from:
+The extension contributes two color themes:
 
 ```text
 extensions/aoe2-aiscript-cursor-local-lab/themes/aoe2-ai-parser-dark-color-theme.json
+extensions/aoe2-aiscript-cursor-local-lab/themes/aoe2-ai-parser-light-color-theme.json
 ```
 
-The theme defines both semantic token colors and TextMate fallback colors. The
-palette follows dark-mode accessibility guidance: use a dark gray editor
-surface instead of pure black, avoid pure white for normal text, and keep
-syntax colors moderately saturated so categories are distinguishable without
-glare. Semantic token mappings should stay aligned with the language server's
-custom token types:
+Both themes define semantic token colors and TextMate fallback colors. The
+palettes follow code-editor accessibility guidance: use neutral editor
+surfaces, avoid pure black/pure white contrast for normal text, reserve the
+strongest colors for meaningful syntax roles, and keep colors distinct enough
+for long files. Semantic token mappings should stay aligned with the language
+server's custom token types:
 
 - `aoe2Action`
 - `aoe2Fact`
@@ -303,8 +304,8 @@ custom token types:
 - `aoe2Value`
 - `aoe2LocalConstant`
 
-When changing token colors, test both semantic highlighting and TextMate fallback
-scopes with `samples/semantic_coloring_sample.per`.
+When changing token colors, update both themes and test semantic highlighting
+plus TextMate fallback scopes with `samples/semantic_coloring_sample.per`.
 
 ## Context-Aware Completions
 
@@ -358,19 +359,40 @@ Cursor can color known symbols by registry role:
 - `aoe2Value`: DUC actions, operators, resources, and other enumerated values.
 - `aoe2LocalConstant`: local `defconst` declarations.
 
-The contributed `AOE2 AI Parser Dark` theme assigns default colors for these
-token types. Users can override them with normal VS Code/Cursor settings:
+The contributed `AOE2 AI Parser Dark` and `AOE2 AI Parser Light` themes assign
+default colors for these token types. Users can override individual colors with
+normal VS Code/Cursor settings, either globally or scoped to one parser theme:
 
 ```json
 {
   "editor.semanticTokenColorCustomizations": {
-    "enabled": true,
-    "rules": {
-      "aoe2Action:aoe2aiscript": "#79C0FF",
-      "aoe2Fact:aoe2aiscript": "#D2A8FF",
-      "aoe2StrategicNumber:aoe2aiscript": "#58A6FF",
-      "aoe2Object:aoe2aiscript": "#F2A65A",
-      "aoe2LocalConstant:aoe2aiscript": "#7EE787"
+    "[AOE2 AI Parser Dark]": {
+      "enabled": true,
+      "rules": {
+        "aoe2Action:aoe2aiscript": "#5DADEC",
+        "aoe2Fact:aoe2aiscript": "#C69CFF",
+        "aoe2FactAction:aoe2aiscript": "#38C2B3",
+        "aoe2Command:aoe2aiscript": "#D7A72F",
+        "aoe2StrategicNumber:aoe2aiscript": "#4CC2FF",
+        "aoe2Object:aoe2aiscript": "#F0A35E",
+        "aoe2Tech:aoe2aiscript": "#8FD694",
+        "aoe2Value:aoe2aiscript": "#D6C56F",
+        "aoe2LocalConstant:aoe2aiscript": "#57D68D"
+      }
+    },
+    "[AOE2 AI Parser Light]": {
+      "enabled": true,
+      "rules": {
+        "aoe2Action:aoe2aiscript": "#0550AE",
+        "aoe2Fact:aoe2aiscript": "#6F42C1",
+        "aoe2FactAction:aoe2aiscript": "#008B8B",
+        "aoe2Command:aoe2aiscript": "#7A5B00",
+        "aoe2StrategicNumber:aoe2aiscript": "#0A7EA4",
+        "aoe2Object:aoe2aiscript": "#B35900",
+        "aoe2Tech:aoe2aiscript": "#22863A",
+        "aoe2Value:aoe2aiscript": "#6E5A00",
+        "aoe2LocalConstant:aoe2aiscript": "#116329"
+      }
     }
   }
 }
@@ -430,9 +452,11 @@ Markdown previews. The command asks Cursor to open
 `markdown.showPreviewToSide` command as a fallback. It opens the combined local
 reference with the symbol anchor fragment when present and falls back to a
 per-symbol Markdown page when necessary. There is no default keyboard shortcut;
-use Cursor's built-in `Ctrl+Alt+Click` side-definition gesture when that is
-sufficient, or the hover link/context menu command when rendered Markdown
-Preview is preferred.
+use VS Code's built-in `Ctrl+Click` definition gesture when the source location
+is sufficient, or the hover link/context menu command when rendered Markdown
+Preview is preferred. Cursor also supports editor-specific side-definition
+gestures such as `Ctrl+Alt+Click`, but that gesture is owned by Cursor rather
+than by this extension.
 
 This workspace also sets Markdown files to open through Cursor/VS Code's
 Markdown Preview editor by default:
@@ -443,10 +467,15 @@ Markdown Preview editor by default:
 }
 ```
 
-That makes Ctrl-click definition targets into generated local docs prefer the
+That makes Ctrl+Click definition targets into generated local docs prefer the
 rendered Markdown view when the editor honors default associations. If Cursor
 opens raw Markdown for a remembered file, use `View: Reopen Editor With...` and
 select Markdown Preview, or use `AoE2: Open Symbol Docs Preview`.
+
+Hover requests must stay independent from package lint. Package diagnostics can
+take noticeable time on very large AI files, so the language server runs Python
+lint in asynchronous child processes and answers hover requests from the cached
+local registry instead of waiting on diagnostics.
 
 ## Registry Signatures
 

@@ -5,6 +5,31 @@ this file. Version numbers are given as:
 
     <major>.<minor>.<patch>
 
+## v0.1.56
+
+- Add `AOE2 AI Parser Light` as a contributed color theme.
+- Refine the dark theme palette and keep strategic numbers visually distinct
+  from local constants.
+- Document theme-scoped semantic-token overrides so users can customize each
+  parser color individually.
+
+## v0.1.55
+
+- Make hover handling fail fast through the local registry and avoid the slower
+  legacy hover fallback that could leave popups stuck loading.
+
+## v0.1.54
+
+- Clarify that VS Code's built-in symbol definition gesture is Ctrl+Click, not
+  Ctrl+Alt+Click.
+- Make registry-symbol definition navigation return the exact Markdown source
+  range instead of relying on URI fragments.
+
+## v0.1.53
+
+- Make symbol documentation navigation target Markdown heading fragments, which
+  Cursor/VS Code Markdown Preview handles more reliably than raw HTML anchors.
+
 ## v0.1.52
 
 - Add inline suppression support with `aoe2-ai-parser-disable-line` and

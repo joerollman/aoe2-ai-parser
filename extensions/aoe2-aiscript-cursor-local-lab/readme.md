@@ -12,8 +12,9 @@ and use the AoE2 command palette actions for linting and package reports.
   values.
 - Semantic coloring that distinguishes actions, facts, strategic numbers,
   objects, techs, values, and local constants.
-- Optional `AOE2 AI Parser Dark` theme with tuned colors for the extension's
-  custom semantic tokens and TextMate fallback scopes.
+- Optional `AOE2 AI Parser Dark` and `AOE2 AI Parser Light` themes with tuned
+  colors for the extension's custom semantic tokens and TextMate fallback
+  scopes.
 - Go to definition for local `defconst` declarations, `.ai` load targets, and
   generated local Markdown reference docs.
 - Package-aware diagnostics from the bundled parser/linter.
@@ -47,10 +48,10 @@ extension.
 
 ## Theme
 
-For the most distinct token colors, choose `AOE2 AI Parser Dark` from
-`Preferences: Color Theme`. The theme uses a softened dark background and
-moderately saturated syntax colors so command categories remain readable without
-the harsh contrast of pure black and pure white.
+For the most distinct token colors, choose `AOE2 AI Parser Dark` or
+`AOE2 AI Parser Light` from `Preferences: Color Theme`. Both themes use neutral
+editor surfaces, restrained contrast, and moderately saturated syntax colors so
+command categories remain readable in long AI files.
 
 ## Settings
 
@@ -68,6 +69,11 @@ nearest `.ai` package root for the active file. `Lint Folder` validates the
 folder containing the active file, which is useful when a mod folder is too broad
 to treat as one package.
 
+For local symbol docs, VS Code's built-in definition gesture is `Ctrl+Click`.
+Cursor also supports its own side-definition gestures such as `Ctrl+Alt+Click`.
+Use the hover link, right-click `AoE2: Open Symbol Docs Preview`, or the command
+palette action when you want rendered Markdown Preview beside the script.
+
 Reviewed findings can be suppressed inline with comments:
 
 ```lisp
@@ -83,6 +89,28 @@ You can customize parser-specific colors with standard VS Code/Cursor
 names are `aoe2Action`, `aoe2Fact`, `aoe2FactAction`, `aoe2Command`,
 `aoe2StrategicNumber`, `aoe2Object`, `aoe2Tech`, `aoe2Value`, and
 `aoe2LocalConstant`.
+
+Theme-scoped overrides let each individual parser color be changed without
+affecting other themes:
+
+```json
+{
+  "editor.semanticTokenColorCustomizations": {
+    "[AOE2 AI Parser Dark]": {
+      "rules": {
+        "aoe2Action:aoe2aiscript": "#5DADEC",
+        "aoe2StrategicNumber:aoe2aiscript": "#4CC2FF"
+      }
+    },
+    "[AOE2 AI Parser Light]": {
+      "rules": {
+        "aoe2Action:aoe2aiscript": "#0550AE",
+        "aoe2StrategicNumber:aoe2aiscript": "#0A7EA4"
+      }
+    }
+  }
+}
+```
 
 ## Attribution
 

@@ -490,6 +490,16 @@ function symbolDocPath(symbol) {
 function markdownAnchor(symbol) {
     return "symbol-" + symbol.toLowerCase().replace(/[^#a-z0-9_-]+/g, "-");
 }
+function markdownHeadingFragment(symbol) {
+    let fragment = String(symbol || "")
+        .toLowerCase()
+        .replace(/`/g, "")
+        .replace(/#/g, "")
+        .replace(/[^a-z0-9 _-]+/g, "")
+        .trim()
+        .replace(/\s+/g, "-");
+    return fragment || markdownAnchor(symbol);
+}
 function diagnosticAnchor(code) {
     return "diagnostic-" + String(code || "").toLowerCase().replace(/[^a-z0-9_-]+/g, "-");
 }
@@ -528,7 +538,7 @@ function openSymbolDocsPreview(token) {
     }
     let referencePath = symbolReferencePath();
     let docsPath = referencePath;
-    let fragment = markdownAnchor(symbol);
+    let fragment = markdownHeadingFragment(symbol);
     if (!fs.existsSync(referencePath)) {
         docsPath = symbolDocPath(symbol);
         fragment = "";

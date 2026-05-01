@@ -80,6 +80,9 @@ class CursorExtensionTests(unittest.TestCase):
         server_source = server_path.read_text(encoding="utf-8")
 
         self.assertIn('"lint-package", packageRoot, "--json", "--fail-level", packageFailLevel', server_source)
+        self.assertIn("function execFileText", server_source)
+        self.assertIn("stdout = yield execFileText(pythonPath", server_source)
+        self.assertIn("diagnostics = yield runLabLinter", server_source)
         self.assertIn('packageFailLevel: "info"', server_source)
         self.assertIn("findNearestPackageRoot(filePath, workspacePath)", server_source)
         self.assertIn("currentFileIsReachable", server_source)
@@ -185,19 +188,70 @@ class CursorExtensionTests(unittest.TestCase):
         self.assertIn('config.get("packageFailLevel") || "info"', extension_source)
         self.assertIn('"--fail-level", settings.packageFailLevel', extension_source)
 
-    def test_lab_extension_contributes_dark_theme_for_custom_tokens(self) -> None:
+    def test_lab_extension_contributes_color_themes_for_custom_tokens(self) -> None:
         root = Path(__file__).resolve().parents[1]
         extension_root = root / "extensions" / "aoe2-aiscript-cursor-local-lab"
         package_data = json.loads((extension_root / "package.json").read_text(encoding="utf-8"))
-        theme_path = extension_root / "themes" / "aoe2-ai-parser-dark-color-theme.json"
-        theme_data = json.loads(theme_path.read_text(encoding="utf-8"))
+        themes = {
+            theme["label"]: theme
+            for theme in package_data["contributes"]["themes"]
+        }
+        semantic_tokens = {
+            "aoe2Action",
+            "aoe2Fact",
+            "aoe2FactAction",
+            "aoe2Command",
+            "aoe2StrategicNumber",
+            "aoe2Object",
+            "aoe2Tech",
+            "aoe2Value",
+            "aoe2LocalConstant",
+        }
 
-        self.assertEqual(package_data["contributes"]["themes"][0]["label"], "AOE2 AI Parser Dark")
-        self.assertEqual(package_data["contributes"]["themes"][0]["path"], "./themes/aoe2-ai-parser-dark-color-theme.json")
-        self.assertTrue(theme_data["semanticHighlighting"])
-        self.assertEqual(theme_data["semanticTokenColors"]["aoe2Action"], "#79C0FF")
-        self.assertIn("aoe2StrategicNumber", theme_data["semanticTokenColors"])
-        self.assertIn("tokenColors", theme_data)
+        self.assertEqual(
+            themes["AOE2 AI Parser Dark"]["path"],
+            "./themes/aoe2-ai-parser-dark-color-theme.json",
+        )
+        self.assertEqual(
+            themes["AOE2 AI Parser Light"]["path"],
+            "./themes/aoe2-ai-parser-light-color-theme.json",
+        )
+        self.assertEqual(themes["AOE2 AI Parser Dark"]["uiTheme"], "vs-dark")
+        self.assertEqual(themes["AOE2 AI Parser Light"]["uiTheme"], "vs")
+
+        for label, expected_type in [
+            ("AOE2 AI Parser Dark", "dark"),
+            ("AOE2 AI Parser Light", "light"),
+        ]:
+            theme_path = extension_root / themes[label]["path"].replace("./", "")
+            theme_data = json.loads(theme_path.read_text(encoding="utf-8"))
+            semantic_colors = theme_data["semanticTokenColors"]
+
+            self.assertEqual(theme_data["type"], expected_type)
+            self.assertTrue(theme_data["semanticHighlighting"])
+            self.assertIn("tokenColors", theme_data)
+            for token in semantic_tokens:
+                self.assertIn(token, semantic_colors)
+                self.assertIn(f"{token}:aoe2aiscript", semantic_colors)
+
+        dark_data = json.loads(
+            (extension_root / "themes" / "aoe2-ai-parser-dark-color-theme.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        light_data = json.loads(
+            (extension_root / "themes" / "aoe2-ai-parser-light-color-theme.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        self.assertNotEqual(
+            dark_data["semanticTokenColors"]["aoe2StrategicNumber"],
+            dark_data["semanticTokenColors"]["aoe2LocalConstant"],
+        )
+        self.assertNotEqual(
+            light_data["semanticTokenColors"]["aoe2StrategicNumber"],
+            light_data["semanticTokenColors"]["aoe2LocalConstant"],
+        )
 
     def test_lab_extension_exposes_package_fail_level_setting(self) -> None:
         root = Path(__file__).resolve().parents[1]
@@ -264,7 +318,8 @@ class CursorExtensionTests(unittest.TestCase):
         self.assertIn("aoe2AiScript.openDiagnosticDocsPreview", server_source)
         self.assertIn("function labRegistrySignatureHelp", server_source)
         self.assertIn("function labSignatureParameters", server_source)
-        self.assertIn("vscode_uri_1.URI.file(docsPath).with({ fragment: markdownAnchor(token) })", server_source)
+        self.assertIn("function markdownHeadingFragment", server_source)
+        self.assertIn("locationForTextOffset(vscode_uri_1.URI.file(docsPath).toString()", server_source)
         self.assertIn("codeActionProvider: true", server_source)
         self.assertIn("connection.onCodeAction", server_source)
         self.assertIn("function codeActionsForDiagnostic", server_source)
@@ -338,8 +393,8 @@ class CursorExtensionTests(unittest.TestCase):
         by_label = {item["label"]: item for item in completion_data["items"]}
 
         self.assertIn("function labRegistryHover", server_source)
-        self.assertIn("hover = labRegistryHover(hover_txt);", server_source)
-        self.assertIn("return hover;", server_source)
+        self.assertIn("AOE2 AI Parser hover request failed", server_source)
+        self.assertIn("return labRegistryHover(token);", server_source)
         self.assertIn("maxHoverDocumentationLength", server_source)
         self.assertIn("documentation.slice(0, maxHoverDocumentationLength)", server_source)
         self.assertIn("Syntax:", by_label["up-find-local"]["documentation"])
