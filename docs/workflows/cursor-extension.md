@@ -187,6 +187,8 @@ For `.ai` files:
   `duplicate-root-target` warning diagnostics.
 - Report `.ai` files with the same case-insensitive display name as
   `duplicate-ai-name` warning diagnostics.
+- Report reachable `.per` files with the same case-insensitive basename as
+  `duplicate-per-name` warning diagnostics on each matching `.per` file.
 
 ## Commands
 
@@ -249,6 +251,9 @@ The language server ranks completion results by cursor context:
   `(up-target-objects 0 ` prioritizes DUC actions, and
   `(up-modify-sn sn-maximum-town-size ` prioritizes math operators.
 - `(map-type ` prioritizes documented MapType values.
+- Enum-like parameter slots such as `Difficulty`, `Age`, `Resource`,
+  `ResourceType`, `Civ`, `GameType`, and similar value families prioritize
+  values from that exact family instead of all generic values.
 - `c:` value positions prioritize objects, values, techs, strategic numbers,
   and local constants.
 - Local `(defconst ...)` names in the current document are offered as

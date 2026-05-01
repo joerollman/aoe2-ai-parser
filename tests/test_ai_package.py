@@ -626,6 +626,21 @@ class AiPackageTests(unittest.TestCase):
         self.assertEqual(sorted(result.duplicate_ai_names), ["scout"])
         self.assertEqual(sorted(path.name for path in result.duplicate_ai_names["scout"]), ["Scout.ai", "Scout.ai"])
 
+    def test_package_integrity_reports_duplicate_per_names(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            nested = root / "nested"
+            nested.mkdir()
+            (root / "Main.ai").write_text('(load "Main")\n', encoding="utf-8")
+            (root / "Main.per").write_text('(load "nested/Shared")\n', encoding="utf-8")
+            (root / "Shared.per").write_text("(defrule\n    (true)\n=>\n    (do-nothing)\n)\n", encoding="utf-8")
+            (nested / "Shared.per").write_text("(defrule\n    (true)\n=>\n    (do-nothing)\n)\n", encoding="utf-8")
+
+            result = inspect_package_integrity(root)
+
+        self.assertEqual(sorted(result.duplicate_per_names), ["shared"])
+        self.assertEqual(sorted(path.name for path in result.duplicate_per_names["shared"]), ["Shared.per", "Shared.per"])
+
     def test_collect_reachable_files_ignores_known_inactive_loads(self) -> None:
         with TemporaryDirectory() as tmp:
             root = Path(tmp)

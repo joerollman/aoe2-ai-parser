@@ -977,8 +977,8 @@ class CliTests(unittest.TestCase):
             nested.mkdir()
             (root / "Scout.ai").write_text('(load "Scout")\n', encoding="utf-8")
             (root / "Scout.per").write_text("(defrule\n    (true)\n=>\n    (do-nothing)\n)\n", encoding="utf-8")
-            (nested / "Scout.ai").write_text('(load "Scout")\n', encoding="utf-8")
-            (nested / "Scout.per").write_text("(defrule\n    (true)\n=>\n    (do-nothing)\n)\n", encoding="utf-8")
+            (nested / "Scout.ai").write_text('(load "NestedScout")\n', encoding="utf-8")
+            (nested / "NestedScout.per").write_text("(defrule\n    (true)\n=>\n    (do-nothing)\n)\n", encoding="utf-8")
             buffer = io.StringIO()
             with redirect_stdout(buffer):
                 code = main(["lint-package", str(root), "--json", "--fail-level", "warning"])
@@ -991,6 +991,27 @@ class CliTests(unittest.TestCase):
         self.assertEqual(payload["issue_groups"][0]["documentation_anchor"], "diagnostic-duplicate-ai-name")
         self.assertEqual(payload["issue_groups"][0]["examples"][0]["code"], "duplicate-ai-name")
         self.assertEqual(payload["totals"]["duplicate_ai_name_count"], 1)
+
+    def test_lint_package_json_reports_duplicate_per_names(self) -> None:
+        with WorkspaceTempDir() as root:
+            nested = root / "nested"
+            nested.mkdir()
+            (root / "Main.ai").write_text('(load "Main")\n', encoding="utf-8")
+            (root / "Main.per").write_text('(load "Shared")\n(load "nested/Shared")\n', encoding="utf-8")
+            (root / "Shared.per").write_text("(defrule\n    (true)\n=>\n    (do-nothing)\n)\n", encoding="utf-8")
+            (nested / "Shared.per").write_text("(defrule\n    (true)\n=>\n    (do-nothing)\n)\n", encoding="utf-8")
+            buffer = io.StringIO()
+            with redirect_stdout(buffer):
+                code = main(["lint-package", str(root), "--json", "--fail-level", "warning"])
+
+        self.assertEqual(code, 1)
+        payload = json.loads(buffer.getvalue())
+        self.assertEqual(payload["integrity"]["duplicate_per_name_count"], 1)
+        self.assertEqual(payload["integrity"]["code_counts"], {"duplicate-per-name": 1})
+        self.assertEqual(payload["issue_groups"][0]["code"], "duplicate-per-name")
+        self.assertEqual(payload["issue_groups"][0]["documentation_anchor"], "diagnostic-duplicate-per-name")
+        self.assertEqual(payload["issue_groups"][0]["examples"][0]["code"], "duplicate-per-name")
+        self.assertEqual(payload["totals"]["duplicate_per_name_count"], 1)
 
     def test_lint_package_can_fail_on_integrity_info(self) -> None:
         with WorkspaceTempDir() as root:

@@ -33,6 +33,7 @@ let hasDiagnosticRelatedInformationCapability = false;
 let aiScriptTypes = aiScriptResources_1.loadAoE2Parameters();
 let aiScriptCompletionList = { items: [], isIncomplete: false };
 let labRegistryHoverMap = undefined;
+let labRegistryItemByLabelMap = undefined;
 let labCommandParameterMap = undefined;
 let labCommandItemMap = undefined;
 let labRegistryItemsByKindMap = undefined;
@@ -87,6 +88,18 @@ function labCommandParameters() {
         labCommandParameterMap.set(item.label, params);
     });
     return labCommandParameterMap;
+}
+function labRegistryItemByLabel() {
+    if (labRegistryItemByLabelMap !== undefined) {
+        return labRegistryItemByLabelMap;
+    }
+    labRegistryItemByLabelMap = new Map();
+    loadLabRegistryItems().forEach(item => {
+        if (item.label && !labRegistryItemByLabelMap.has(item.label)) {
+            labRegistryItemByLabelMap.set(item.label, item);
+        }
+    });
+    return labRegistryItemByLabelMap;
 }
 function labCommandItems() {
     if (labCommandItemMap !== undefined) {
@@ -575,6 +588,14 @@ function runLabPackageLinter(textDocument, settings, labPath, pythonPath, env, w
             diagnostics.push(labFindingToDiagnostic(textDocument, finding.severity, finding.code, finding.message, finding.line, finding.span));
         });
     });
+    (((payload.integrity || {}).duplicate_per_names) || []).forEach(duplicate => {
+        if (!(duplicate.per_paths || []).some(perPath => normalizeFsPath(perPath) === currentPath)) {
+            return;
+        }
+        currentFileIsReachable = true;
+        let files = (duplicate.per_paths || []).map(perPath => path.basename(perPath)).join(", ");
+        diagnostics.push(labFindingToDiagnostic(textDocument, "warning", "duplicate-per-name", ".per basename '" + (duplicate.name || path.basename(currentPath, ".per")) + "' is shared by multiple files: " + files, 1));
+    });
     if (!currentFileIsReachable) {
         return null;
     }
@@ -991,6 +1012,28 @@ function labKindForOriginalSection(section) {
 }
 function preferredKindsForParameter(paramType) {
     let normalized = String(paramType || "").toLowerCase();
+    const valueFamilies = new Set([
+        "age",
+        "civ",
+        "commodity",
+        "difficulty",
+        "factid",
+        "gametype",
+        "mapsize",
+        "objectdata",
+        "objectlist",
+        "objectstatus",
+        "placementtype",
+        "playerstance",
+        "positiontype",
+        "researchstate",
+        "resource",
+        "resourcetype",
+        "searchorder",
+        "subgametype",
+        "timerstate",
+        "victorycondition"
+    ]);
     if (normalized === "snid" || normalized === "strategicnumber") {
         return new Set(["strategic-number", "local-constant"]);
     }
@@ -1018,6 +1061,9 @@ function preferredKindsForParameter(paramType) {
     if (normalized === "maptype") {
         return new Set(["map-type", "local-constant"]);
     }
+    if (valueFamilies.has(normalized)) {
+        return new Set([normalized, "local-constant"]);
+    }
     if (normalized.indexOf("value") >= 0 || normalized.indexOf("goal") >= 0 || normalized.indexOf("option") >= 0) {
         return new Set(["value", "local-constant"]);
     }
@@ -1027,6 +1073,13 @@ function completionItemFamily(item) {
     let label = item.label || "";
     let labKind = item.data && item.data.labKind ? item.data.labKind : "";
     let detail = String(item.detail || "").toLowerCase();
+    if (labKind === "local-constant") {
+        return labKind;
+    }
+    let registryItem = labRegistryItemByLabel().get(label);
+    if (registryItem && registryItem.detail && detail.indexOf(" value") < 0) {
+        detail = String(registryItem.detail).toLowerCase();
+    }
     if (detail.indexOf("ducaction") >= 0 || label.indexOf("action-") === 0) {
         return "duc-action";
     }
@@ -1044,6 +1097,10 @@ function completionItemFamily(item) {
     }
     if (detail.indexOf("maptype") >= 0) {
         return "map-type";
+    }
+    let valueFamilyMatch = /^([a-z]+) value$/.exec(detail);
+    if (valueFamilyMatch) {
+        return valueFamilyMatch[1].toLowerCase();
     }
     return labKind;
 }

@@ -145,6 +145,14 @@
       "meaning": "Multiple `.ai` files have the same case-insensitive display name. This can confuse package users and launcher/editor selection."
     },
     {
+      "code": "duplicate-per-name",
+      "source": "integrity",
+      "severity": "warning",
+      "corpus": "active",
+      "cursor_action": "none",
+      "meaning": "Multiple `.per` files have the same case-insensitive basename. This is legal in subfolders, but it can confuse package review, load-target completion, and human navigation."
+    },
+    {
       "code": "duplicate-defconst-conflict",
       "source": "lint",
       "severity": "warning",
