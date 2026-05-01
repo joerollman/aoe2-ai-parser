@@ -20,6 +20,8 @@ Then go directly to the relevant task surface:
 - command semantics: `docs/reference/command-reference.md`
 - package validation: `docs/workflows/ai-package-validator.md`
 - editor extension: `docs/workflows/cursor-extension.md`
+- Discord/community feedback triage:
+  `docs/workflows/community-feedback.md`
 - offline extracted references: `docs/extracted/README.md`
 
 ## Repository Layout
@@ -31,6 +33,12 @@ Then go directly to the relevant task surface:
 - `docs/workflows/`: tooling, release, and editor workflows
 - `extensions/aoe2-aiscript-cursor-local-lab/`: VS Code/Cursor extension
 - `scripts/`: generation, verification, packaging, and publishing scripts
+
+## Community Feedback
+
+Community reports are expected to arrive through Discord. Do not ask users to
+submit PRs. For triage, response drafting, and bot-facing project rules, read
+`docs/workflows/community-feedback.md`.
 
 ## Working Rules
 

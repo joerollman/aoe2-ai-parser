@@ -35,6 +35,11 @@ Use this as the entry point for project notes.
 - [workflows/cursor-extension.md](./workflows/cursor-extension.md): VS
   Code/Cursor extension diagnostics, command palette linting, completions,
   hovers, quick fixes, packaging, and verification.
+- [workflows/community-feedback.md](./workflows/community-feedback.md):
+  Discord-first user feedback triage, bot entry points, report templates, and
+  maintainer handoff format.
+- [workflows/community-feedback.json](./workflows/community-feedback.json):
+  compact bot-facing manifest for feedback triage.
 - [workflows/release-and-repo-split.md](./workflows/release-and-repo-split.md):
   marketplace publishing and bundled extension runtime.
 - [workflows/generator-usage.md](./workflows/generator-usage.md): generation

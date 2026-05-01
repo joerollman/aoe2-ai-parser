@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "project": "aoe2-ai-parser",
+  "feedback_front_door": "discord",
+  "users_expected_to_submit_prs": false,
+  "primary_triage_doc": "docs/workflows/community-feedback.md",
+  "entry_docs": [
+    "AGENTS.md",
+    "docs/README.md",
+    "docs/workflows/ai-package-validator.md",
+    "docs/workflows/validator-diagnostic-codes.md",
+    "docs/workflows/cursor-extension.md",
+    "docs/reference/command-reference.md",
+    "docs/reference/generated/symbols/"
+  ],
+  "commands": {
+    "lint_file": "python -m aoe2_ai_lab lint <file>",
+    "lint_package_json": "python -m aoe2_ai_lab lint-package <folder-or-ai-file> --json",
+    "lint_package_corpus_json": "python -m aoe2_ai_lab lint-package <folder-or-ai-file> --profile corpus --json",
+    "resolve_reference": "python -m aoe2_ai_lab resolve-reference <token>",
+    "search_registry": "python -m aoe2_ai_lab search-registry <query>"
+  },
+  "triage_start": {
+    "package_reports": "Start with top-level issue_groups from lint-package --json.",
+    "diagnostic_codes": "Read docs/workflows/validator-diagnostic-codes.md.",
+    "extension_issues": "Read docs/workflows/cursor-extension.md.",
+    "command_questions": "Use resolve-reference first, then docs/reference/generated/symbols/<token>.md."
+  },
+  "categories": [
+    "bug: extension",
+    "bug: parser",
+    "false-positive",
+    "false-negative",
+    "docs",
+    "autocomplete",
+    "hover/reference",
+    "theme",
+    "performance",
+    "feature-request"
+  ],
+  "priority_order": [
+    "Extension commands crash or throw runtime errors.",
+    "Hover/autocomplete hangs or is blocked during common workflows.",
+    "Lint package cannot run on normal AI packages.",
+    "Valid working scripts are flagged as hard errors.",
+    "Package reports or diagnostics are too slow to be useful.",
+    "Missing docs, low-risk false positives, and feature requests."
+  ],
+  "required_report_fields": [
+    "Extension version",
+    "Editor",
+    "OS",
+    "What were you doing",
+    "What happened",
+    "What did you expect",
+    "AOE2 AI Parser output",
+    "Smallest .ai/.per repro"
+  ],
+  "maintainer_handoff_fields": [
+    "Source",
+    "Reporter environment",
+    "Category",
+    "Priority",
+    "User-visible symptom",
+    "Expected behavior",
+    "Repro files or snippet",
+    "Command/output",
+    "Likely docs to read",
+    "Recommended next step",
+    "Draft user response"
+  ],
+  "do_not": [
+    "Do not ask community users to submit pull requests.",
+    "Do not commit private AI packages, large downloaded corpora, game logs, or Discord exports.",
+    "Do not add bot tokens, Discord server IDs, deployment config, or moderation secrets.",
+    "Do not turn uncertain scripting claims into validator rules without evidence."
+  ]
+}
