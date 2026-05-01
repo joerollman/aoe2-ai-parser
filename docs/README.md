@@ -17,6 +17,9 @@ Use this as the entry point for project notes.
   evidence and validation status for AI `map-type` values.
 - [reference/load-random-evidence.md](./reference/load-random-evidence.md):
   validation status for `load-random` weight forms and package reachability.
+- [reference/include-xs-evidence.md](./reference/include-xs-evidence.md):
+  local rules and validator/editor behavior for `include` and
+  `xs-script-call`.
 - [extracted/README.md](./extracted/README.md): offline imported inventories
   and raw evidence.
 - [extracted/offline-reference-map.md](./extracted/offline-reference-map.md):

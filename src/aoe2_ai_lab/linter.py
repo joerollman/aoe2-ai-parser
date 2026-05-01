@@ -38,6 +38,7 @@ WARNING_FINDING_CODES = {
     "command-typed-operand-mismatch",
     "defconst-alias-cycle",
     "duplicate-defconst-conflict",
+    "duplicate-include-target",
     "livestock-default-point",
     "load-random-plus-weight-de-behavior",
     "repeat-chat",

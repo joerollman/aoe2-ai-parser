@@ -703,6 +703,36 @@ def package_xs_script_call_findings(
     return findings
 
 
+def package_duplicate_include_findings(
+    file_path: Path,
+    includes: list[tuple[int, str, Path | None, str, tuple[Path, ...]]],
+    *,
+    file_confidence: str,
+) -> list[tuple[Path, Finding]]:
+    findings: list[tuple[Path, Finding]] = []
+    first_by_target: dict[Path, tuple[int, str]] = {}
+    for line_number, include, target, confidence, _candidates in includes:
+        if target is None:
+            continue
+        resolved_target = target.resolve()
+        if resolved_target not in first_by_target:
+            first_by_target[resolved_target] = (line_number, include)
+            continue
+        first_line, first_include = first_by_target[resolved_target]
+        findings.append(
+            (
+                file_path,
+                Finding(
+                    line_number,
+                    "duplicate-include-target",
+                    f"include target {include!r} resolves to the same .xs file as {first_include!r} on line {first_line}",
+                    merge_confidence(file_confidence, confidence),
+                ),
+            )
+        )
+    return findings
+
+
 def package_defconst_conflict_findings(
     definitions: dict[str, list[tuple[str, Path, int, str]]],
 ) -> list[tuple[Path, Finding]]:
@@ -782,10 +812,14 @@ def lint_package_root(root: PackageRoot, *, profile: str = "corpus") -> PackageL
     result.findings.extend(package_defconst_alias_cycle_findings(constant_tokens, constant_locations))
     for file_path in files:
         file_level_confidence = file_confidence.get(file_path.resolve(), "definite")
-        for line_number, include, target, include_confidence, candidates in find_include_targets(
+        includes = find_include_targets(
             file_path,
             package_root=root.package_dir,
-        ):
+        )
+        result.findings.extend(
+            package_duplicate_include_findings(file_path, includes, file_confidence=file_level_confidence)
+        )
+        for line_number, include, target, include_confidence, candidates in includes:
             child_confidence = merge_confidence(file_level_confidence, include_confidence)
             if target is not None:
                 resolved_target = target.resolve()

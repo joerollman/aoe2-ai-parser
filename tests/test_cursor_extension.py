@@ -249,6 +249,7 @@ class CursorExtensionTests(unittest.TestCase):
         self.assertIn("difficulty argument", smoke_source)
         self.assertIn("resource argument", smoke_source)
         self.assertIn(".ai load-random target definition", smoke_source)
+        self.assertIn(".per include target definition", smoke_source)
         self.assertIn("up-find-local signature help", smoke_source)
         self.assertIn("missing load target code action", smoke_source)
         self.assertIn("unsafe set target explanation action", smoke_source)

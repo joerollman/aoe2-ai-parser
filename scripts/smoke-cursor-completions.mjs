@@ -153,6 +153,7 @@ fs.mkdirSync(path.join(fixtureRoot, "shared"), { recursive: true });
 
 const perFixture = fixtureWithCursors([
   "(defconst local-probe 123)",
+  '(include "shared/debug|includeTarget|.xs")',
   "(defrule",
   "    (true)",
   "    (map-type |mapType|)",
@@ -182,6 +183,7 @@ fs.writeFileSync(perPath, perText, "utf8");
 fs.writeFileSync(aiPath, aiText, "utf8");
 fs.writeFileSync(path.join(fixtureRoot, "shared", "helper.per"), "(defrule (true) =>)\n", "utf8");
 fs.writeFileSync(path.join(fixtureRoot, "shared", "second.per"), "(defrule (true) =>)\n", "utf8");
+fs.writeFileSync(path.join(fixtureRoot, "shared", "debug.xs"), "void debug() {}\n", "utf8");
 
 const child = fork(serverPath, ["--node-ipc"], {
   cwd: extensionRoot,
@@ -364,6 +366,12 @@ try {
       uri: fileUri(aiPath),
       position: aiFixture.positions.loadRandomSecond,
       expectedSuffix: "shared/second.per",
+    },
+    {
+      name: ".per include target definition",
+      uri: fileUri(perPath),
+      position: perFixture.positions.includeTarget,
+      expectedSuffix: "shared/debug.xs",
     },
   ];
 

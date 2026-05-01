@@ -46,6 +46,7 @@ Manual `--suppress-code <code>` can suppress any finding code for one lint run. 
 | `duplicate-root-target` | integrity | warning | active | none | Multiple `.ai` files resolve to the same root `.per`. This can be intentional for personalities but should be explicit. |
 | `duplicate-ai-name` | integrity | warning | active | none | Multiple `.ai` files have the same case-insensitive display name. This can confuse package users and launcher/editor selection. |
 | `duplicate-load-target` | integrity | warning | active | none | One `.ai` file loads the same resolved `.per` root more than once. This may be intentional, but it usually indicates a redundant or mistaken package manifest entry. |
+| `duplicate-include-target` | package lint | warning | active | none | One reachable `.per` file includes the same resolved `.xs` file more than once. This may be intentional when relying on top-level XS side effects, but is usually redundant. |
 | `duplicate-per-name` | integrity | warning | active | none | Multiple `.per` files have the same case-insensitive basename. This is legal in subfolders, but it can confuse package review, load-target completion, and human navigation. |
 | `duplicate-defconst-conflict` | lint | warning | suppressed | none | A definitely active file assigns two different parsed values to the same `defconst` name. |
 | `empty-action` | lint | error | active | none | A rule has no actions after `=>`. |
@@ -250,6 +251,16 @@ Manual `--suppress-code <code>` can suppress any finding code for one lint run. 
 - Corpus profile: active
 - Cursor action: none
 - Meaning: One `.ai` file loads the same resolved `.per` root more than once. This may be intentional, but it usually indicates a redundant or mistaken package manifest entry.
+
+<a id="diagnostic-duplicate-include-target"></a>
+
+### `duplicate-include-target`
+
+- Source: package lint
+- Default severity: warning
+- Corpus profile: active
+- Cursor action: none
+- Meaning: One reachable `.per` file includes the same resolved `.xs` file more than once. This may be intentional when relying on top-level XS side effects, but is usually redundant.
 
 <a id="diagnostic-duplicate-per-name"></a>
 

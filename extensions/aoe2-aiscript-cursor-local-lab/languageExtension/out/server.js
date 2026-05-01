@@ -1392,6 +1392,25 @@ function loadTargetAtPosition(textDocument, position) {
     }
     return undefined;
 }
+function includeTargetAtPosition(textDocument, position) {
+    let line = textDocument.getText({
+        start: { line: position.line, character: 0 },
+        end: { line: position.line, character: 10000 }
+    });
+    if (!/\(\s*include\b/i.test(line)) {
+        return undefined;
+    }
+    let includePattern = /"([^"]+)"/g;
+    let match;
+    while ((match = includePattern.exec(line)) !== null) {
+        let targetStart = match.index + match[0].lastIndexOf(match[1]);
+        let targetEnd = targetStart + match[1].length;
+        if (position.character >= targetStart && position.character <= targetEnd) {
+            return match[1];
+        }
+    }
+    return undefined;
+}
 function resolveLoadTarget(textDocument, target) {
     let currentPath = vscode_uri_1.URI.parse(textDocument.uri).fsPath;
     let root = completionPackageRoot(textDocument);
@@ -1519,6 +1538,26 @@ function labRegistryDefinition(token, labPath) {
     }
     return undefined;
 }
+function resolveIncludeTarget(textDocument, target) {
+    let currentPath = vscode_uri_1.URI.parse(textDocument.uri).fsPath;
+    let root = completionPackageRoot(textDocument);
+    let candidates = [
+        path.resolve(path.dirname(currentPath), target),
+        path.resolve(root, target)
+    ];
+    for (let index = 0; index < candidates.length; index++) {
+        if (fs.existsSync(candidates[index])) {
+            return {
+                uri: vscode_uri_1.URI.file(candidates[index]).toString(),
+                range: {
+                    start: { line: 0, character: 0 },
+                    end: { line: 0, character: 0 }
+                }
+            };
+        }
+    }
+    return undefined;
+}
 function getDefinition(params) {
     return __awaiter(this, void 0, void 0, function* () {
         let textDocument = documents.get(params.textDocument.uri);
@@ -1528,6 +1567,10 @@ function getDefinition(params) {
         let loadTarget = loadTargetAtPosition(textDocument, params.position);
         if (loadTarget) {
             return resolveLoadTarget(textDocument, loadTarget);
+        }
+        let includeTarget = includeTargetAtPosition(textDocument, params.position);
+        if (includeTarget) {
+            return resolveIncludeTarget(textDocument, includeTarget);
         }
         let token = wordAtPosition(textDocument, params.position);
         if (!token) {

@@ -284,6 +284,11 @@ Resolved `.xs` files are linted and reported under each root's `xs_files`.
 Missing include targets produce `missing-include-target` errors with candidate
 paths in JSON.
 
+Repeated include targets in the same reachable `.per` file produce
+`duplicate-include-target` warnings when they resolve to the same local `.xs`
+file. This is warning-level because top-level XS side effects can make repeated
+includes intentional, but it is usually redundant.
+
 When an included `.xs` file is available locally, package lint also cross-checks
 `xs-script-call` targets against visible XS function signatures. A call to a
 function with one or more parameters is reported as

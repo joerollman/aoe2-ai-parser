@@ -792,6 +792,26 @@ bool helloWorld() { return(true); }
         self.assertEqual(result.missing_includes[0].include, "missing.xs")
         self.assertEqual(result.findings[0][1].code, "missing-include-target")
 
+    def test_package_lint_reports_duplicate_include_targets(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "Main.ai").write_text('(load "main")\n', encoding="utf-8")
+            (root / "main.per").write_text(
+                """
+(include "debug.xs")
+(include "debug.xs")
+""".strip(),
+                encoding="utf-8",
+            )
+            (root / "debug.xs").write_text("void debug() {}\n", encoding="utf-8")
+
+            result = lint_package_root(find_package_roots(root)[0], profile="default")
+
+        findings = [finding for _, finding in result.findings]
+        self.assertEqual([finding.code for finding in findings], ["duplicate-include-target"])
+        self.assertEqual(findings[0].line, 2)
+        self.assertEqual(findings[0].severity, "warning")
+
 
 if __name__ == "__main__":
     unittest.main()

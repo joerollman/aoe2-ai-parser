@@ -153,6 +153,14 @@
       "meaning": "One `.ai` file loads the same resolved `.per` root more than once. This may be intentional, but it usually indicates a redundant or mistaken package manifest entry."
     },
     {
+      "code": "duplicate-include-target",
+      "source": "package lint",
+      "severity": "warning",
+      "corpus": "active",
+      "cursor_action": "none",
+      "meaning": "One reachable `.per` file includes the same resolved `.xs` file more than once. This may be intentional when relying on top-level XS side effects, but is usually redundant."
+    },
+    {
       "code": "duplicate-per-name",
       "source": "integrity",
       "severity": "warning",

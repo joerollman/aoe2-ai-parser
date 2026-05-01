@@ -1180,6 +1180,28 @@ class CliTests(unittest.TestCase):
         self.assertEqual(payload["issue_groups"][0]["code"], "xs-script-call-parameterized-function")
         self.assertEqual(payload["issue_groups"][0]["severity_counts"], {"warning": 1})
 
+    def test_lint_package_json_groups_duplicate_include_targets(self) -> None:
+        with WorkspaceTempDir() as root:
+            (root / "Main.ai").write_text('(load "Main")\n', encoding="utf-8")
+            (root / "Main.per").write_text(
+                """
+(include "debug.xs")
+(include "debug.xs")
+""".strip(),
+                encoding="utf-8",
+            )
+            (root / "debug.xs").write_text("void debug() {}\n", encoding="utf-8")
+            buffer = io.StringIO()
+            with redirect_stdout(buffer):
+                code = main(["lint-package", str(root), "--json"])
+
+        self.assertEqual(code, 0)
+        payload = json.loads(buffer.getvalue())
+        root_payload = payload["roots"][0]
+        self.assertEqual(root_payload["severity_counts"], {"warning": 1})
+        self.assertEqual(root_payload["finding_groups"][0]["code"], "duplicate-include-target")
+        self.assertEqual(payload["issue_groups"][0]["code"], "duplicate-include-target")
+
 
 if __name__ == "__main__":
     unittest.main()
