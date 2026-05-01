@@ -187,6 +187,8 @@ For `.ai` files:
   `duplicate-root-target` warning diagnostics.
 - Report `.ai` files with the same case-insensitive display name as
   `duplicate-ai-name` warning diagnostics.
+- Report repeated resolved load targets inside one `.ai` file as
+  `duplicate-load-target` warning diagnostics.
 - Report reachable `.per` files with the same case-insensitive basename as
   `duplicate-per-name` warning diagnostics on each matching `.per` file.
 

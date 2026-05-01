@@ -527,6 +527,14 @@ function collectAiRootDiagnostics(textDocument, payload, currentPath) {
             let roots = (duplicate.ai_paths || []).map(aiPath => path.basename(aiPath)).join(", ");
             diagnostics.push(labFindingToDiagnostic(textDocument, "warning", "duplicate-ai-name", "AI display name '" + (duplicate.name || path.basename(currentPath, ".ai")) + "' is shared by multiple .ai files: " + roots, 1));
         });
+        (((payload.integrity || {}).duplicate_load_targets) || []).forEach(duplicate => {
+            if (normalizeFsPath(duplicate.ai_path) !== currentPath) {
+                return;
+            }
+            let references = duplicate.references || [];
+            let line = references.length > 1 && references[1].line ? references[1].line : (references[0] && references[0].line ? references[0].line : 1);
+            diagnostics.push(labFindingToDiagnostic(textDocument, "warning", "duplicate-load-target", "AI loads '" + path.basename(duplicate.target_path || "duplicate-load-target") + "' more than once", line));
+        });
     });
     (((payload.integrity || {}).stale_ai_roots) || []).forEach(stale => {
         if (normalizeFsPath(stale.ai_path) !== currentPath) {

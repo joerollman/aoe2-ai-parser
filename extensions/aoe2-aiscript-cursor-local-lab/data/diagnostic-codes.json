@@ -145,6 +145,14 @@
       "meaning": "Multiple `.ai` files have the same case-insensitive display name. This can confuse package users and launcher/editor selection."
     },
     {
+      "code": "duplicate-load-target",
+      "source": "integrity",
+      "severity": "warning",
+      "corpus": "active",
+      "cursor_action": "none",
+      "meaning": "One `.ai` file loads the same resolved `.per` root more than once. This may be intentional, but it usually indicates a redundant or mistaken package manifest entry."
+    },
+    {
       "code": "duplicate-per-name",
       "source": "integrity",
       "severity": "warning",

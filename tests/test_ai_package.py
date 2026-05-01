@@ -641,6 +641,20 @@ class AiPackageTests(unittest.TestCase):
         self.assertEqual(sorted(result.duplicate_per_names), ["shared"])
         self.assertEqual(sorted(path.name for path in result.duplicate_per_names["shared"]), ["Shared.per", "Shared.per"])
 
+    def test_package_integrity_reports_duplicate_load_targets(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "Main.ai").write_text('(load "Main")\n(load "Main")\n', encoding="utf-8")
+            (root / "Main.per").write_text("(defrule\n    (true)\n=>\n    (do-nothing)\n)\n", encoding="utf-8")
+
+            result = inspect_package_integrity(root)
+
+        self.assertEqual(len(result.duplicate_load_targets), 1)
+        duplicate = result.duplicate_load_targets[0]
+        self.assertEqual(duplicate.ai_path.name, "Main.ai")
+        self.assertEqual(duplicate.target_path.name, "Main.per")
+        self.assertEqual([reference.line for reference in duplicate.references], [1, 2])
+
     def test_collect_reachable_files_ignores_known_inactive_loads(self) -> None:
         with TemporaryDirectory() as tmp:
             root = Path(tmp)

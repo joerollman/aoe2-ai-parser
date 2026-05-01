@@ -95,6 +95,13 @@ class StaleAiRoot:
     message: str
 
 
+@dataclass(frozen=True)
+class DuplicateLoadTarget:
+    ai_path: Path
+    target_path: Path
+    references: tuple[LoadReference, ...]
+
+
 @dataclass
 class PackageIntegrityResult:
     package_dir: Path
@@ -104,6 +111,7 @@ class PackageIntegrityResult:
     duplicate_root_targets: dict[Path, list[Path]] = field(default_factory=dict)
     duplicate_ai_names: dict[str, list[Path]] = field(default_factory=dict)
     duplicate_per_names: dict[str, list[Path]] = field(default_factory=dict)
+    duplicate_load_targets: list[DuplicateLoadTarget] = field(default_factory=list)
 
 
 def merge_confidence(existing: str, incoming: str) -> str:
@@ -439,6 +447,22 @@ def find_package_roots(package_dir: str | Path) -> list[PackageRoot]:
     return roots
 
 
+def find_duplicate_load_targets(ai_paths: list[Path], *, package_root: Path) -> list[DuplicateLoadTarget]:
+    duplicates: list[DuplicateLoadTarget] = []
+    for ai_path in sorted(set(ai_paths)):
+        by_target: dict[Path, list[LoadReference]] = {}
+        for reference in find_load_references(ai_path, package_root=package_root):
+            if reference.target is None or reference.skipped_reason is not None:
+                continue
+            by_target.setdefault(reference.target.resolve(), []).append(reference)
+        duplicates.extend(
+            DuplicateLoadTarget(ai_path=ai_path, target_path=target, references=tuple(references))
+            for target, references in sorted(by_target.items())
+            if len(references) > 1
+        )
+    return duplicates
+
+
 def inspect_package_integrity(package_dir: str | Path) -> PackageIntegrityResult:
     root = Path(package_dir)
     if root.is_file() and root.suffix.lower() == ".ai":
@@ -460,6 +484,7 @@ def inspect_package_integrity(package_dir: str | Path) -> PackageIntegrityResult
             stale_ai_roots=stale_ai_roots,
             unreachable_per_files=[],
             duplicate_root_targets={},
+            duplicate_load_targets=find_duplicate_load_targets([root], package_root=package_root),
         )
     if root.is_file() and root.suffix.lower() == ".per":
         package_root = root.parent
@@ -499,11 +524,11 @@ def inspect_package_integrity(package_dir: str | Path) -> PackageIntegrityResult
         per_names.setdefault(per_path.stem.lower(), []).append(per_path)
     unreachable = sorted(all_per_files - reachable)
 
-    root_targets: dict[Path, list[Path]] = {}
+    root_targets: dict[Path, set[Path]] = {}
     for package_root in roots:
-        root_targets.setdefault(package_root.per_path.resolve(), []).append(package_root.ai_path)
+        root_targets.setdefault(package_root.per_path.resolve(), set()).add(package_root.ai_path)
     duplicates = {
-        per_path: ai_paths
+        per_path: sorted(ai_paths)
         for per_path, ai_paths in root_targets.items()
         if len(ai_paths) > 1
     }
@@ -517,6 +542,8 @@ def inspect_package_integrity(package_dir: str | Path) -> PackageIntegrityResult
         for name, paths in sorted(per_names.items())
         if len(paths) > 1
     }
+    all_ai_paths = sorted(ai_path for paths in ai_names.values() for ai_path in paths)
+    duplicate_load_targets = find_duplicate_load_targets(all_ai_paths, package_root=root)
 
     return PackageIntegrityResult(
         package_dir=root,
@@ -526,6 +553,7 @@ def inspect_package_integrity(package_dir: str | Path) -> PackageIntegrityResult
         duplicate_root_targets=duplicates,
         duplicate_ai_names=duplicate_ai_names,
         duplicate_per_names=duplicate_per_names,
+        duplicate_load_targets=duplicate_load_targets,
     )
 
 

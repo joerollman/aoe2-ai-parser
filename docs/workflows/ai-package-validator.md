@@ -301,6 +301,8 @@ zero-parameter XS functions.
   `.per`.
 - duplicate AI names: multiple `.ai` files with the same case-insensitive stem,
   which can confuse package users and launcher/editor selection.
+- duplicate load targets: one `.ai` file loading the same resolved `.per` root
+  more than once.
 - duplicate `.per` names: multiple `.per` files with the same case-insensitive
   stem. This is legal in subfolders, but it makes package review and editor
   load-target completion more ambiguous.
@@ -322,8 +324,9 @@ load edge increments the depth.
 
 Stale `.ai` roots are integrity errors and fail package validation by default.
 Unreachable `.per` files are integrity info by default. Duplicate root targets,
-duplicate AI names, and duplicate `.per` names are integrity warnings because
-they may be intentional personality entries or packaging choices.
+duplicate AI names, duplicate load targets, and duplicate `.per` names are
+integrity warnings because they may be intentional personality entries or
+packaging choices.
 `--fail-level warning` fails on those warnings, and `--fail-level info` also
 fails on unreachable files.
 
@@ -362,6 +365,7 @@ Important `totals` fields:
 - `unreachable_per_file_count`
 - `duplicate_root_target_count`
 - `duplicate_ai_name_count`
+- `duplicate_load_target_count`
 - `duplicate_per_name_count`
 - `integrity_severity_counts`
 - `integrity_code_counts`

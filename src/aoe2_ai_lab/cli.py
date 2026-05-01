@@ -858,11 +858,13 @@ def package_integrity_to_json(integrity: object) -> dict[str, object]:
             len(integrity.duplicate_root_targets)
             + len(integrity.duplicate_ai_names)
             + len(integrity.duplicate_per_names)
+            + len(integrity.duplicate_load_targets)
         ),
     }
     severity_counts = {key: value for key, value in sorted(severity_counts.items()) if value}
     code_counts = {
         "duplicate-ai-name": len(integrity.duplicate_ai_names),
+        "duplicate-load-target": len(integrity.duplicate_load_targets),
         "duplicate-per-name": len(integrity.duplicate_per_names),
         "duplicate-root-target": len(integrity.duplicate_root_targets),
         "stale-ai-root": len(integrity.stale_ai_roots),
@@ -910,6 +912,23 @@ def package_integrity_to_json(integrity: object) -> dict[str, object]:
             for name, per_paths in sorted(integrity.duplicate_per_names.items())
         ],
         "duplicate_per_name_count": len(integrity.duplicate_per_names),
+        "duplicate_load_targets": [
+            {
+                "ai_path": str(duplicate.ai_path),
+                "target_path": str(duplicate.target_path),
+                "references": [
+                    {
+                        "line": reference.line,
+                        "include": reference.include,
+                        "source": reference.source,
+                        "confidence": reference.confidence,
+                    }
+                    for reference in duplicate.references
+                ],
+            }
+            for duplicate in integrity.duplicate_load_targets
+        ],
+        "duplicate_load_target_count": len(integrity.duplicate_load_targets),
     }
 
 
@@ -972,6 +991,8 @@ def package_integrity_has_failure(integrity: object, fail_level: str) -> bool:
         return True
     if integrity.duplicate_per_names and SEVERITY_ORDER["warning"] >= threshold:
         return True
+    if integrity.duplicate_load_targets and SEVERITY_ORDER["warning"] >= threshold:
+        return True
     if integrity.unreachable_per_files and SEVERITY_ORDER["info"] >= threshold:
         return True
     return False
@@ -1020,6 +1041,7 @@ def package_totals_to_json(root_payloads: list[dict[str, object]], integrity_pay
         "duplicate_root_target_count": integrity_payload["duplicate_root_target_count"],
         "duplicate_ai_name_count": integrity_payload["duplicate_ai_name_count"],
         "duplicate_per_name_count": integrity_payload["duplicate_per_name_count"],
+        "duplicate_load_target_count": integrity_payload["duplicate_load_target_count"],
         "integrity_severity_counts": integrity_payload["severity_counts"],
         "integrity_code_counts": integrity_payload["code_counts"],
     }
@@ -1039,6 +1061,7 @@ def package_integrity_groups_to_json(integrity_payload: dict[str, object]) -> li
         ("duplicate-root-target", "warning", integrity_payload["duplicate_root_targets"]),
         ("duplicate-ai-name", "warning", integrity_payload["duplicate_ai_names"]),
         ("duplicate-per-name", "warning", integrity_payload["duplicate_per_names"]),
+        ("duplicate-load-target", "warning", integrity_payload["duplicate_load_targets"]),
         ("unreachable-per-file", "info", integrity_payload["unreachable_per_files"]),
     ]
     for code, severity, items in specs:
@@ -1089,6 +1112,20 @@ def package_integrity_groups_to_json(integrity_payload: dict[str, object]) -> li
                     "code": code,
                     "message": "multiple .per files share the same case-insensitive basename",
                     "per_paths": item["per_paths"],
+                }
+                for item in items[:5]
+            ]
+        elif code == "duplicate-load-target":
+            examples = [
+                {
+                    "path": item["ai_path"],
+                    "line": item["references"][1]["line"] if len(item["references"]) > 1 else item["references"][0]["line"],
+                    "severity": severity,
+                    "confidence": "definite",
+                    "code": code,
+                    "message": "same .per target is loaded more than once by one .ai file",
+                    "target_path": item["target_path"],
+                    "references": item["references"],
                 }
                 for item in items[:5]
             ]
@@ -1252,6 +1289,7 @@ def package_report_to_markdown(payload: dict[str, object]) -> str:
         "duplicate-root-target": integrity["duplicate_root_targets"],
         "duplicate-ai-name": integrity["duplicate_ai_names"],
         "duplicate-per-name": integrity["duplicate_per_names"],
+        "duplicate-load-target": integrity["duplicate_load_targets"],
     }
 
     all_codes = sorted(set(findings_by_code) | {code for code, items in integrity_categories.items() if items})
@@ -1321,6 +1359,9 @@ def package_report_to_markdown(payload: dict[str, object]) -> str:
         elif code == "duplicate-per-name":
             for item in integrity_items:
                 lines.append(f"- `{item['name']}` used by `{', '.join(item['per_paths'])}`")
+        elif code == "duplicate-load-target":
+            for item in integrity_items:
+                lines.append(f"- `{item['ai_path']}` loads `{item['target_path']}` more than once")
         lines.append("")
 
     lines.extend(["## Root Manifest", ""])
@@ -1482,6 +1523,14 @@ def main(argv: list[str] | None = None) -> int:
                 for name, per_paths in list(integrity.duplicate_per_names.items())[:10]:
                     joined = ", ".join(str(path) for path in per_paths)
                     print(f"  {name}: warning: duplicate-per-name: referenced by {joined}")
+            if integrity.duplicate_load_targets:
+                print("package integrity:")
+                print(f"  duplicate load targets: {len(integrity.duplicate_load_targets)}")
+                for duplicate in integrity.duplicate_load_targets[:10]:
+                    print(
+                        f"  {duplicate.ai_path}: warning: duplicate-load-target: "
+                        f"loads {duplicate.target_path} more than once"
+                    )
         return exit_code
 
     if args.command == "diagnostics":

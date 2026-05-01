@@ -1013,6 +1013,23 @@ class CliTests(unittest.TestCase):
         self.assertEqual(payload["issue_groups"][0]["examples"][0]["code"], "duplicate-per-name")
         self.assertEqual(payload["totals"]["duplicate_per_name_count"], 1)
 
+    def test_lint_package_json_reports_duplicate_load_targets(self) -> None:
+        with WorkspaceTempDir() as root:
+            (root / "Main.ai").write_text('(load "Main")\n(load "Main")\n', encoding="utf-8")
+            (root / "Main.per").write_text("(defrule\n    (true)\n=>\n    (do-nothing)\n)\n", encoding="utf-8")
+            buffer = io.StringIO()
+            with redirect_stdout(buffer):
+                code = main(["lint-package", str(root), "--json", "--fail-level", "warning"])
+
+        self.assertEqual(code, 1)
+        payload = json.loads(buffer.getvalue())
+        self.assertEqual(payload["integrity"]["duplicate_load_target_count"], 1)
+        self.assertEqual(payload["integrity"]["code_counts"], {"duplicate-load-target": 1})
+        self.assertEqual(payload["issue_groups"][0]["code"], "duplicate-load-target")
+        self.assertEqual(payload["issue_groups"][0]["documentation_anchor"], "diagnostic-duplicate-load-target")
+        self.assertEqual(payload["issue_groups"][0]["examples"][0]["line"], 2)
+        self.assertEqual(payload["totals"]["duplicate_load_target_count"], 1)
+
     def test_lint_package_can_fail_on_integrity_info(self) -> None:
         with WorkspaceTempDir() as root:
             (root / "Good.ai").write_text('(load "Good")\n', encoding="utf-8")
