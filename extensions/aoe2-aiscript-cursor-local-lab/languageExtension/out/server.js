@@ -1378,7 +1378,10 @@ function loadTargetAtPosition(textDocument, position) {
         start: { line: position.line, character: 0 },
         end: { line: position.line, character: 10000 }
     });
-    let loadPattern = /\(\s*load(?:-random)?\b[^\n;"]*"([^"]+)"/g;
+    if (!/\(\s*load(?:-random)?\b/i.test(line)) {
+        return undefined;
+    }
+    let loadPattern = /"([^"]+)"/g;
     let match;
     while ((match = loadPattern.exec(line)) !== null) {
         let targetStart = match.index + match[0].lastIndexOf(match[1]);

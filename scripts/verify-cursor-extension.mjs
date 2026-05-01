@@ -287,10 +287,12 @@ for (const sample of [
 for (const needle of [
   "textDocument/completion",
   "textDocument/signatureHelp",
+  "textDocument/definition",
   "textDocument/codeAction",
   "up-find-local object argument",
   "difficulty argument",
   "resource argument",
+  ".ai load-random target definition",
   "up-find-local signature help",
   "missing load target code action",
   "unsafe set target explanation action",

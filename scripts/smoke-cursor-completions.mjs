@@ -120,6 +120,16 @@ function assertNoCodeAction(result, unexpectedTitle, label) {
   );
 }
 
+function assertDefinition(result, expectedSuffix, label) {
+  const locations = Array.isArray(result) ? result : (result ? [result] : []);
+  assert(locations.length > 0, `${label}: expected a definition location`);
+  const uri = String(locations[0].uri || "").replace(/\\/g, "/");
+  assert(
+    uri.endsWith(expectedSuffix.replace(/\\/g, "/")),
+    `${label}: expected definition uri to end with ${expectedSuffix}, saw ${locations[0].uri}`
+  );
+}
+
 async function requestWithTimeout(promise, label, timeoutMs = 10000) {
   let timeout;
   try {
@@ -162,7 +172,7 @@ const perFixture = fixtureWithCursors([
   ")",
   "",
 ].join("\n"));
-const aiFixture = fixtureWithCursors('(load "|loadTarget|")\n(load "missing-target")\n');
+const aiFixture = fixtureWithCursors('(load "|loadTarget|")\n(load-random 50 "shared/helper" 50 "shared/sec|loadRandomSecond|ond")\n(load "missing-target")\n');
 const perText = perFixture.text;
 const aiText = aiFixture.text;
 
@@ -171,6 +181,7 @@ const aiPath = path.join(fixtureRoot, "smoke.ai");
 fs.writeFileSync(perPath, perText, "utf8");
 fs.writeFileSync(aiPath, aiText, "utf8");
 fs.writeFileSync(path.join(fixtureRoot, "shared", "helper.per"), "(defrule (true) =>)\n", "utf8");
+fs.writeFileSync(path.join(fixtureRoot, "shared", "second.per"), "(defrule (true) =>)\n", "utf8");
 
 const child = fork(serverPath, ["--node-ipc"], {
   cwd: extensionRoot,
@@ -345,6 +356,26 @@ try {
       testCase.name
     );
     assertSignature(result, testCase.expectedLabel, testCase.expectedParameter, testCase.name);
+  }
+
+  const definitionCases = [
+    {
+      name: ".ai load-random target definition",
+      uri: fileUri(aiPath),
+      position: aiFixture.positions.loadRandomSecond,
+      expectedSuffix: "shared/second.per",
+    },
+  ];
+
+  for (const testCase of definitionCases) {
+    const result = await requestWithTimeout(
+      connection.sendRequest("textDocument/definition", {
+        textDocument: { uri: testCase.uri },
+        position: testCase.position,
+      }),
+      testCase.name
+    );
+    assertDefinition(result, testCase.expectedSuffix, testCase.name);
   }
 
   const codeActionCases = [

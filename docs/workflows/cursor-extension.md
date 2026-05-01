@@ -314,7 +314,8 @@ script symbols:
   `(defconst ...)` declaration. The current buffer is checked first, then nearby
   package `.per` files are scanned from the package root.
 - `.ai` and `.per` `(load "...")` / `(load-random ... "...")` string targets
-  jump to the resolved `.per` file when it exists.
+  jump to the resolved `.per` file when it exists, including later quoted
+  targets inside a multi-entry `load-random` line.
 - Built-in registry symbols such as commands, strategic numbers, objects, techs,
   classes, DUC actions, and value constants jump to the matching anchor in the
   combined local reference at `docs/reference/generated/ai-symbol-reference.md`.
