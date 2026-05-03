@@ -5,6 +5,13 @@ this file. Version numbers are given as:
 
     <major>.<minor>.<patch>
 
+## v0.1.71
+
+- Improve AutoFormat indentation for multiline `defrule` blocks, including
+  rules written as `(defrule; comment)`.
+- Apply the same formatter behavior to both current-file and package
+  AutoFormat commands.
+
 ## v0.1.70
 
 - Remove unused legacy `aiName` and `aiDirectory` extension settings.
