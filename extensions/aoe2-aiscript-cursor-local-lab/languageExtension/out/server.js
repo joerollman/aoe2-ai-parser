@@ -289,7 +289,7 @@ const defaultSettings = {
     aiName: "",
     aiDirectory: "",
     useLabLinter: true,
-    usePackageLint: true,
+    usePackageLint: false,
     packageFailLevel: "info",
     labPath: "",
     pythonPath: "python"

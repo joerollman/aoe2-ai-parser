@@ -5,6 +5,51 @@ this file. Version numbers are given as:
 
     <major>.<minor>.<patch>
 
+## v0.1.67
+
+- Show a visible progress notification while parser commands such as linting,
+  report generation, and package formatting are running.
+
+## v0.1.66
+
+- Rewrite command output after parser commands finish so the output panel starts
+  with a clear `complete` header, final status, and duration.
+
+## v0.1.65
+
+- Make package-aware live diagnostics opt-in by defaulting
+  `aoe2_AiScript.usePackageLint` to `false`; command-palette package linting is
+  unchanged. This avoids repeated full-package Python validation when opening or
+  saving large AI files.
+
+## v0.1.64
+
+- Add `AoE2: AutoFormat Package`, which formats every `.ai` and `.per` file in
+  the nearest AI package folder.
+
+## v0.1.63
+
+- Keep users' normal editor theme colors by default by making parser-specific
+  semantic coloring opt-in through `aoe2_AiScript.enableSemanticColors`.
+- Add `AOE2 AiScript Classic`, an opt-in theme based on the original
+  extension's TextMate scopes.
+
+## v0.1.62
+
+- Add `AoE2: AutoFormat` for active `.per` and `.ai` files.
+- Add opt-in `aoe2_AiScript.formatOnSave` plus formatter settings for maximum
+  comment line length and chat-line formatting.
+
+## v0.1.61
+
+- Resolve package load paths from the root entry file's folder first, with the
+  including file folder retained only as a fallback for compatibility.
+
+## v0.1.60
+
+- Prefer VS Code's Markdown preview command when opening package-lint reports
+  from `Lint Package`, `Lint Folder`, and report commands.
+
 ## v0.1.59
 
 - Make `Lint Package` and `Lint Folder` write Markdown reports and open them in

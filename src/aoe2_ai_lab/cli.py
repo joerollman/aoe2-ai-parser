@@ -25,6 +25,7 @@ from .airef_scraper import (
 from .ai_package import find_include_targets, find_load_references, inspect_package_integrity, lint_package_root
 from .assembler import assemble_per
 from .binary_strings import scan_strings, write_filtered_strings, write_userpatch_sections
+from .formatter import FormatOptions, discover_script_files, format_file, format_text
 from .generator import (
     generate_goal_batch,
     generate_sn_defaults,
@@ -255,6 +256,43 @@ def build_parser() -> argparse.ArgumentParser:
 
     stats = subparsers.add_parser("stats", help="print basic script stats")
     stats.add_argument("path", type=Path)
+
+    formatter = subparsers.add_parser(
+        "format",
+        help="format .per files and enforce empty .ai entry files",
+    )
+    formatter.add_argument("path", type=Path)
+    formatter.add_argument(
+        "--write",
+        action="store_true",
+        help="write formatted files in place; default is dry-run",
+    )
+    formatter.add_argument(
+        "--check",
+        action="store_true",
+        help="return 1 if any files would change",
+    )
+    formatter.add_argument(
+        "--stdout",
+        action="store_true",
+        help="print the formatted content for a single file instead of writing it",
+    )
+    formatter.add_argument(
+        "--stdin",
+        action="store_true",
+        help="read script text from stdin and print formatted text; path is used only for its suffix",
+    )
+    formatter.add_argument(
+        "--max-line-length",
+        type=int,
+        default=255,
+        help="wrap comment lines at this length; cannot exceed 255",
+    )
+    formatter.add_argument(
+        "--format-chat",
+        action="store_true",
+        help="allow formatting chat-to-all/chat-to-player lines; default leaves chat lines unchanged",
+    )
 
     redundancy = subparsers.add_parser(
         "redundancy", help="scan .per files for repeated rule patterns"
@@ -1670,6 +1708,40 @@ def main(argv: list[str] | None = None) -> int:
         script = parse_script(args.path)
         print(f"rules: {len(script.rules)}")
         print(f"constants: {len(script.constants)}")
+        return 0
+
+    if args.command == "format":
+        try:
+            options = FormatOptions(
+                max_line_length=args.max_line_length,
+                format_chat=args.format_chat,
+            )
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
+            return 2
+        if args.stdin:
+            print(format_text(sys.stdin.read(), args.path.suffix, options), end="")
+            return 0
+        files = discover_script_files(args.path)
+        if not files:
+            print(f"no .ai or .per files found at {args.path}", file=sys.stderr)
+            return 2
+        if args.stdout and len(files) != 1:
+            print("--stdout requires a single .ai or .per file", file=sys.stderr)
+            return 2
+        results = [format_file(path, options) for path in files]
+        if args.stdout:
+            print(results[0].formatted_text, end="")
+            return 0
+        changed = [result for result in results if result.changed]
+        if args.write:
+            for result in changed:
+                result.path.write_text(result.formatted_text, encoding="utf-8")
+        for result in changed:
+            action = "formatted" if args.write else "would format"
+            print(f"{action}: {result.path}")
+        if args.check and changed:
+            return 1
         return 0
 
     if args.command == "redundancy":

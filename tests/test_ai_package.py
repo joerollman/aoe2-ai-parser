@@ -534,16 +534,16 @@ class AiPackageTests(unittest.TestCase):
 
         self.assertEqual([finding.code for finding in findings], ["unsafe-goal-block"])
 
-    def test_package_lint_resolves_package_root_relative_loads(self) -> None:
+    def test_package_lint_resolves_root_file_folder_relative_loads(self) -> None:
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
             package = root / "Example AI"
             nested = package / "Civs" / "Mayans"
             package.mkdir()
             nested.mkdir(parents=True)
-            (package / "Example AI.ai").write_text('(load "Example AI/Civs/Mayans/Loads")\n', encoding="utf-8")
+            (package / "Example AI.ai").write_text('(load "Civs/Mayans/Loads")\n', encoding="utf-8")
             (nested / "Loads.per").write_text(
-                '(load "Example AI/Maps/Arabia/Strategic Numbers")\n',
+                '(load "Maps/Arabia/Strategic Numbers")\n',
                 encoding="utf-8",
             )
             maps = package / "Maps" / "Arabia"
@@ -554,6 +554,28 @@ class AiPackageTests(unittest.TestCase):
 
         self.assertEqual(result.missing_loads, [])
         self.assertEqual([path.name for path in result.files], ["Loads.per", "Strategic Numbers.per"])
+
+    def test_package_lint_prefers_package_root_loads_over_including_file_directory(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            nested = root / "nested"
+            root_shared = root / "shared"
+            local_shared = nested / "shared"
+            nested.mkdir(parents=True)
+            root_shared.mkdir()
+            local_shared.mkdir()
+            (root / "Main.ai").write_text('(load "nested/entry")\n', encoding="utf-8")
+            (nested / "entry.per").write_text('(load "shared/common")\n', encoding="utf-8")
+            (root_shared / "common.per").write_text("(defconst root-shared 1)\n", encoding="utf-8")
+            (local_shared / "common.per").write_text("(defconst local-shared 1)\n", encoding="utf-8")
+
+            result = lint_package_root(find_package_roots(root)[0])
+
+        self.assertEqual(result.missing_loads, [])
+        self.assertEqual(
+            [path.relative_to(root).as_posix() for path in result.files],
+            ["nested/entry.per", "shared/common.per"],
+        )
 
     def test_package_lint_reports_load_cycles(self) -> None:
         with TemporaryDirectory() as tmp:

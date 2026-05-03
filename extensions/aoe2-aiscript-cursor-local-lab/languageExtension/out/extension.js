@@ -32,6 +32,27 @@ function execFileText(command, args, options) {
         });
     });
 }
+function execFileTextInput(command, args, input, options) {
+    return new Promise((resolve, reject) => {
+        const child = child_process.spawn(command, args, options);
+        let stdout = "";
+        let stderr = "";
+        child.stdout.on("data", chunk => stdout += chunk.toString());
+        child.stderr.on("data", chunk => stderr += chunk.toString());
+        child.on("error", reject);
+        child.on("close", code => {
+            if (code) {
+                let error = new Error("Command failed with exit code " + code);
+                error.stdout = stdout;
+                error.stderr = stderr;
+                reject(error);
+                return;
+            }
+            resolve(stdout || "");
+        });
+        child.stdin.end(input);
+    });
+}
 function getWorkspacePath() {
     let folders = vscode_1.workspace.workspaceFolders;
     if (!folders || folders.length === 0) {
@@ -57,6 +78,25 @@ function getLabSettings() {
         packageFailLevel = "info";
     }
     return { labPath, pythonPath, workspacePath, configuredLabPath, packageFailLevel };
+}
+function getFormatSettings() {
+    let config = vscode_1.workspace.getConfiguration("aoe2_AiScript");
+    let maxLineLength = config.get("formatMaxLineLength") || 255;
+    if (maxLineLength < 40) {
+        maxLineLength = 40;
+    }
+    if (maxLineLength > 255) {
+        maxLineLength = 255;
+    }
+    return {
+        formatOnSave: !!config.get("formatOnSave"),
+        maxLineLength,
+        formatChat: !!config.get("formatChat")
+    };
+}
+function semanticColorsEnabled() {
+    let config = vscode_1.workspace.getConfiguration("aoe2_AiScript");
+    return !!config.get("enableSemanticColors");
 }
 let labRegistryLabelSet;
 let labRegistryKindMap;
@@ -326,42 +366,71 @@ function formatPackageIssueGroups(stdout, labPath) {
 async function runLabCommand(args, title, formatStdout) {
     let settings = getLabSettings();
     let channel = getOutputChannel();
+    let startedAt = Date.now();
     channel.clear();
     channel.appendLine(title);
+    channel.appendLine("status: running");
     channel.appendLine("labPath: " + settings.labPath);
     channel.appendLine("command: " + settings.pythonPath + " " + args.join(" "));
     channel.appendLine("");
     channel.show(false);
-    if (!settings.labPath || !fs.existsSync(settings.labPath)) {
-        vscode_1.window.showErrorMessage("AOE2 AI Parser runtime path does not exist. Set aoe2_AiScript.labPath.");
-        return { ok: false, stdout: "", stderr: "invalid labPath" };
-    }
-    let env = Object.assign({}, process.env, { PYTHONPATH: path.join(settings.labPath, "src") });
-    try {
-        let stdout = await execFileText(settings.pythonPath, args, {
-            cwd: settings.labPath,
-            env,
-            encoding: "utf8",
-            windowsHide: true
-        });
-        channel.append(formatStdout ? formatStdout(stdout || "") : (stdout || "No output."));
-        return { ok: true, stdout: stdout || "", stderr: "" };
-    }
-    catch (error) {
-        let stdout = error.stdout ? String(error.stdout) : "";
-        let stderr = error.stderr ? String(error.stderr) : "";
-        if (stdout) {
-            channel.append(formatStdout ? formatStdout(stdout) : stdout);
-        }
-        if (!stdout && !stderr) {
-            stderr = String(error.message || error);
-        }
+    function writeFinalOutput(ok, stdout, stderr) {
+        let elapsedSeconds = ((Date.now() - startedAt) / 1000).toFixed(1);
+        let body = stdout ? (formatStdout ? formatStdout(stdout) : stdout) : "No output.";
+        channel.clear();
+        channel.appendLine(title + " complete");
+        channel.appendLine("status: " + (ok ? "completed" : "failed"));
+        channel.appendLine("duration: " + elapsedSeconds + "s");
+        channel.appendLine("labPath: " + settings.labPath);
+        channel.appendLine("command: " + settings.pythonPath + " " + args.join(" "));
+        channel.appendLine("");
+        channel.append(body);
         if (stderr) {
             channel.appendLine("");
             channel.appendLine(stderr);
         }
-        return { ok: false, stdout, stderr };
+        channel.show(false);
     }
+    if (!settings.labPath || !fs.existsSync(settings.labPath)) {
+        writeFinalOutput(false, "", "invalid labPath");
+        vscode_1.window.showErrorMessage("AOE2 AI Parser runtime path does not exist. Set aoe2_AiScript.labPath.");
+        return { ok: false, stdout: "", stderr: "invalid labPath" };
+    }
+    let env = Object.assign({}, process.env, { PYTHONPATH: path.join(settings.labPath, "src") });
+    return await vscode_1.window.withProgress({
+        location: vscode_1.ProgressLocation.Notification,
+        title: title,
+        cancellable: false
+    }, async (progress) => {
+        let timer = setInterval(() => {
+            let elapsedSeconds = ((Date.now() - startedAt) / 1000).toFixed(0);
+            progress.report({ message: "running... " + elapsedSeconds + "s" });
+        }, 1000);
+        progress.report({ message: "starting..." });
+        try {
+            let stdout = await execFileText(settings.pythonPath, args, {
+                cwd: settings.labPath,
+                env,
+                encoding: "utf8",
+                windowsHide: true
+            });
+            clearInterval(timer);
+            progress.report({ message: "complete" });
+            writeFinalOutput(true, stdout || "", "");
+            return { ok: true, stdout: stdout || "", stderr: "" };
+        }
+        catch (error) {
+            clearInterval(timer);
+            progress.report({ message: "failed" });
+            let stdout = error.stdout ? String(error.stdout) : "";
+            let stderr = error.stderr ? String(error.stderr) : "";
+            if (!stdout && !stderr) {
+                stderr = String(error.message || error);
+            }
+            writeFinalOutput(false, stdout, stderr);
+            return { ok: false, stdout, stderr };
+        }
+    });
 }
 function getCurrentPackageRoot() {
     let filePath = getActiveFilePath();
@@ -415,12 +484,12 @@ async function lintPackage() {
     let settings = getLabSettings();
     let reportPath = packageReportPath(settings, packageRoot);
     let result = await runLabCommand(["-m", "aoe2_ai_lab", "lint-package", packageRoot, "--json", "--report", reportPath, "--fail-level", settings.packageFailLevel], "AoE2: Lint Package", stdout => formatPackageIssueGroups(stdout, settings.labPath));
-    openPackageReportPreview(reportPath);
+    let reportOpened = await openPackageReportPreview(reportPath);
     if (result.ok) {
-        vscode_1.window.showInformationMessage("AoE2 lint package completed. Markdown report opened.");
+        vscode_1.window.showInformationMessage(reportOpened ? "AoE2 lint package completed. Markdown report opened." : "AoE2 lint package completed. See AOE2 AI Parser output.");
     }
     else if (result.stdout) {
-        vscode_1.window.showWarningMessage("AoE2 lint package completed with findings. Markdown report opened.");
+        vscode_1.window.showWarningMessage(reportOpened ? "AoE2 lint package completed with findings. Markdown report opened." : "AoE2 lint package completed with findings.");
     }
     else {
         vscode_1.window.showErrorMessage("AoE2 lint package failed. See AOE2 AI Parser output.");
@@ -435,12 +504,12 @@ async function lintFolder() {
     let settings = getLabSettings();
     let reportPath = packageReportPath(settings, folderPath);
     let result = await runLabCommand(["-m", "aoe2_ai_lab", "lint-package", folderPath, "--json", "--report", reportPath, "--fail-level", settings.packageFailLevel], "AoE2: Lint Folder", stdout => formatPackageIssueGroups(stdout, settings.labPath));
-    openPackageReportPreview(reportPath);
+    let reportOpened = await openPackageReportPreview(reportPath);
     if (result.ok) {
-        vscode_1.window.showInformationMessage("AoE2 lint folder completed. Markdown report opened.");
+        vscode_1.window.showInformationMessage(reportOpened ? "AoE2 lint folder completed. Markdown report opened." : "AoE2 lint folder completed. See AOE2 AI Parser output.");
     }
     else if (result.stdout) {
-        vscode_1.window.showWarningMessage("AoE2 lint folder completed with findings. Markdown report opened.");
+        vscode_1.window.showWarningMessage(reportOpened ? "AoE2 lint folder completed with findings. Markdown report opened." : "AoE2 lint folder completed with findings.");
     }
     else {
         vscode_1.window.showErrorMessage("AoE2 lint folder failed. See AOE2 AI Parser output.");
@@ -455,14 +524,26 @@ function packageReportPath(settings, rootPath) {
     fs.mkdirSync(reportDir, { recursive: true });
     return path.join(reportDir, path.basename(rootPath) + "-" + timestampForReport() + ".md");
 }
-function openPackageReportPreview(reportPath) {
+async function openPackageReportPreview(reportPath) {
     if (!fs.existsSync(reportPath)) {
-        return;
+        return false;
     }
     let reportUri = vscode_1.Uri.file(reportPath);
-    vscode_1.commands.executeCommand("vscode.openWith", reportUri, "vscode.markdown.preview.editor", vscode_1.ViewColumn.Beside).then(undefined, () => {
-        vscode_1.workspace.openTextDocument(reportPath).then(document => vscode_1.window.showTextDocument(document, vscode_1.ViewColumn.Beside));
-    });
+    try {
+        await vscode_1.commands.executeCommand("markdown.showPreviewToSide", reportUri);
+        return true;
+    }
+    catch (_error) {
+        try {
+            await vscode_1.commands.executeCommand("vscode.openWith", reportUri, "vscode.markdown.preview.editor", { viewColumn: vscode_1.ViewColumn.Beside, preview: false });
+            return true;
+        }
+        catch (_fallbackError) {
+            let document = await vscode_1.workspace.openTextDocument(reportPath);
+            await vscode_1.window.showTextDocument(document, vscode_1.ViewColumn.Beside);
+            return true;
+        }
+    }
 }
 async function generatePackageReport() {
     let packageRoot = getCurrentPackageRoot();
@@ -473,7 +554,7 @@ async function generatePackageReport() {
     let reportPath = packageReportPath(settings, packageRoot);
     let result = await runLabCommand(["-m", "aoe2_ai_lab", "lint-package", packageRoot, "--report", reportPath, "--fail-level", settings.packageFailLevel], "AoE2: Generate Package Report");
     if (fs.existsSync(reportPath)) {
-        openPackageReportPreview(reportPath);
+        await openPackageReportPreview(reportPath);
         if (result.ok) {
             vscode_1.window.showInformationMessage("AoE2 package report generated.");
         }
@@ -485,7 +566,7 @@ async function generatePackageReport() {
         vscode_1.window.showErrorMessage("AoE2 package report failed. See AOE2 AI Parser output.");
     }
 }
-function openLatestPackageReport() {
+async function openLatestPackageReport() {
     let settings = getLabSettings();
     let reportRoot = settings.configuredLabPath ? settings.labPath : (settings.workspacePath || settings.labPath);
     let reportDir = path.join(reportRoot, ".tmp", "lint-package");
@@ -501,7 +582,109 @@ function openLatestPackageReport() {
         vscode_1.window.showWarningMessage("No AoE2 package reports found.");
         return;
     }
-    openPackageReportPreview(reports[0]);
+    await openPackageReportPreview(reports[0]);
+}
+function formatCommandArgs(filePath, stdout) {
+    let settings = getFormatSettings();
+    let args = ["-m", "aoe2_ai_lab", "format", filePath, "--max-line-length", String(settings.maxLineLength)];
+    if (settings.formatChat) {
+        args.push("--format-chat");
+    }
+    if (stdout) {
+        args.push("--stdin");
+    }
+    else {
+        args.push("--write");
+    }
+    return args;
+}
+async function formattedTextForDocument(document) {
+    let settings = getLabSettings();
+    if (!settings.labPath || !fs.existsSync(settings.labPath)) {
+        throw new Error("AOE2 AI Parser runtime path does not exist. Set aoe2_AiScript.labPath.");
+    }
+    let env = Object.assign({}, process.env, { PYTHONPATH: path.join(settings.labPath, "src") });
+    return await execFileTextInput(settings.pythonPath, formatCommandArgs(document.uri.fsPath, true), document.getText(), {
+        cwd: settings.labPath,
+        env,
+        shell: false,
+        windowsHide: true
+    });
+}
+async function autoFormat() {
+    let editor = vscode_1.window.activeTextEditor;
+    if (!editor || editor.document.uri.scheme !== "file" || editor.document.languageId !== "aoe2aiscript") {
+        vscode_1.window.showWarningMessage("Open an AoE2 .per or .ai file first.");
+        return;
+    }
+    try {
+        let formatted = await formattedTextForDocument(editor.document);
+        if (formatted === editor.document.getText()) {
+            vscode_1.window.showInformationMessage("AoE2 AutoFormat: no changes.");
+            return;
+        }
+        let fullRange = new vscode_1.Range(editor.document.positionAt(0), editor.document.positionAt(editor.document.getText().length));
+        await editor.edit(editBuilder => editBuilder.replace(fullRange, formatted));
+        vscode_1.window.showInformationMessage("AoE2 AutoFormat applied.");
+    }
+    catch (error) {
+        let channel = getOutputChannel();
+        channel.clear();
+        channel.appendLine("AoE2 AutoFormat failed.");
+        channel.appendLine(String(error && error.stderr ? error.stderr : (error && error.message ? error.message : error)));
+        channel.show(false);
+        vscode_1.window.showErrorMessage("AoE2 AutoFormat failed. See AOE2 AI Parser output.");
+    }
+}
+async function saveOpenPackageDocuments(packageRoot) {
+    let root = normalizeFsPath(packageRoot);
+    let saves = vscode_1.workspace.textDocuments
+        .filter(document => document.uri.scheme === "file" && document.languageId === "aoe2aiscript" && document.isDirty)
+        .filter(document => {
+        let filePath = normalizeFsPath(document.uri.fsPath);
+        return filePath === root || filePath.startsWith(root + path.sep.toLowerCase());
+    })
+        .map(document => document.save());
+    if (saves.length > 0) {
+        await Promise.all(saves);
+    }
+}
+async function autoFormatPackage() {
+    let packageRoot = getCurrentPackageRoot();
+    if (!packageRoot) {
+        return;
+    }
+    let formatRoot = path.extname(packageRoot).toLowerCase() === ".ai" ? path.dirname(packageRoot) : packageRoot;
+    await saveOpenPackageDocuments(formatRoot);
+    let result = await runLabCommand(formatCommandArgs(formatRoot, false), "AoE2: AutoFormat Package");
+    if (result.ok) {
+        vscode_1.window.showInformationMessage(result.stdout ? "AoE2 AutoFormat Package applied." : "AoE2 AutoFormat Package: no changes.");
+    }
+    else {
+        vscode_1.window.showErrorMessage("AoE2 AutoFormat Package failed. See AOE2 AI Parser output.");
+    }
+}
+function autoFormatOnSave(event) {
+    if (event.document.uri.scheme !== "file" || event.document.languageId !== "aoe2aiscript") {
+        return;
+    }
+    if (!getFormatSettings().formatOnSave) {
+        return;
+    }
+    event.waitUntil(formattedTextForDocument(event.document).then(formatted => {
+        if (formatted === event.document.getText()) {
+            return [];
+        }
+        let fullRange = new vscode_1.Range(event.document.positionAt(0), event.document.positionAt(event.document.getText().length));
+        return [vscode_1.TextEdit.replace(fullRange, formatted)];
+    }, error => {
+        let channel = getOutputChannel();
+        channel.clear();
+        channel.appendLine("AoE2 AutoFormat on save failed.");
+        channel.appendLine(String(error && error.stderr ? error.stderr : (error && error.message ? error.message : error)));
+        channel.show(false);
+        return [];
+    }));
 }
 function symbolReferencePath() {
     let settings = getLabSettings();
@@ -630,7 +813,7 @@ function activate(context) {
         "wordPattern": /(#{0,1}([a-zA-Z0-9]+-){0,}[a-zA-Z0-9]+)/g
     };
     vscode_1.languages.setLanguageConfiguration('aoe2aiscript', langConf);
-    if (vscode_1.languages.registerDocumentSemanticTokensProvider && vscode_1.SemanticTokensBuilder && vscode_1.SemanticTokensLegend) {
+    if (semanticColorsEnabled() && vscode_1.languages.registerDocumentSemanticTokensProvider && vscode_1.SemanticTokensBuilder && vscode_1.SemanticTokensLegend) {
         semanticTokenLegend = new vscode_1.SemanticTokensLegend(semanticTokenTypes, ["declaration"]);
         context.subscriptions.push(vscode_1.languages.registerDocumentSemanticTokensProvider({ language: 'aoe2aiscript', scheme: 'file' }, {
             provideDocumentSemanticTokens: semanticTokensForDocument
@@ -644,6 +827,9 @@ function activate(context) {
     context.subscriptions.push(vscode_1.commands.registerCommand("aoe2AiScript.lintFolder", lintFolder));
     context.subscriptions.push(vscode_1.commands.registerCommand("aoe2AiScript.generatePackageReport", generatePackageReport));
     context.subscriptions.push(vscode_1.commands.registerCommand("aoe2AiScript.openLatestPackageReport", openLatestPackageReport));
+    context.subscriptions.push(vscode_1.commands.registerCommand("aoe2AiScript.autoFormat", autoFormat));
+    context.subscriptions.push(vscode_1.commands.registerCommand("aoe2AiScript.autoFormatPackage", autoFormatPackage));
+    context.subscriptions.push(vscode_1.workspace.onWillSaveTextDocument(autoFormatOnSave));
     context.subscriptions.push(vscode_1.commands.registerCommand("aoe2AiScript.openSymbolDocsPreview", openSymbolDocsPreview));
     context.subscriptions.push(vscode_1.commands.registerCommand("aoe2AiScript.openDiagnosticDocsPreview", openDiagnosticDocsPreview));
 }

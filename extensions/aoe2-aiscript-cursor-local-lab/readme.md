@@ -12,9 +12,9 @@ and use the AoE2 command palette actions for linting and package reports.
   values.
 - Semantic coloring that distinguishes actions, facts, strategic numbers,
   objects, techs, values, and local constants.
-- Optional `AOE2 AI Parser Dark` and `AOE2 AI Parser Light` themes with tuned
-  colors for the extension's custom semantic tokens and TextMate fallback
-  scopes.
+- Optional `AOE2 AI Parser Dark`, `AOE2 AI Parser Light`, and
+  `AOE2 AiScript Classic` themes. The classic theme is based on the original
+  extension's TextMate scopes instead of parser-specific semantic tokens.
 - Go to definition for local `defconst` declarations, `.ai` load targets, and
   generated local Markdown reference docs.
 - Package-aware diagnostics from the bundled parser/linter.
@@ -43,26 +43,40 @@ extension.
 - `AoE2: Lint Folder`
 - `AoE2: Generate Package Report`
 - `AoE2: Open Latest Package Report`
+- `AoE2: AutoFormat`
+- `AoE2: AutoFormat Package`
 - `AoE2: Open Symbol Docs Preview`
 - `AoE2: Open Diagnostic Docs Preview`
 
 ## Theme
 
-For the most distinct token colors, choose `AOE2 AI Parser Dark` or
-`AOE2 AI Parser Light` from `Preferences: Color Theme`. Both themes use neutral
-editor surfaces, restrained contrast, and moderately saturated syntax colors so
-command categories remain readable in long AI files.
+For the most distinct parser token colors, choose `AOE2 AI Parser Dark` or
+`AOE2 AI Parser Light` from `Preferences: Color Theme`. To stay closer to the
+original AoE2 AiScript extension coloring model, choose `AOE2 AiScript Classic`;
+it colors the original TextMate scopes and leaves semantic highlighting off.
 
 ## Settings
 
 - `aoe2_AiScript.useLabLinter`: use bundled AOE2 AI Parser diagnostics.
-- `aoe2_AiScript.usePackageLint`: prefer package-aware diagnostics.
+- `aoe2_AiScript.usePackageLint`: prefer package-aware live diagnostics.
+  Default is `false` because large AI packages can make live open/save
+  diagnostics CPU-heavy. Use `AoE2: Lint Package` for explicit package
+  validation.
 - `aoe2_AiScript.packageFailLevel`: minimum package-lint severity surfaced by
   package commands and package-aware diagnostics (`error`, `warning`, or
   `info`). Default is `info`.
 - `aoe2_AiScript.labPath`: optional development checkout override.
 - `aoe2_AiScript.pythonPath`: Python executable.
 - `aoe2_AiScript.updateErrorsWhen`: validate on save, on change, or never.
+- `aoe2_AiScript.formatOnSave`: run `AoE2: AutoFormat` during save. Default
+  is `false`.
+- `aoe2_AiScript.formatMaxLineLength`: comment wrapping limit for AutoFormat,
+  from 40 to 255. Default is 255.
+- `aoe2_AiScript.formatChat`: allow AutoFormat to touch `chat-to-all` and
+  `chat-to-player` lines. Default is `false`.
+- `aoe2_AiScript.enableSemanticColors`: enable parser-specific semantic colors
+  for commands, facts, strategic numbers, objects, techs, values, and local
+  constants. Default is `false` so users keep their normal editor theme colors.
 
 `Lint Current File` validates only the active file. `Lint Package` uses the
 nearest `.ai` package root for the active file. `Lint Folder` validates the
@@ -71,6 +85,14 @@ to treat as one package.
 `Lint Package`, `Lint Folder`, and package-report commands write a Markdown
 summary under `.tmp/lint-package/` and open it in a side Markdown Preview when
 the linter finishes.
+
+`AoE2: AutoFormat` formats the active `.per` or `.ai` file. It enforces final
+newlines for `.per`, keeps `.ai` entry files empty, wraps long comments,
+promotes overlong inline comments above code, normalizes load path separators
+to the dominant style in the file, and splits multiple same-line expressions
+into separate lines. Chat lines are skipped unless `formatChat` is enabled.
+`AoE2: AutoFormat Package` finds the nearest `.ai` package root for the active
+file and formats every `.ai` and `.per` file in that package folder.
 
 For local symbol docs, VS Code's built-in definition gesture is `Ctrl+Click`.
 Cursor also supports its own side-definition gestures such as `Ctrl+Alt+Click`.
@@ -92,6 +114,10 @@ You can customize parser-specific colors with standard VS Code/Cursor
 names are `aoe2Action`, `aoe2Fact`, `aoe2FactAction`, `aoe2Command`,
 `aoe2StrategicNumber`, `aoe2Object`, `aoe2Tech`, `aoe2Value`, and
 `aoe2LocalConstant`.
+
+Parser-specific semantic colors are off by default. Enable
+`aoe2_AiScript.enableSemanticColors` if you want those token categories colored
+separately from your normal theme.
 
 The extension contributes parser-theme defaults for these keys. Theme-scoped
 overrides let each individual parser color be changed without affecting other

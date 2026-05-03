@@ -84,6 +84,7 @@ class CursorExtensionTests(unittest.TestCase):
         self.assertIn("stdout = yield execFileText(pythonPath", server_source)
         self.assertIn("diagnostics = yield runLabLinter", server_source)
         self.assertIn('packageFailLevel: "info"', server_source)
+        self.assertIn("usePackageLint: false", server_source)
         self.assertIn("findNearestPackageRoot(filePath, workspacePath)", server_source)
         self.assertIn("currentFileIsReachable", server_source)
         self.assertIn("return null;", server_source)
@@ -167,6 +168,8 @@ class CursorExtensionTests(unittest.TestCase):
         self.assertEqual(commands["aoe2AiScript.lintFolder"], "AoE2: Lint Folder")
         self.assertEqual(commands["aoe2AiScript.generatePackageReport"], "AoE2: Generate Package Report")
         self.assertEqual(commands["aoe2AiScript.openLatestPackageReport"], "AoE2: Open Latest Package Report")
+        self.assertEqual(commands["aoe2AiScript.autoFormat"], "AoE2: AutoFormat")
+        self.assertEqual(commands["aoe2AiScript.autoFormatPackage"], "AoE2: AutoFormat Package")
         self.assertIn("vscode_1.commands.registerCommand(\"aoe2AiScript.lintCurrentFile\"", extension_source)
         self.assertIn("vscode_1.commands.registerCommand(\"aoe2AiScript.lintFolder\"", extension_source)
         self.assertIn("function lintFolder", extension_source)
@@ -187,11 +190,17 @@ class CursorExtensionTests(unittest.TestCase):
         self.assertIn('PYTHONPATH: path.join(settings.labPath, "src")', extension_source)
         self.assertIn('config.get("packageFailLevel") || "info"', extension_source)
         self.assertIn('"--fail-level", settings.packageFailLevel', extension_source)
+        self.assertIn('config.get("enableSemanticColors")', extension_source)
+        self.assertIn("semanticColorsEnabled() &&", extension_source)
+        self.assertIn("aoe2AiScript.autoFormat", extension_source)
+        self.assertIn("aoe2AiScript.autoFormatPackage", extension_source)
+        self.assertIn("function autoFormatPackage", extension_source)
 
     def test_lab_extension_contributes_color_themes_for_custom_tokens(self) -> None:
         root = Path(__file__).resolve().parents[1]
         extension_root = root / "extensions" / "aoe2-aiscript-cursor-local-lab"
         package_data = json.loads((extension_root / "package.json").read_text(encoding="utf-8"))
+        settings = package_data["contributes"]["configuration"]["properties"]
         defaults = package_data["contributes"]["configurationDefaults"]
         customization_defaults = defaults["editor.semanticTokenColorCustomizations"]
         themes = {
@@ -218,10 +227,16 @@ class CursorExtensionTests(unittest.TestCase):
             themes["AOE2 AI Parser Light"]["path"],
             "./themes/aoe2-ai-parser-light-color-theme.json",
         )
+        self.assertEqual(
+            themes["AOE2 AiScript Classic"]["path"],
+            "./themes/aoe2-aiscript-classic-color-theme.json",
+        )
         self.assertEqual(themes["AOE2 AI Parser Dark"]["uiTheme"], "vs-dark")
         self.assertEqual(themes["AOE2 AI Parser Light"]["uiTheme"], "vs")
+        self.assertEqual(themes["AOE2 AiScript Classic"]["uiTheme"], "vs-dark")
         self.assertIn("[AOE2 AI Parser Dark]", customization_defaults)
         self.assertIn("[AOE2 AI Parser Light]", customization_defaults)
+        self.assertFalse(settings["aoe2_AiScript.enableSemanticColors"]["default"])
 
         for label, expected_type in [
             ("AOE2 AI Parser Dark", "dark"),
@@ -260,6 +275,22 @@ class CursorExtensionTests(unittest.TestCase):
             light_data["semanticTokenColors"]["aoe2StrategicNumber"],
             light_data["semanticTokenColors"]["aoe2LocalConstant"],
         )
+        classic_data = json.loads(
+            (extension_root / "themes" / "aoe2-aiscript-classic-color-theme.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        classic_scopes = {
+            scope
+            for rule in classic_data["tokenColors"]
+            for scope in (
+                rule["scope"] if isinstance(rule["scope"], list) else [rule["scope"]]
+            )
+        }
+        self.assertFalse(classic_data["semanticHighlighting"])
+        self.assertIn("entity.name.function.aoe2aiscript.fact", classic_scopes)
+        self.assertIn("entity.name.function.aoe2aiscript.action", classic_scopes)
+        self.assertIn("storage.type.aoe2aiscript.def.rule", classic_scopes)
 
     def test_lab_extension_exposes_package_fail_level_setting(self) -> None:
         root = Path(__file__).resolve().parents[1]
@@ -275,6 +306,10 @@ class CursorExtensionTests(unittest.TestCase):
 
         self.assertEqual(setting["default"], "info")
         self.assertEqual(setting["enum"], ["error", "warning", "info"])
+
+        package_lint_setting = package_data["contributes"]["configuration"]["properties"]["aoe2_AiScript.usePackageLint"]
+        self.assertFalse(package_lint_setting["default"])
+        self.assertIn("CPU-heavy", package_lint_setting["description"])
 
     def test_lab_extension_does_not_print_generic_command_failed_when_stdout_exists(self) -> None:
         root = Path(__file__).resolve().parents[1]
@@ -293,6 +328,12 @@ class CursorExtensionTests(unittest.TestCase):
         self.assertIn("function execFileText", extension_source)
         self.assertIn("async function runLabCommand", extension_source)
         self.assertIn("await execFileText(settings.pythonPath", extension_source)
+        self.assertIn('channel.appendLine(title + " complete")', extension_source)
+        self.assertIn('channel.appendLine("status: " + (ok ? "completed" : "failed"))', extension_source)
+        self.assertIn('channel.appendLine("duration: " + elapsedSeconds + "s")', extension_source)
+        self.assertIn("vscode_1.window.withProgress", extension_source)
+        self.assertIn("vscode_1.ProgressLocation.Notification", extension_source)
+        self.assertIn('progress.report({ message: "running... " + elapsedSeconds + "s" })', extension_source)
         self.assertIn("async function lintPackage", extension_source)
         self.assertIn("await runLabCommand", extension_source)
         self.assertNotIn("__awaiter", extension_source)

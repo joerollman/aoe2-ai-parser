@@ -127,10 +127,10 @@ def resolve_ai_root(ai_path: str | Path, *, package_dir: str | Path | None = Non
 
 def resolve_ai_roots(ai_path: str | Path, *, package_dir: str | Path | None = None) -> list[PackageRoot]:
     path = Path(ai_path)
-    package_root = Path(package_dir) if package_dir is not None else path.parent
+    root_file_folder = path.parent
     candidates: list[Path] = []
 
-    for _, _, target, _, target_candidates in find_load_targets(path, package_root=package_root):
+    for _, _, target, _, target_candidates in find_load_targets(path, package_root=root_file_folder):
         if target is not None:
             candidates.append(target)
         else:
@@ -144,16 +144,16 @@ def resolve_ai_roots(ai_path: str | Path, *, package_dir: str | Path | None = No
     for candidate in candidates:
         resolved = candidate.resolve()
         if candidate.exists() and resolved not in seen:
-            roots.append(PackageRoot(ai_path=path, per_path=candidate, package_dir=package_root))
+            roots.append(PackageRoot(ai_path=path, per_path=candidate, package_dir=root_file_folder))
             seen.add(resolved)
     return roots
 
 
 def describe_ai_root_failure(ai_path: str | Path, *, package_dir: str | Path | None = None) -> str:
     path = Path(ai_path)
-    package_root = Path(package_dir) if package_dir is not None else path.parent
+    root_file_folder = path.parent
     candidates: list[Path] = []
-    for _, _, target, _, target_candidates in find_load_targets(path, package_root=package_root):
+    for _, _, target, _, target_candidates in find_load_targets(path, package_root=root_file_folder):
         if target is not None:
             candidates.append(target)
         else:
@@ -181,11 +181,13 @@ def resolve_load_candidates(
     *,
     package_root: Path | None = None,
 ) -> list[Path]:
-    candidates = [resolve_load_path(base_dir, include_name)]
     if package_root is not None:
-        package_candidate = resolve_load_path(package_root, include_name)
-        if package_candidate not in candidates:
-            candidates.append(package_candidate)
+        candidates = [resolve_load_path(package_root, include_name)]
+        local_candidate = resolve_load_path(base_dir, include_name)
+        if local_candidate not in candidates:
+            candidates.append(local_candidate)
+        return candidates
+    candidates = [resolve_load_path(base_dir, include_name)]
     return candidates
 
 
@@ -443,7 +445,7 @@ def find_package_roots(package_dir: str | Path) -> list[PackageRoot]:
 
     roots: list[PackageRoot] = []
     for ai_path in sorted(root.rglob("*.ai")):
-        roots.extend(resolve_ai_roots(ai_path, package_dir=root))
+        roots.extend(resolve_ai_roots(ai_path, package_dir=ai_path.parent))
     return roots
 
 
@@ -503,12 +505,12 @@ def inspect_package_integrity(package_dir: str | Path) -> PackageIntegrityResult
     per_names: dict[str, list[Path]] = {}
     for ai_path in sorted(root.rglob("*.ai")):
         ai_names.setdefault(ai_path.stem.lower(), []).append(ai_path)
-        package_roots = resolve_ai_roots(ai_path, package_dir=root)
+        package_roots = resolve_ai_roots(ai_path, package_dir=ai_path.parent)
         if not package_roots:
             stale_ai_roots.append(
                 StaleAiRoot(
                     ai_path=ai_path,
-                    message=describe_ai_root_failure(ai_path, package_dir=root),
+                    message=describe_ai_root_failure(ai_path, package_dir=ai_path.parent),
                 )
             )
         else:
@@ -516,7 +518,7 @@ def inspect_package_integrity(package_dir: str | Path) -> PackageIntegrityResult
 
     reachable: set[Path] = set()
     for package_root in roots:
-        files, _ = collect_reachable_per_files(package_root.per_path, package_root=root)
+        files, _ = collect_reachable_per_files(package_root.per_path, package_root=package_root.package_dir)
         reachable.update(path.resolve() for path in files)
 
     all_per_files = {path.resolve() for path in root.rglob("*.per")}

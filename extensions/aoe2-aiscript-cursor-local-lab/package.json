@@ -2,7 +2,7 @@
 	"name": "aoe2-ai-parser",
 	"displayName": "AOE2 AI Parser",
 	"description": "Parser diagnostics, command tooltips, syntax highlighting, and autocomplete for Age of Empires 2 AI scripts in VS Code and Cursor",
-	"version": "0.1.59",
+	"version": "0.1.67",
 	"keywords": [
 		"aoeII",
 		"age",
@@ -25,6 +25,8 @@
 		"onCommand:aoe2AiScript.lintFolder",
 		"onCommand:aoe2AiScript.generatePackageReport",
 		"onCommand:aoe2AiScript.openLatestPackageReport",
+		"onCommand:aoe2AiScript.autoFormat",
+		"onCommand:aoe2AiScript.autoFormatPackage",
 		"onCommand:aoe2AiScript.openSymbolDocsPreview",
 		"onCommand:aoe2AiScript.openDiagnosticDocsPreview"
 	],
@@ -123,8 +125,8 @@
 				"aoe2_AiScript.usePackageLint": {
 					"scope": "resource.aiscript",
 					"type": "boolean",
-					"default": true,
-					"description": "When using parser diagnostics, prefer package-aware linting from the nearest directory containing an .ai file."
+					"default": false,
+					"description": "When using live parser diagnostics, prefer package-aware linting from the nearest directory containing an .ai file. Default off because large AI packages can make live diagnostics CPU-heavy; use AoE2: Lint Package for explicit package validation."
 				},
 				"aoe2_AiScript.packageFailLevel": {
 					"scope": "resource.aiscript",
@@ -136,6 +138,32 @@
 					],
 					"default": "info",
 					"description": "Minimum package-lint severity surfaced by package commands and package-aware diagnostics. Use 'info' to include hygiene notes such as redundant built-in defconsts."
+				},
+				"aoe2_AiScript.formatOnSave": {
+					"scope": "resource.aiscript",
+					"type": "boolean",
+					"default": false,
+					"description": "Run AoE2 AutoFormat automatically when saving .per or .ai files. Default off; use the AoE2: AutoFormat command for manual formatting."
+				},
+				"aoe2_AiScript.formatMaxLineLength": {
+					"scope": "resource.aiscript",
+					"type": "integer",
+					"minimum": 40,
+					"maximum": 255,
+					"default": 255,
+					"description": "Maximum line length used by AoE2 AutoFormat for comments and inline comments. The game limit is 255, so higher values are not accepted."
+				},
+				"aoe2_AiScript.formatChat": {
+					"scope": "resource.aiscript",
+					"type": "boolean",
+					"default": false,
+					"description": "Allow AoE2 AutoFormat to touch chat-to-all/chat-to-player lines. Default off because chat strings may intentionally exceed normal script line limits."
+				},
+				"aoe2_AiScript.enableSemanticColors": {
+					"scope": "resource.aiscript",
+					"type": "boolean",
+					"default": false,
+					"description": "Enable parser-specific semantic coloring for commands, facts, strategic numbers, objects, techs, values, and local constants. Default off so users keep their normal editor theme colors."
 				},
 				"aoe2_AiScript.labPath": {
 					"scope": "resource.aiscript",
@@ -200,6 +228,11 @@
 				"label": "AOE2 AI Parser Light",
 				"uiTheme": "vs",
 				"path": "./themes/aoe2-ai-parser-light-color-theme.json"
+			},
+			{
+				"label": "AOE2 AiScript Classic",
+				"uiTheme": "vs-dark",
+				"path": "./themes/aoe2-aiscript-classic-color-theme.json"
 			}
 		],
 		"snippets": [
@@ -275,6 +308,14 @@
 			{
 				"command": "aoe2AiScript.openLatestPackageReport",
 				"title": "AoE2: Open Latest Package Report"
+			},
+			{
+				"command": "aoe2AiScript.autoFormat",
+				"title": "AoE2: AutoFormat"
+			},
+			{
+				"command": "aoe2AiScript.autoFormatPackage",
+				"title": "AoE2: AutoFormat Package"
 			},
 			{
 				"command": "aoe2AiScript.openSymbolDocsPreview",

@@ -21,8 +21,9 @@ The extension provides:
 - Go to definition for local `defconst`s and load targets.
 - Package-aware diagnostics for reachable `.per` files.
 - Markdown package reports for AI package triage.
-- Optional `AOE2 AI Parser Dark` and `AOE2 AI Parser Light` color themes tuned
-  for the extension's semantic token categories.
+- Optional `AOE2 AI Parser Dark`, `AOE2 AI Parser Light`, and
+  `AOE2 AiScript Classic` color themes. The classic theme follows the original
+  extension's TextMate scope model.
 
 Python must be available on your PATH because the extension runs the bundled
 validator with Python. If Python is installed somewhere else, set:
@@ -40,11 +41,23 @@ Useful command palette actions:
 - `AoE2: Lint Folder`
 - `AoE2: Generate Package Report`
 - `AoE2: Open Latest Package Report`
+- `AoE2: AutoFormat`
+- `AoE2: AutoFormat Package`
 - `AoE2: Open Symbol Docs Preview`
 - `AoE2: Open Diagnostic Docs Preview`
 
-For the most distinct syntax colors, select `AOE2 AI Parser Dark` or
-`AOE2 AI Parser Light` with `Preferences: Color Theme`.
+For the most distinct parser syntax colors, select `AOE2 AI Parser Dark` or
+`AOE2 AI Parser Light` with `Preferences: Color Theme`. For coloring closer to
+the original AoE2 AiScript extension, select `AOE2 AiScript Classic`.
+
+The extension does not switch your editor theme. Parser-specific semantic
+colors are opt-in so users keep their existing color scheme by default:
+
+```json
+{
+  "aoe2_AiScript.enableSemanticColors": true
+}
+```
 
 `Lint Current File` validates only the active file. `Lint Package` starts from
 the nearest `.ai` package root for the active file. `Lint Folder` validates the
@@ -53,14 +66,41 @@ mods folder is broader than the AI package you want to inspect.
 Package-report commands open the generated Markdown report in a side preview
 after the linter finishes.
 
+`AoE2: AutoFormat` formats the active `.per` or `.ai` file. Formatting is
+manual by default; enable opt-in save-time formatting with:
+
+```json
+{
+  "aoe2_AiScript.formatOnSave": true
+}
+```
+
+The formatter enforces final newlines for `.per` files, empty `.ai` entry
+files, comment wrapping up to `aoe2_AiScript.formatMaxLineLength` (maximum
+255), load path separator normalization, and conservative one-expression-per-
+line splitting for facts/actions. Chat lines are skipped by default; set
+`aoe2_AiScript.formatChat` only when you explicitly want chat lines formatted.
+`AoE2: AutoFormat Package` finds the nearest `.ai` package root from the active
+file and formats every `.ai` and `.per` file in that package folder.
+
 For local symbol docs, VS Code's built-in definition gesture is `Ctrl+Click`.
 Cursor also supports its own side-definition gestures such as `Ctrl+Alt+Click`.
 Use the hover link, right-click `AoE2: Open Symbol Docs Preview`, or the command
 palette action when you want the rendered Markdown Preview beside the script.
 
-Diagnostics run on save by default. Package commands and package-aware
-diagnostics surface info-level findings by default. To make package lint less
-strict, change the fail level in workspace settings:
+Diagnostics run on save by default. Live diagnostics validate the active file
+by default; package-aware live diagnostics are opt-in because large AI packages
+can make open/save validation CPU-heavy. Use `AoE2: Lint Package` when you want
+explicit package validation, or enable package-aware live diagnostics with:
+
+```json
+{
+  "aoe2_AiScript.usePackageLint": true
+}
+```
+
+Package commands surface info-level findings by default. To make package lint
+less strict, change the fail level in workspace settings:
 
 ```json
 {
@@ -179,6 +219,16 @@ Generate a Markdown report:
 ```powershell
 python -m aoe2_ai_lab lint-package path\to\your-ai-package --report .tmp\lint-package\report.md
 ```
+
+Format one file or a folder of `.ai`/`.per` files:
+
+```powershell
+python -m aoe2_ai_lab format path\to\your-ai-package --check
+python -m aoe2_ai_lab format path\to\your-ai-package --write --max-line-length 220
+```
+
+The CLI formatter leaves `chat-to-all` and `chat-to-player` lines alone unless
+you pass `--format-chat`.
 
 Use `--profile corpus` when reviewing imported/community AI packages where
 legacy-compatible patterns should be suppressed:

@@ -1,0 +1,100 @@
+{
+  "$schema": "vscode://schemas/color-theme",
+  "name": "AOE2 AiScript Classic",
+  "type": "dark",
+  "semanticHighlighting": false,
+  "colors": {
+    "editor.background": "#1E1E1E",
+    "editor.foreground": "#D4D4D4",
+    "editorLineNumber.foreground": "#858585",
+    "editorCursor.foreground": "#AEAFAD",
+    "editor.selectionBackground": "#264F78",
+    "editor.inactiveSelectionBackground": "#3A3D41"
+  },
+  "tokenColors": [
+    {
+      "scope": "comment.line.semicolon",
+      "settings": {
+        "foreground": "#6A9955"
+      }
+    },
+    {
+      "scope": "string.quoted.double.aoe2aiscript",
+      "settings": {
+        "foreground": "#CE9178"
+      }
+    },
+    {
+      "scope": [
+        "entity.name.function.aoe2aiscript.fact",
+        "entity.name.function.aoe2aiscript.action"
+      ],
+      "settings": {
+        "foreground": "#DCDCAA"
+      }
+    },
+    {
+      "scope": [
+        "storage.type.aoe2aiscript.def",
+        "storage.type.aoe2aiscript.def.rule",
+        "storage.type.aoe2aiscript.def.const",
+        "support.type.aoe2aiscript.yields"
+      ],
+      "settings": {
+        "foreground": "#C586C0"
+      }
+    },
+    {
+      "scope": [
+        "keyword.control.aoe2aiscript.load",
+        "keyword.control.aoe2aiscript.load.if",
+        "keyword.control.aoe2aiscript.load.elseend",
+        "keyword.control.aoe2aiscript.load.file"
+      ],
+      "settings": {
+        "foreground": "#569CD6"
+      }
+    },
+    {
+      "scope": [
+        "keyword.control.aoe2aiscript.control",
+        "keyword.control.aoe2aiscript.defact",
+        "keyword.control.aoe2aiscript.defact.disableself",
+        "keyword.control.aoe2aiscript.defact.donothing"
+      ],
+      "settings": {
+        "foreground": "#C586C0"
+      }
+    },
+    {
+      "scope": [
+        "variable.other.aoe2aiscript.resource",
+        "variable.other.constant.aoe2aiscript"
+      ],
+      "settings": {
+        "foreground": "#9CDCFE"
+      }
+    },
+    {
+      "scope": [
+        "constant.numeric.aoe2aiscript",
+        "constant.language.aoe2aiscript.truefalse"
+      ],
+      "settings": {
+        "foreground": "#B5CEA8"
+      }
+    },
+    {
+      "scope": [
+        "support.constant.strategic-number.aoe2aiscript",
+        "constant.other.object.aoe2aiscript",
+        "constant.other.value.aoe2aiscript",
+        "aoe2aiscript.age",
+        "aoe2aiscript.tech"
+      ],
+      "settings": {
+        "foreground": "#4EC9B0"
+      }
+    }
+  ]
+}

@@ -69,6 +69,20 @@ The Markdown report is intended for humans and agent handoff notes. It includes
 a summary, root manifest, category explanations, and file/line occurrences for
 each warning or error category.
 
+Format `.ai` and `.per` scripts:
+
+```powershell
+python -m aoe2_ai_lab format "path\\to\\ai-package" --check
+python -m aoe2_ai_lab format "path\\to\\ai-package" --write --max-line-length 220
+```
+
+The formatter enforces empty `.ai` root files, final newlines for `.per` files,
+comment wrapping at a configurable length up to the game-safe 255 character
+limit, dominant load-path separator style, and conservative splitting of
+multiple same-line facts/actions. `chat-to-all` and `chat-to-player` are skipped
+by default because those strings can intentionally exceed normal line limits;
+use `--format-chat` only when that is wanted.
+
 ## Profiles
 
 - `default`: strict normal project lint profile.
@@ -335,6 +349,14 @@ file, its resolved load/load-random edges, and its include edges to `.xs` files.
 Use this when reviewing package structure before drilling into individual
 findings. The Cursor/VS Code extension's package-lint output includes a compact
 version of the same graph.
+
+When a package root is known, `(load "...")`, `#load`, and `load-random`
+targets are resolved from the folder containing the root/entry file first. This
+matches observed AI folder behavior: a nested `.per` loading `shared/common`
+should resolve to `<root file folder>/shared/common.per`, not to
+`<including file directory>/shared/common.per`. The including file's directory
+is kept as a fallback candidate for compatibility and for single-file lint
+contexts where no root-file folder is known.
 
 ## Package Integrity
 
