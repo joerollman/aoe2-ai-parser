@@ -5,6 +5,11 @@ this file. Version numbers are given as:
 
     <major>.<minor>.<patch>
 
+## v0.1.59
+
+- Make `Lint Package` and `Lint Folder` write Markdown reports and open them in
+  a side Markdown Preview when validation finishes.
+
 ## v0.1.58
 
 - Fix command-palette lint commands in the packaged JavaScript by using native

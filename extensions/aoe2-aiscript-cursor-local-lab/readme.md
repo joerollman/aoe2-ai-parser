@@ -68,8 +68,9 @@ command categories remain readable in long AI files.
 nearest `.ai` package root for the active file. `Lint Folder` validates the
 folder containing the active file, which is useful when a mod folder is too broad
 to treat as one package.
-Package-report commands open the generated Markdown report in a side preview
-when the linter finishes.
+`Lint Package`, `Lint Folder`, and package-report commands write a Markdown
+summary under `.tmp/lint-package/` and open it in a side Markdown Preview when
+the linter finishes.
 
 For local symbol docs, VS Code's built-in definition gesture is `Ctrl+Click`.
 Cursor also supports its own side-definition gestures such as `Ctrl+Alt+Click`.

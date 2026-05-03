@@ -413,12 +413,14 @@ async function lintPackage() {
         return;
     }
     let settings = getLabSettings();
-    let result = await runLabCommand(["-m", "aoe2_ai_lab", "lint-package", packageRoot, "--json", "--fail-level", settings.packageFailLevel], "AoE2: Lint Package", stdout => formatPackageIssueGroups(stdout, settings.labPath));
+    let reportPath = packageReportPath(settings, packageRoot);
+    let result = await runLabCommand(["-m", "aoe2_ai_lab", "lint-package", packageRoot, "--json", "--report", reportPath, "--fail-level", settings.packageFailLevel], "AoE2: Lint Package", stdout => formatPackageIssueGroups(stdout, settings.labPath));
+    openPackageReportPreview(reportPath);
     if (result.ok) {
-        vscode_1.window.showInformationMessage("AoE2 lint package completed. See AOE2 AI Parser output.");
+        vscode_1.window.showInformationMessage("AoE2 lint package completed. Markdown report opened.");
     }
     else if (result.stdout) {
-        vscode_1.window.showWarningMessage("AoE2 lint package completed with findings.");
+        vscode_1.window.showWarningMessage("AoE2 lint package completed with findings. Markdown report opened.");
     }
     else {
         vscode_1.window.showErrorMessage("AoE2 lint package failed. See AOE2 AI Parser output.");
@@ -431,12 +433,14 @@ async function lintFolder() {
     }
     let folderPath = fs.statSync(filePath).isDirectory() ? filePath : path.dirname(filePath);
     let settings = getLabSettings();
-    let result = await runLabCommand(["-m", "aoe2_ai_lab", "lint-package", folderPath, "--json", "--fail-level", settings.packageFailLevel], "AoE2: Lint Folder", stdout => formatPackageIssueGroups(stdout, settings.labPath));
+    let reportPath = packageReportPath(settings, folderPath);
+    let result = await runLabCommand(["-m", "aoe2_ai_lab", "lint-package", folderPath, "--json", "--report", reportPath, "--fail-level", settings.packageFailLevel], "AoE2: Lint Folder", stdout => formatPackageIssueGroups(stdout, settings.labPath));
+    openPackageReportPreview(reportPath);
     if (result.ok) {
-        vscode_1.window.showInformationMessage("AoE2 lint folder completed. See AOE2 AI Parser output.");
+        vscode_1.window.showInformationMessage("AoE2 lint folder completed. Markdown report opened.");
     }
     else if (result.stdout) {
-        vscode_1.window.showWarningMessage("AoE2 lint folder completed with findings.");
+        vscode_1.window.showWarningMessage("AoE2 lint folder completed with findings. Markdown report opened.");
     }
     else {
         vscode_1.window.showErrorMessage("AoE2 lint folder failed. See AOE2 AI Parser output.");
@@ -445,23 +449,31 @@ async function lintFolder() {
 function timestampForReport() {
     return new Date().toISOString().replace(/[:.]/g, "-");
 }
+function packageReportPath(settings, rootPath) {
+    let reportRoot = settings.configuredLabPath ? settings.labPath : (settings.workspacePath || settings.labPath);
+    let reportDir = path.join(reportRoot, ".tmp", "lint-package");
+    fs.mkdirSync(reportDir, { recursive: true });
+    return path.join(reportDir, path.basename(rootPath) + "-" + timestampForReport() + ".md");
+}
+function openPackageReportPreview(reportPath) {
+    if (!fs.existsSync(reportPath)) {
+        return;
+    }
+    let reportUri = vscode_1.Uri.file(reportPath);
+    vscode_1.commands.executeCommand("vscode.openWith", reportUri, "vscode.markdown.preview.editor", vscode_1.ViewColumn.Beside).then(undefined, () => {
+        vscode_1.workspace.openTextDocument(reportPath).then(document => vscode_1.window.showTextDocument(document, vscode_1.ViewColumn.Beside));
+    });
+}
 async function generatePackageReport() {
     let packageRoot = getCurrentPackageRoot();
     if (!packageRoot) {
         return;
     }
     let settings = getLabSettings();
-    let reportRoot = settings.configuredLabPath ? settings.labPath : (settings.workspacePath || settings.labPath);
-    let reportDir = path.join(reportRoot, ".tmp", "lint-package");
-    fs.mkdirSync(reportDir, { recursive: true });
-    let reportName = path.basename(packageRoot) + "-" + timestampForReport() + ".md";
-    let reportPath = path.join(reportDir, reportName);
+    let reportPath = packageReportPath(settings, packageRoot);
     let result = await runLabCommand(["-m", "aoe2_ai_lab", "lint-package", packageRoot, "--report", reportPath, "--fail-level", settings.packageFailLevel], "AoE2: Generate Package Report");
     if (fs.existsSync(reportPath)) {
-        let reportUri = vscode_1.Uri.file(reportPath);
-        vscode_1.commands.executeCommand("vscode.openWith", reportUri, "vscode.markdown.preview.editor", vscode_1.ViewColumn.Beside).then(undefined, () => {
-            vscode_1.workspace.openTextDocument(reportPath).then(document => vscode_1.window.showTextDocument(document, vscode_1.ViewColumn.Beside));
-        });
+        openPackageReportPreview(reportPath);
         if (result.ok) {
             vscode_1.window.showInformationMessage("AoE2 package report generated.");
         }
@@ -489,10 +501,7 @@ function openLatestPackageReport() {
         vscode_1.window.showWarningMessage("No AoE2 package reports found.");
         return;
     }
-    let reportUri = vscode_1.Uri.file(reports[0]);
-    vscode_1.commands.executeCommand("vscode.openWith", reportUri, "vscode.markdown.preview.editor", vscode_1.ViewColumn.Beside).then(undefined, () => {
-        vscode_1.workspace.openTextDocument(reports[0]).then(document => vscode_1.window.showTextDocument(document, vscode_1.ViewColumn.Beside));
-    });
+    openPackageReportPreview(reports[0]);
 }
 function symbolReferencePath() {
     let settings = getLabSettings();
