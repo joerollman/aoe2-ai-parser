@@ -22,7 +22,13 @@ from .airef_scraper import (
     scrape_xs_constants,
     scrape_xs_functions,
 )
-from .ai_package import find_include_targets, find_load_references, inspect_package_integrity, lint_package_root
+from .ai_package import (
+    collect_reachable_per_files,
+    find_include_targets,
+    find_load_references,
+    inspect_package_integrity,
+    lint_package_root,
+)
 from .assembler import assemble_per
 from .binary_strings import scan_strings, write_filtered_strings, write_userpatch_sections
 from .formatter import FormatOptions, discover_script_files, format_file, format_text
@@ -225,6 +231,11 @@ def build_parser() -> argparse.ArgumentParser:
         action="append",
         default=[],
         help="suppress a finding code for this package run; may be provided multiple times",
+    )
+    lint_package.add_argument(
+        "--trace-progress",
+        action="store_true",
+        help="emit a live package trace to stderr before and during linting; stdout remains machine-readable",
     )
 
     suppress = subparsers.add_parser(
@@ -1516,6 +1527,36 @@ def package_report_to_markdown(payload: dict[str, object]) -> str:
     return "\n".join(lines) + "\n"
 
 
+def trace_progress(message: str, *, enabled: bool) -> None:
+    if enabled:
+        print(message, file=sys.stderr, flush=True)
+
+
+def trace_package_root(root: object, *, enabled: bool) -> None:
+    if not enabled:
+        return
+    trace_progress(f"|-- AI: {root.ai_path}", enabled=enabled)
+    trace_progress(f"|   |-- root .per: {root.per_path}", enabled=enabled)
+    try:
+        files, missing = collect_reachable_per_files(root.per_path, package_root=root.package_dir)
+    except Exception as exc:  # pragma: no cover - defensive progress reporting
+        trace_progress(f"|   `-- reachable graph: failed before linting: {exc}", enabled=enabled)
+        return
+    trace_progress(f"|   |-- reachable .per files ({len(files)})", enabled=enabled)
+    for index, file_path in enumerate(files):
+        prefix = "`--" if index == len(files) - 1 else "|--"
+        trace_progress(f"|   |   {prefix} {file_path}", enabled=enabled)
+    if missing:
+        trace_progress(f"|   |-- missing load targets ({len(missing)})", enabled=enabled)
+        for index, missing_load in enumerate(missing):
+            prefix = "`--" if index == len(missing) - 1 else "|--"
+            trace_progress(
+                f"|   |   {prefix} {missing_load.path}:{missing_load.line} {missing_load.include}",
+                enabled=enabled,
+            )
+    trace_progress("|   `-- linting reachable graph...", enabled=enabled)
+
+
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
 
@@ -1548,16 +1589,25 @@ def main(argv: list[str] | None = None) -> int:
         return 1 if has_failure(findings, "info") else 0
 
     if args.command == "lint-package":
+        trace_progress(f"Lint trace: inspecting package input {args.path}", enabled=args.trace_progress)
         integrity = inspect_package_integrity(args.path)
         roots = integrity.roots
         if not roots:
+            trace_progress("Lint trace: no AI package roots resolved", enabled=args.trace_progress)
             print(f"no AI package roots found in {args.path}", file=sys.stderr)
             return 2
+        trace_progress(f"Lint trace: resolved {len(roots)} root(s)", enabled=args.trace_progress)
         exit_code = 1 if package_integrity_has_failure(integrity, args.fail_level) else 0
         json_roots: list[dict[str, object]] = []
         suppress_codes = set(args.suppress_code)
-        for root in roots:
+        for index, root in enumerate(roots, start=1):
+            trace_progress(f"Lint trace: root {index}/{len(roots)}", enabled=args.trace_progress)
+            trace_package_root(root, enabled=args.trace_progress)
             result = lint_package_root(root, profile=args.profile)
+            trace_progress(
+                f"Lint trace: finished root {index}/{len(roots)} with {len(result.findings)} finding(s)",
+                enabled=args.trace_progress,
+            )
             suppress_package_findings(result, suppress_codes)
             root_failed = package_has_failure(result.findings, args.fail_level, args.fail_confidence)
             if args.json or args.output or args.report:

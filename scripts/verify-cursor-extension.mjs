@@ -81,6 +81,9 @@ const completionLabels = new Set(completions.items.map((item) => item.label));
 
 assert(language.extensions.includes(".per"), "extension must register .per files");
 assert(language.extensions.includes(".ai"), "extension must register .ai files");
+assert(!packageData.contributes.configuration.properties["aoe2_AiScript.aiDirectory"], "unused legacy aiDirectory setting must not be contributed");
+assert(!packageData.contributes.configuration.properties["aoe2_AiScript.aiName"], "unused legacy aiName setting must not be contributed");
+assert(packageData.contributes.configuration.properties["aoe2_AiScript.maxErrorsReported"].default === -1, "maxErrorsReported must default to uncapped diagnostics");
 assert(themes.get("AOE2 AI Parser Dark")?.path === "./themes/aoe2-ai-parser-dark-color-theme.json", "dark theme contribution is missing");
 assert(themes.get("AOE2 AI Parser Light")?.path === "./themes/aoe2-ai-parser-light-color-theme.json", "light theme contribution is missing");
 assert(themes.get("AOE2 AI Parser Dark")?.uiTheme === "vs-dark", "dark theme must use vs-dark");
@@ -127,7 +130,7 @@ assertIncludes(clientSource, "vscode_1.Uri.file(docsPath).with({ fragment })", c
 assertIncludes(clientSource, "return markdownAnchor(symbol);", clientPath);
 assertIncludes(clientSource, "function execFileText", clientPath);
 assertIncludes(clientSource, "async function runLabCommand", clientPath);
-assertIncludes(clientSource, "await execFileText(settings.pythonPath", clientPath);
+assertIncludes(clientSource, "await execFileTextStreaming(settings.pythonPath", clientPath);
 assertIncludes(clientSource, "async function lintPackage", clientPath);
 assertIncludes(clientSource, "await runLabCommand", clientPath);
 assert(!clientSource.includes("__awaiter"), "extension client must not reference missing __awaiter helper");

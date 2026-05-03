@@ -168,14 +168,20 @@ class CursorExtensionTests(unittest.TestCase):
         self.assertEqual(commands["aoe2AiScript.lintFolder"], "AoE2: Lint Folder")
         self.assertEqual(commands["aoe2AiScript.generatePackageReport"], "AoE2: Generate Package Report")
         self.assertEqual(commands["aoe2AiScript.openLatestPackageReport"], "AoE2: Open Latest Package Report")
-        self.assertEqual(commands["aoe2AiScript.autoFormat"], "AoE2: AutoFormat")
-        self.assertEqual(commands["aoe2AiScript.autoFormatPackage"], "AoE2: AutoFormat Package")
+        self.assertEqual(commands["aoe2AiScript.autoFormat"], "AoE2: AutoFormat Current File")
+        self.assertEqual(commands["aoe2AiScript.autoFormatPackage"], "AoE2: AutoFormat Nearest AI Package")
         self.assertIn("vscode_1.commands.registerCommand(\"aoe2AiScript.lintCurrentFile\"", extension_source)
         self.assertIn("vscode_1.commands.registerCommand(\"aoe2AiScript.lintFolder\"", extension_source)
         self.assertIn("function lintFolder", extension_source)
         self.assertIn("folderPath, \"--json\"", extension_source)
         self.assertIn("function formatPackageIssueGroups", extension_source)
         self.assertIn("function formatPackageLoadGraph", extension_source)
+        self.assertIn("function formatPackageLintTrace", extension_source)
+        self.assertIn('lines.push("Lint trace:")', extension_source)
+        self.assertIn('lines.push("  roots:")', extension_source)
+        self.assertIn('lines.push(rootChildPrefix + "|-- reachable .per files ("', extension_source)
+        self.assertIn('lines.push(rootChildPrefix + "|-- included .xs files ("', extension_source)
+        self.assertIn('lines.push(rootChildPrefix + "`-- load/include graph")', extension_source)
         self.assertIn("payload.issue_groups || []", extension_source)
         self.assertIn("root.load_graph || []", extension_source)
         self.assertIn("channel.show(false)", extension_source)
@@ -183,6 +189,9 @@ class CursorExtensionTests(unittest.TestCase):
         self.assertIn("See AOE2 AI Parser output.", extension_source)
         self.assertIn("documentation_markdown", extension_source)
         self.assertIn("\"-m\", \"aoe2_ai_lab\", \"lint-package\", packageRoot, \"--json\"", extension_source)
+        self.assertIn('"--trace-progress"', extension_source)
+        self.assertIn("function execFileTextStreaming", extension_source)
+        self.assertIn("child.stderr.on(\"data\"", extension_source)
         self.assertIn("exports._test", extension_source)
         self.assertIn("\"-m\", \"aoe2_ai_lab\", \"lint-package\", packageRoot, \"--report\"", extension_source)
         self.assertIn("AOE2 AI Parser", extension_source)
@@ -307,9 +316,21 @@ class CursorExtensionTests(unittest.TestCase):
         self.assertEqual(setting["default"], "info")
         self.assertEqual(setting["enum"], ["error", "warning", "info"])
 
+        max_errors_setting = package_data["contributes"]["configuration"]["properties"]["aoe2_AiScript.maxErrorsReported"]
+        self.assertEqual(max_errors_setting["default"], -1)
+        self.assertIn("Default -1 means no limit", max_errors_setting["description"])
+
         package_lint_setting = package_data["contributes"]["configuration"]["properties"]["aoe2_AiScript.usePackageLint"]
         self.assertFalse(package_lint_setting["default"])
         self.assertIn("CPU-heavy", package_lint_setting["description"])
+        self.assertIn("nearest folder containing an .ai file", package_lint_setting["description"])
+
+        format_on_save_setting = package_data["contributes"]["configuration"]["properties"]["aoe2_AiScript.formatOnSave"]
+        self.assertFalse(format_on_save_setting["default"])
+        self.assertIn("active .per or .ai file", format_on_save_setting["description"])
+
+        self.assertNotIn("aoe2_AiScript.aiDirectory", package_data["contributes"]["configuration"]["properties"])
+        self.assertNotIn("aoe2_AiScript.aiName", package_data["contributes"]["configuration"]["properties"])
 
     def test_lab_extension_does_not_print_generic_command_failed_when_stdout_exists(self) -> None:
         root = Path(__file__).resolve().parents[1]
@@ -327,7 +348,7 @@ class CursorExtensionTests(unittest.TestCase):
         self.assertIn("AoE2 package report generated with findings.", extension_source)
         self.assertIn("function execFileText", extension_source)
         self.assertIn("async function runLabCommand", extension_source)
-        self.assertIn("await execFileText(settings.pythonPath", extension_source)
+        self.assertIn("await execFileTextStreaming(settings.pythonPath", extension_source)
         self.assertIn('channel.appendLine(title + " complete")', extension_source)
         self.assertIn('channel.appendLine("status: " + (ok ? "completed" : "failed"))', extension_source)
         self.assertIn('channel.appendLine("duration: " + elapsedSeconds + "s")', extension_source)

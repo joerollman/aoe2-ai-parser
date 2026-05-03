@@ -85,6 +85,11 @@ to treat as one package.
 `Lint Package`, `Lint Folder`, and package-report commands write a Markdown
 summary under `.tmp/lint-package/` and open it in a side Markdown Preview when
 the linter finishes.
+The output panel also starts with a `Lint trace` tree that shows the input path,
+resolved `.ai` roots, root `.per` files, every reachable `.per`, included
+`.xs` files, and load/include edges so users can confirm exactly what was
+validated. Package and folder lint commands also stream a simpler live trace
+while linting is still running.
 
 `AoE2: AutoFormat` formats the active `.per` or `.ai` file. It enforces final
 newlines for `.per`, keeps `.ai` entry files empty, wraps long comments,

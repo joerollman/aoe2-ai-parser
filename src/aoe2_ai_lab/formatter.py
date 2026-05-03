@@ -56,8 +56,24 @@ def format_text(text: str, suffix: str = ".per", options: FormatOptions | None =
     raw_lines = text.splitlines()
     formatted_lines: list[str] = []
     for line in raw_lines:
-        formatted_lines.extend(format_line(line.rstrip(), options, dominant_separator))
+        next_lines = format_line(line.rstrip(), options, dominant_separator)
+        if next_lines and next_lines[0] == "" and should_drop_promoted_comment_separator(formatted_lines, next_lines):
+            next_lines = next_lines[1:]
+        formatted_lines.extend(next_lines)
+    formatted_lines = normalize_defrule_indentation(formatted_lines)
     return "\n".join(formatted_lines) + "\n"
+
+
+def should_drop_promoted_comment_separator(formatted_lines: list[str], next_lines: list[str]) -> bool:
+    previous_nonempty = next((line for line in reversed(formatted_lines) if line.strip()), "")
+    if not previous_nonempty:
+        return True
+    if previous_nonempty.strip() == "=>":
+        return True
+    if is_comment_line(previous_nonempty):
+        return True
+    code = next_lines[-1].strip() if next_lines else ""
+    return code.startswith("(defrule")
 
 
 def format_line(line: str, options: FormatOptions, dominant_separator: str | None) -> list[str]:
@@ -73,6 +89,73 @@ def format_line(line: str, options: FormatOptions, dominant_separator: str | Non
     if split is not None:
         return split
     return [line]
+
+
+def normalize_defrule_indentation(lines: list[str]) -> list[str]:
+    normalized: list[str] = []
+    in_rule = False
+    rule_balance = 0
+    for line in lines:
+        stripped = line.strip()
+        if not stripped:
+            normalized.append("")
+            continue
+
+        if is_defrule_line(stripped) and not in_rule:
+            normalized.append(stripped)
+            rule_balance = paren_delta(stripped)
+            in_rule = rule_balance > 0
+            continue
+
+        if in_rule:
+            if stripped == "=>" or (stripped == ")" and rule_balance <= 1):
+                normalized.append(stripped)
+            else:
+                normalized.append(f"    {stripped}")
+            rule_balance += paren_delta(stripped)
+            if rule_balance <= 0:
+                in_rule = False
+                rule_balance = 0
+            continue
+
+        normalized.append(line.rstrip())
+    return normalized
+
+
+def is_defrule_line(stripped: str) -> bool:
+    code = line_without_comment(stripped).strip()
+    return code == "(defrule" or code.startswith("(defrule ")
+
+
+def paren_delta(line: str) -> int:
+    code = line_without_comment(line)
+    delta = 0
+    in_string = False
+    escaped = False
+    for char in code:
+        if escaped:
+            escaped = False
+            continue
+        if char == "\\":
+            escaped = True
+            continue
+        if char == '"':
+            in_string = not in_string
+            continue
+        if in_string:
+            continue
+        if char == "(":
+            delta += 1
+        elif char == ")":
+            delta -= 1
+    return delta
+
+
+def line_without_comment(line: str) -> str:
+    comment_index = inline_comment_index(line)
+    if comment_index is None:
+        return line
+    return line[:comment_index]
 
 
 def is_comment_line(line: str) -> bool:

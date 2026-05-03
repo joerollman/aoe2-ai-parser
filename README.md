@@ -65,6 +65,11 @@ folder containing the active file, which is useful when the workspace or local
 mods folder is broader than the AI package you want to inspect.
 Package-report commands open the generated Markdown report in a side preview
 after the linter finishes.
+The output panel starts with a `Lint trace` tree for package/folder linting so
+users can see the input path, resolved `.ai` roots, root `.per` files, every
+reachable `.per`, included `.xs` files, and load/include edges that were
+validated. Package and folder lint commands also stream a simpler live trace
+while linting is still running.
 
 `AoE2: AutoFormat` formats the active `.per` or `.ai` file. Formatting is
 manual by default; enable opt-in save-time formatting with:

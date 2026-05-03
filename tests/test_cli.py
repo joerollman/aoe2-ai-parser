@@ -813,6 +813,35 @@ class CliTests(unittest.TestCase):
         )
         self.assertIn("validator-diagnostic-codes.md", payload["issue_groups"][0]["documentation_markdown"])
 
+    def test_lint_package_trace_progress_writes_live_trace_to_stderr(self) -> None:
+        with WorkspaceTempDir() as root:
+            (root / "Trace.ai").write_text('(load "Trace")\n', encoding="utf-8")
+            (root / "Trace.per").write_text(
+                """
+(defrule
+    (true)
+=>
+    (do-nothing)
+)
+""".strip(),
+                encoding="utf-8",
+            )
+            stdout = io.StringIO()
+            stderr = io.StringIO()
+            with redirect_stdout(stdout), redirect_stderr(stderr):
+                code = main(["lint-package", str(root), "--json", "--trace-progress"])
+
+        self.assertEqual(code, 0)
+        payload = json.loads(stdout.getvalue())
+        self.assertEqual(payload["root_count"], 1)
+        trace = stderr.getvalue()
+        self.assertIn("Lint trace: inspecting package input", trace)
+        self.assertIn("Lint trace: resolved 1 root(s)", trace)
+        self.assertIn("|-- AI:", trace)
+        self.assertIn("|   |-- reachable .per files (1)", trace)
+        self.assertIn("|   `-- linting reachable graph...", trace)
+        self.assertIn("Lint trace: finished root 1/1", trace)
+
     def test_lint_package_accepts_single_ai_file_path(self) -> None:
         with WorkspaceTempDir() as root:
             ai_path = root / "Focused.ai"

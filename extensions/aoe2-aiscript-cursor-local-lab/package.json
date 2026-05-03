@@ -2,7 +2,7 @@
 	"name": "aoe2-ai-parser",
 	"displayName": "AOE2 AI Parser",
 	"description": "Parser diagnostics, command tooltips, syntax highlighting, and autocomplete for Age of Empires 2 AI scripts in VS Code and Cursor",
-	"version": "0.1.67",
+	"version": "0.1.70",
 	"keywords": [
 		"aoeII",
 		"age",
@@ -70,8 +70,8 @@
 					"scope": "resource.aiscript",
 					"type": "integer",
 					"minimum": -1,
-					"default": 100,
-					"description": "Controls the maximum number of errors reported in a file. '-1' means no limit."
+					"default": -1,
+					"description": "Controls the maximum number of diagnostics reported in a file. Default -1 means no limit; use 0 to disable diagnostic reporting."
 				},
 				"aoe2_AiScript.enableCompletionHelp": {
 					"scope": "resource.aiscript",
@@ -104,18 +104,6 @@
 					"default": true,
 					"description": "Controls whether parameter help will be provided when you hover over a parameter."
 				},
-				"aoe2_AiScript.aiName": {
-					"scope": "resource.aiscript",
-					"type": "string",
-					"default": "",
-					"description": "Name of the ai to be edited"
-				},
-				"aoe2_AiScript.aiDirectory": {
-					"scope": "resource.aiscript",
-					"type": "string",
-					"default": "${workspaceFolder}",
-					"description": "Path to the directory containing the AI script '.ai' file."
-				},
 				"aoe2_AiScript.useLabLinter": {
 					"scope": "resource.aiscript",
 					"type": "boolean",
@@ -126,7 +114,7 @@
 					"scope": "resource.aiscript",
 					"type": "boolean",
 					"default": false,
-					"description": "When using live parser diagnostics, prefer package-aware linting from the nearest directory containing an .ai file. Default off because large AI packages can make live diagnostics CPU-heavy; use AoE2: Lint Package for explicit package validation."
+					"description": "When using live parser diagnostics, lint the nearest AI package instead of only the active file. The package root is discovered by walking upward from the active file to the nearest folder containing an .ai file. Default off because large AI packages can make live diagnostics CPU-heavy; use AoE2: Lint Current File for active-file diagnostics or AoE2: Lint Package for explicit package validation."
 				},
 				"aoe2_AiScript.packageFailLevel": {
 					"scope": "resource.aiscript",
@@ -143,7 +131,7 @@
 					"scope": "resource.aiscript",
 					"type": "boolean",
 					"default": false,
-					"description": "Run AoE2 AutoFormat automatically when saving .per or .ai files. Default off; use the AoE2: AutoFormat command for manual formatting."
+					"description": "Run AoE2 AutoFormat automatically on the active .per or .ai file when that file is saved. Default off; use AoE2: AutoFormat Current File for manual single-file formatting."
 				},
 				"aoe2_AiScript.formatMaxLineLength": {
 					"scope": "resource.aiscript",
@@ -311,11 +299,11 @@
 			},
 			{
 				"command": "aoe2AiScript.autoFormat",
-				"title": "AoE2: AutoFormat"
+				"title": "AoE2: AutoFormat Current File"
 			},
 			{
 				"command": "aoe2AiScript.autoFormatPackage",
-				"title": "AoE2: AutoFormat Package"
+				"title": "AoE2: AutoFormat Nearest AI Package"
 			},
 			{
 				"command": "aoe2AiScript.openSymbolDocsPreview",

@@ -34,10 +34,40 @@ class FormatterTests(unittest.TestCase):
         formatted = format_text(text, ".per", FormatOptions(max_line_length=70))
         lines = formatted.splitlines()
 
-        self.assertEqual(lines[0], "")
-        self.assertTrue(lines[1].startswith("; "))
+        self.assertTrue(lines[0].startswith("; "))
         self.assertEqual(lines[-1], "(set-goal gl-test 1)")
         self.assertTrue(all(len(line) <= 70 for line in lines if line))
+
+    def test_promotes_overlong_inline_comment_above_later_code_with_blank_line(self) -> None:
+        text = "(true)\n(set-goal gl-test 1) ; " + "comment " * 15 + "\n"
+        formatted = format_text(text, ".per", FormatOptions(max_line_length=70))
+        lines = formatted.splitlines()
+
+        self.assertEqual(lines[0], "(true)")
+        self.assertEqual(lines[1], "")
+        self.assertTrue(lines[2].startswith("; "))
+        self.assertEqual(lines[-1], "(set-goal gl-test 1)")
+        self.assertTrue(all(len(line) <= 70 for line in lines if line))
+
+    def test_keeps_promoted_inline_comment_attached_to_existing_comment_block(self) -> None:
+        text = "; existing comment\n(set-goal gl-test 1) ; " + "comment " * 15 + "\n"
+        formatted = format_text(text, ".per", FormatOptions(max_line_length=70))
+        lines = formatted.splitlines()
+
+        self.assertEqual(lines[0], "; existing comment")
+        self.assertTrue(lines[1].startswith("; "))
+        self.assertEqual(lines[-1], "(set-goal gl-test 1)")
+        self.assertNotEqual(lines[1], "")
+
+    def test_keeps_promoted_inline_defrule_comment_attached_to_defrule(self) -> None:
+        text = "(true)\n(defrule ; " + "comment " * 15 + "\n    (true)\n=>\n    (do-nothing)\n)\n"
+        formatted = format_text(text, ".per", FormatOptions(max_line_length=70))
+        lines = formatted.splitlines()
+
+        self.assertEqual(lines[0], "(true)")
+        self.assertTrue(lines[1].startswith("; "))
+        self.assertEqual(lines[3], "(defrule")
+        self.assertNotEqual(lines[1], "")
 
     def test_keeps_short_inline_comment(self) -> None:
         text = "(set-goal gl-test 1) ; short\n"
@@ -47,9 +77,9 @@ class FormatterTests(unittest.TestCase):
         text = "\n".join(
             [
                 "(defrule",
-                "    (true) (food-amount > 100)",
+                "(true) (food-amount > 100)",
                 "=>",
-                "    (set-goal gl-test 1) (disable-self)",
+                "(set-goal gl-test 1) (disable-self)",
                 ")",
                 "",
             ]
@@ -59,6 +89,82 @@ class FormatterTests(unittest.TestCase):
 
         self.assertIn("    (true)\n    (food-amount > 100)", formatted)
         self.assertIn("    (set-goal gl-test 1)\n    (disable-self)", formatted)
+
+    def test_indents_defrule_body(self) -> None:
+        text = "\n".join(
+            [
+                "(defrule",
+                "(up-compare-sn sn-focus-player-number < 9)",
+                "(or",
+                "(true)",
+                "(players-stance focus-player ally))",
+                "=>",
+                "(up-full-reset-search)",
+                "; action comment",
+                "(up-find-remote c: town-center c: 40)",
+                ")",
+                "",
+            ]
+        )
+
+        formatted = format_text(text, ".per")
+
+        self.assertEqual(
+            formatted,
+            "\n".join(
+                [
+                    "(defrule",
+                    "    (up-compare-sn sn-focus-player-number < 9)",
+                    "    (or",
+                    "    (true)",
+                    "    (players-stance focus-player ally))",
+                    "=>",
+                    "    (up-full-reset-search)",
+                    "    ; action comment",
+                    "    (up-find-remote c: town-center c: 40)",
+                    ")",
+                    "",
+                ]
+            ),
+        )
+
+    def test_indents_defrule_body_when_defrule_has_inline_comment(self) -> None:
+        text = "\n".join(
+            [
+                "(defrule; short rule comment",
+                "(true)",
+                "=>",
+                "(do-nothing)",
+                ")",
+                "",
+            ]
+        )
+
+        formatted = format_text(text, ".per")
+
+        self.assertEqual(
+            formatted,
+            "\n".join(
+                [
+                    "(defrule; short rule comment",
+                    "    (true)",
+                    "=>",
+                    "    (do-nothing)",
+                    ")",
+                    "",
+                ]
+            ),
+        )
+
+    def test_indents_promoted_inline_comment_inside_defrule(self) -> None:
+        text = "(defrule\n(true)\n=>\n(up-find-remote c: town-center c: 40) ; " + "comment " * 15 + "\n)\n"
+        formatted = format_text(text, ".per", FormatOptions(max_line_length=70))
+        lines = formatted.splitlines()
+
+        self.assertEqual(lines[1], "    (true)")
+        self.assertTrue(lines[3].startswith("    ; "))
+        self.assertNotEqual(lines[3], "")
+        self.assertEqual(lines[-2], "    (up-find-remote c: town-center c: 40)")
 
     def test_uses_dominant_load_path_separator(self) -> None:
         text = "\n".join(

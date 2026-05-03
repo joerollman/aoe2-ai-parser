@@ -5,6 +5,25 @@ this file. Version numbers are given as:
 
     <major>.<minor>.<patch>
 
+## v0.1.70
+
+- Remove unused legacy `aiName` and `aiDirectory` extension settings.
+- Default `maxErrorsReported` to `-1`, meaning diagnostics are uncapped unless
+  the user explicitly sets a cap.
+- Rename AutoFormat palette entries to clarify current-file formatting versus
+  nearest-package formatting.
+
+## v0.1.69
+
+- Stream `lint-package --trace-progress` output into the output panel while
+  package/folder linting is still running.
+
+## v0.1.68
+
+- Add a `Lint trace` tree to package/folder lint command output showing the
+  input path, resolved roots, reachable `.per` and `.xs` files, and
+  load/include edges.
+
 ## v0.1.67
 
 - Show a visible progress notification while parser commands such as linting,

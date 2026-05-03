@@ -282,12 +282,10 @@ connection.onInitialized(() => {
  **************************************************************************/
 const defaultSettings = {
     updateErrorsWhen: "onSave",
-    maxErrorsReported: 100,
+    maxErrorsReported: -1,
     enableCompletionHelp: false,
     enableHoverHelp: false,
     enableParameterHelp: "off",
-    aiName: "",
-    aiDirectory: "",
     useLabLinter: true,
     usePackageLint: false,
     packageFailLevel: "info",
@@ -706,7 +704,6 @@ function validateTextDocument(textDocument) {
         let settings = yield getDocumentSettings(textDocument.uri);
         let diagnostics = [];
         // Quit if no checks were actually requested
-        connection.console.log(settings.aiName);
         if ((settings.maxErrorsReported === 0) || (settings.updateErrorsWhen === "never")) {
             return;
         }
@@ -717,128 +714,6 @@ function validateTextDocument(textDocument) {
             connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
             return;
         }
-        else if (settings.aiName === "") {
-            return;
-        }
-        //let loadfile = textDocument.uri.substring(7);
-        // Script text
-        let text = textDocument.getText();
-        let filepath = vscode_uri_1.URI.parse(workspaceFolder).fsPath;
-        connection.console.log("dir : " + filepath);
-        // Get the errors
-        let parser = new aiScriptParser_1.AiScriptParser(settings.aiName, workspaceFolder, aiScriptTypes);
-        parser.parse();
-        connection.console.log("file:\n" + parser.logger);
-        let errors = parser.getErrors();
-        let scopes = parser.getScopes();
-        connection.console.log("" + Object.keys(scopes).length);
-        Object.keys(scopes).forEach(scp => {
-            connection.console.log(scopes[scp].filename);
-        });
-        connection.console.log("NumErrs: " + errors.length);
-        // Define the diagnostic information
-        errors.forEach(error => {
-            // Assemble the error message
-            let errMsg = error.message.long;
-            if (error.severity === 1) {
-                errMsg = "ERR" + error.code + ": " + errMsg;
-            }
-            else if (error.severity === 2) {
-                errMsg = "WARN" + error.code + ": " + errMsg;
-            }
-            else if (error.severity === 3) {
-                errMsg = "INFO: " + errMsg;
-            }
-            // Push append the new diagnostic
-            diagnostics.push({
-                severity: error.severity,
-                code: error.code,
-                range: { start: textDocument.positionAt(error.position.start),
-                    end: textDocument.positionAt(error.position.stop) },
-                message: errMsg,
-                source: 'Aoe2AiScript'
-            });
-        });
-        /*
-    
-        //let command_pattern: RegExp = /(\(\s*)\w[^\(\)]*(\".*\")*[^\(\)]*(?=\))/g;
-        //let m: RegExpExecArray;
-    
-        while ((m = command_pattern.exec(text)) && problems < settings.maxErrorsReported) {
-            connection.console.log(m.index + ": " + m.join('|'));
-    
-            let char = m.index;
-            let isComment = false;
-            while ((text[char--] !== "\n") && !isComment) {
-                if (text[char] === ";")
-                    isComment = true;
-            }
-            // Skip comments
-            if (isComment) continue;
-    
-            // Search for matching command
-            let test_str = m[0].slice(m[1].length,);
-            //connection.console.log(test_str);
-            let offset = m[0].length - test_str.length;
-    
-            // Replace strings with a single word, for ease of parsing
-            test_str      = test_str.replace(/"[\s\S]*"/g, '"string"');
-            let test_arr  = test_str.split(/\s+/g);
-            let com_match = aiScriptPars[test_arr[0]];
-            
-            // Note the match
-            let diagnostic: Diagnostic = undefined;
-            if (com_match == undefined) {
-                // Failure to find a match for the command
-                diagnostic = {
-                    severity: DiagnosticSeverity.Error,
-                    range: {
-                        start: textDocument.positionAt(m.index+offset),
-                        end: textDocument.positionAt(m.index + offset + test_arr[0].length)
-                    },
-                    message: 'Unknown command: `'+test_arr[0]+'`',
-                    source: 'Aoe2AiScript'
-                };
-                problems++;
-            }
-            // ... otherwise if no command is found, produce an error
-            else {
-                let diagnosic: Diagnostic = {
-                    severity: DiagnosticSeverity.Warning,
-                    range: {
-                        start: textDocument.positionAt(m.index+offset),
-                        end: textDocument.positionAt(m.index + m[0].length)
-                    },
-                    message: `${test_str}\n${com_match}`,
-                    source: 'Aoe2AiScript'
-                };
-                if (hasDiagnosticRelatedInformationCapability) {
-                    diagnosic.relatedInformation = [
-                        {
-                            location: {
-                                uri: textDocument.uri,
-                                range: Object.assign({}, diagnosic.range)
-                            },
-                            message: 'Spelling matters'
-                        },
-                        {
-                            location: {
-                                uri: textDocument.uri,
-                                range: Object.assign({}, diagnosic.range)
-                            },
-                            message: 'Particularly for names'
-                        }
-                    ];
-                }
-            }
-    
-            if (diagnostic != undefined) {
-                diagnostics.push(diagnostic);
-            }
-            
-        }
-        */
-        // Send the computed diagnostics to VSCode.
         connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
     });
 }

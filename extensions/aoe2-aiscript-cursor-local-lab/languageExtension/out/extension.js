@@ -32,6 +32,32 @@ function execFileText(command, args, options) {
         });
     });
 }
+function execFileTextStreaming(command, args, options, onStderr) {
+    return new Promise((resolve, reject) => {
+        const child = child_process.spawn(command, args, options);
+        let stdout = "";
+        let stderr = "";
+        child.stdout.on("data", chunk => stdout += chunk.toString());
+        child.stderr.on("data", chunk => {
+            let text = chunk.toString();
+            stderr += text;
+            if (onStderr) {
+                onStderr(text);
+            }
+        });
+        child.on("error", reject);
+        child.on("close", code => {
+            if (code) {
+                let error = new Error("Command failed with exit code " + code);
+                error.stdout = stdout;
+                error.stderr = stderr;
+                reject(error);
+                return;
+            }
+            resolve(stdout || "");
+        });
+    });
+}
 function execFileTextInput(command, args, input, options) {
     return new Promise((resolve, reject) => {
         const child = child_process.spawn(command, args, options);
@@ -275,6 +301,123 @@ function relativeDisplayPath(filePath, labPath) {
     }
     return filePath;
 }
+function relativePackagePath(filePath, packagePath) {
+    if (!filePath) {
+        return "";
+    }
+    if (!packagePath) {
+        return filePath;
+    }
+    let basePath = packagePath;
+    try {
+        if (fs.existsSync(basePath) && fs.statSync(basePath).isFile()) {
+            basePath = path.dirname(basePath);
+        }
+    }
+    catch (_error) {
+        basePath = path.dirname(basePath);
+    }
+    let relative = path.relative(basePath, filePath);
+    if (relative && !relative.startsWith("..") && !path.isAbsolute(relative)) {
+        return relative || path.basename(filePath);
+    }
+    return filePath;
+}
+function formatSeveritySummary(summary) {
+    if (!summary) {
+        return "";
+    }
+    let pieces = [];
+    if (summary.confidence) {
+        pieces.push(summary.confidence);
+    }
+    let findingCount = summary.finding_count || 0;
+    pieces.push(findingCount + " findings");
+    let severity = formatCounts(summary.severity_counts || {});
+    if (severity !== "none") {
+        pieces.push(severity);
+    }
+    return " [" + pieces.join("; ") + "]";
+}
+function formatPackageLintTrace(payload) {
+    let lines = [];
+    let packagePath = payload.path || "";
+    let roots = payload.roots || [];
+    lines.push("Lint trace:");
+    lines.push("  input: " + packagePath);
+    lines.push("  profile: " + (payload.profile || "unknown"));
+    lines.push("  fail level: " + (payload.fail_level || "unknown") + ", confidence: " + (payload.fail_confidence || "unknown"));
+    lines.push("  roots:");
+    if (roots.length === 0) {
+        lines.push("    (none)");
+    }
+    roots.forEach((root, rootIndex) => {
+        let rootPrefix = rootIndex === roots.length - 1 ? "    `-- " : "    |-- ";
+        let rootChildPrefix = rootIndex === roots.length - 1 ? "        " : "    |   ";
+        let fileSummaries = new Map();
+        (root.file_summaries || []).forEach(summary => fileSummaries.set(path.resolve(summary.path), summary));
+        lines.push(rootPrefix + "AI: " + relativePackagePath(root.ai_path, packagePath));
+        lines.push(rootChildPrefix + "|-- root .per: " + relativePackagePath(root.per_path, packagePath));
+        lines.push(rootChildPrefix + "|-- reachable .per files (" + ((root.files || []).length) + ")");
+        (root.files || []).forEach((filePath, fileIndex, files) => {
+            let filePrefix = fileIndex === files.length - 1 ? "`-- " : "|-- ";
+            let summary = fileSummaries.get(path.resolve(filePath));
+            lines.push(rootChildPrefix + "|   " + filePrefix + relativePackagePath(filePath, packagePath) + formatSeveritySummary(summary));
+        });
+        let xsFiles = root.xs_files || [];
+        lines.push(rootChildPrefix + "|-- included .xs files (" + xsFiles.length + ")");
+        if (xsFiles.length === 0) {
+            lines.push(rootChildPrefix + "|   `-- (none)");
+        }
+        xsFiles.forEach((filePath, fileIndex) => {
+            let filePrefix = fileIndex === xsFiles.length - 1 ? "`-- " : "|-- ";
+            let summary = fileSummaries.get(path.resolve(filePath));
+            lines.push(rootChildPrefix + "|   " + filePrefix + relativePackagePath(filePath, packagePath) + formatSeveritySummary(summary));
+        });
+        lines.push(rootChildPrefix + "`-- load/include graph");
+        let graph = root.load_graph || [];
+        if (graph.length === 0) {
+            lines.push(rootChildPrefix + "    `-- (none)");
+        }
+        graph.forEach((entry, entryIndex) => {
+            let entryPrefix = entryIndex === graph.length - 1 ? "`-- " : "|-- ";
+            let entryChildPrefix = entryIndex === graph.length - 1 ? "    " : "|   ";
+            let edges = [];
+            (entry.loads || []).forEach(load => edges.push({
+                label: load.source + " line " + load.line + ": " + load.include + " -> " + load.status + (load.resolved_path ? " (" + relativePackagePath(load.resolved_path, packagePath) + ")" : "") + (load.skipped_reason ? ", " + load.skipped_reason : "")
+            }));
+            (entry.includes || []).forEach(include => edges.push({
+                label: "include line " + include.line + ": " + include.include + " -> " + include.status + (include.resolved_path ? " (" + relativePackagePath(include.resolved_path, packagePath) + ")" : "")
+            }));
+            lines.push(rootChildPrefix + "    " + entryPrefix + relativePackagePath(entry.path, packagePath) + " [" + (entry.confidence || "unknown") + "]");
+            if (edges.length === 0) {
+                lines.push(rootChildPrefix + "    " + entryChildPrefix + "`-- (no load/include edges)");
+            }
+            edges.forEach((edge, edgeIndex) => {
+                let edgePrefix = edgeIndex === edges.length - 1 ? "`-- " : "|-- ";
+                lines.push(rootChildPrefix + "    " + entryChildPrefix + edgePrefix + edge.label);
+            });
+        });
+    });
+    let integrity = payload.integrity || {};
+    let manifest = integrity.root_manifest || [];
+    lines.push("  root manifest:");
+    if (manifest.length === 0) {
+        lines.push("    (none)");
+    }
+    manifest.forEach((entry, index) => {
+        let prefix = index === manifest.length - 1 ? "    `-- " : "    |-- ";
+        let childPrefix = index === manifest.length - 1 ? "        " : "    |   ";
+        lines.push(prefix + relativePackagePath(entry.ai_path, packagePath) + " -> " + entry.status);
+        (entry.entries || []).forEach((loadEntry, loadIndex, entries) => {
+            let entryPrefix = loadIndex === entries.length - 1 ? "`-- " : "|-- ";
+            let lineLabel = loadEntry.line === null || loadEntry.line === undefined ? "" : " line " + loadEntry.line;
+            lines.push(childPrefix + entryPrefix + loadEntry.source + lineLabel + ": " + loadEntry.include + " -> " + loadEntry.status);
+        });
+    });
+    lines.push("");
+    return lines;
+}
 function formatPackageLoadGraph(roots, labPath) {
     let lines = [];
     let graphEntries = [];
@@ -325,6 +468,7 @@ function formatPackageIssueGroups(stdout, labPath) {
     let totals = payload.totals || {};
     let issueGroups = payload.issue_groups || [];
     let lines = [];
+    lines.push(...formatPackageLintTrace(payload));
     lines.push("Package summary:");
     lines.push("  roots: " + ((payload.roots || []).length || 0));
     lines.push("  reachable files: " + (totals.reachable_file_count || 0));
@@ -408,11 +552,13 @@ async function runLabCommand(args, title, formatStdout) {
         }, 1000);
         progress.report({ message: "starting..." });
         try {
-            let stdout = await execFileText(settings.pythonPath, args, {
+            let stdout = await execFileTextStreaming(settings.pythonPath, args, {
                 cwd: settings.labPath,
                 env,
-                encoding: "utf8",
+                shell: false,
                 windowsHide: true
+            }, text => {
+                channel.append(text);
             });
             clearInterval(timer);
             progress.report({ message: "complete" });
@@ -483,7 +629,7 @@ async function lintPackage() {
     }
     let settings = getLabSettings();
     let reportPath = packageReportPath(settings, packageRoot);
-    let result = await runLabCommand(["-m", "aoe2_ai_lab", "lint-package", packageRoot, "--json", "--report", reportPath, "--fail-level", settings.packageFailLevel], "AoE2: Lint Package", stdout => formatPackageIssueGroups(stdout, settings.labPath));
+    let result = await runLabCommand(["-m", "aoe2_ai_lab", "lint-package", packageRoot, "--json", "--report", reportPath, "--fail-level", settings.packageFailLevel, "--trace-progress"], "AoE2: Lint Package", stdout => formatPackageIssueGroups(stdout, settings.labPath));
     let reportOpened = await openPackageReportPreview(reportPath);
     if (result.ok) {
         vscode_1.window.showInformationMessage(reportOpened ? "AoE2 lint package completed. Markdown report opened." : "AoE2 lint package completed. See AOE2 AI Parser output.");
@@ -503,7 +649,7 @@ async function lintFolder() {
     let folderPath = fs.statSync(filePath).isDirectory() ? filePath : path.dirname(filePath);
     let settings = getLabSettings();
     let reportPath = packageReportPath(settings, folderPath);
-    let result = await runLabCommand(["-m", "aoe2_ai_lab", "lint-package", folderPath, "--json", "--report", reportPath, "--fail-level", settings.packageFailLevel], "AoE2: Lint Folder", stdout => formatPackageIssueGroups(stdout, settings.labPath));
+    let result = await runLabCommand(["-m", "aoe2_ai_lab", "lint-package", folderPath, "--json", "--report", reportPath, "--fail-level", settings.packageFailLevel, "--trace-progress"], "AoE2: Lint Folder", stdout => formatPackageIssueGroups(stdout, settings.labPath));
     let reportOpened = await openPackageReportPreview(reportPath);
     if (result.ok) {
         vscode_1.window.showInformationMessage(reportOpened ? "AoE2 lint folder completed. Markdown report opened." : "AoE2 lint folder completed. See AOE2 AI Parser output.");
@@ -552,7 +698,7 @@ async function generatePackageReport() {
     }
     let settings = getLabSettings();
     let reportPath = packageReportPath(settings, packageRoot);
-    let result = await runLabCommand(["-m", "aoe2_ai_lab", "lint-package", packageRoot, "--report", reportPath, "--fail-level", settings.packageFailLevel], "AoE2: Generate Package Report");
+    let result = await runLabCommand(["-m", "aoe2_ai_lab", "lint-package", packageRoot, "--report", reportPath, "--fail-level", settings.packageFailLevel, "--trace-progress"], "AoE2: Generate Package Report");
     if (fs.existsSync(reportPath)) {
         await openPackageReportPreview(reportPath);
         if (result.ok) {
