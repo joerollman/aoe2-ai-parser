@@ -703,6 +703,15 @@ function formatPackageIssueGroups(stdout, labPath) {
         if (group.documentation_markdown) {
             lines.push("    docs: " + group.documentation_markdown);
         }
+        (group.references || []).slice(0, 3).forEach(reference => {
+            if (reference.url) {
+                lines.push("    reference: " + (reference.label || reference.url) + " - " + reference.url);
+            }
+            else if (reference.path) {
+                let anchor = reference.anchor ? "#" + reference.anchor : "";
+                lines.push("    reference: " + (reference.label || reference.path) + " - " + reference.path + anchor);
+            }
+        });
         (group.examples || []).slice(0, 5).forEach(example => {
             let location = relativeDisplayPath(example.path || example.ai_path || example.per_path, labPath);
             if (example.line) {

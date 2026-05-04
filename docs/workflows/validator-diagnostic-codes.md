@@ -213,6 +213,9 @@ Manual `--suppress-code <code>` can suppress any finding code for one lint run. 
 - Corpus profile: active
 - Cursor action: explain
 - Meaning: A numeric `defconst` value is outside the documented signed 16-bit range of -32768 to 32767.
+- References:
+  - [Local AI scripting limits](../reference/ai-scripting-reference.md#data-limits-that-affect-this-project)
+  - [AIRef Data Limits](https://airef.github.io/resources/articles/data-limits.html)
 
 <a id="diagnostic-duplicate-preprocessor-else"></a>
 

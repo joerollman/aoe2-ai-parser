@@ -66,6 +66,18 @@ class DiagnosticRegistryTests(unittest.TestCase):
 
         self.assertEqual(markdown_codes, self._registry_codes())
 
+    def test_defconst_range_diagnostic_cites_limits_references(self) -> None:
+        registry = json.loads(REGISTRY_JSON_PATH.read_text(encoding="utf-8"))
+        entry = next(entry for entry in registry["codes"] if entry["code"] == "defconst-value-out-of-range")
+        markdown = REGISTRY_MARKDOWN_PATH.read_text(encoding="utf-8")
+
+        self.assertEqual(
+            [reference["label"] for reference in entry["references"]],
+            ["Local AI scripting limits", "AIRef Data Limits"],
+        )
+        self.assertIn("https://airef.github.io/resources/articles/data-limits.html", markdown)
+        self.assertIn("../reference/ai-scripting-reference.md#data-limits-that-affect-this-project", markdown)
+
     def test_extension_registry_copy_matches_source_json(self) -> None:
         self.assertEqual(
             json.loads(EXTENSION_REGISTRY_JSON_PATH.read_text(encoding="utf-8")),

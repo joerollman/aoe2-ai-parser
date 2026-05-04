@@ -838,6 +838,7 @@ def finding_span(path: Path, finding: Finding) -> dict[str, int] | None:
 
 
 def finding_to_json(path: Path, finding: Finding) -> dict[str, object]:
+    references = diagnostic_code_reference_entries(finding.code)
     return {
         "path": str(path),
         "line": finding.line,
@@ -846,6 +847,7 @@ def finding_to_json(path: Path, finding: Finding) -> dict[str, object]:
         "code": finding.code,
         "message": finding.message,
         "suggestion": finding.suggestion,
+        "references": references,
         "span": finding_span(path, finding),
     }
 
@@ -881,6 +883,7 @@ def finding_groups_to_json(findings: list[dict[str, object]]) -> list[dict[str, 
                 "documentation_path": DIAGNOSTIC_REGISTRY_MARKDOWN_PATH.as_posix(),
                 "documentation_anchor": diagnostic_code_anchor(code),
                 "documentation_markdown": diagnostic_code_markdown_link(code),
+                "references": diagnostic_code_reference_entries(code),
                 "examples": examples,
             }
         )
@@ -1315,6 +1318,7 @@ def package_integrity_groups_to_json(integrity_payload: dict[str, object]) -> li
                 "documentation_path": DIAGNOSTIC_REGISTRY_MARKDOWN_PATH.as_posix(),
                 "documentation_anchor": diagnostic_code_anchor(code),
                 "documentation_markdown": diagnostic_code_markdown_link(code),
+                "references": diagnostic_code_reference_entries(code),
                 "examples": examples,
             }
         )
@@ -1341,6 +1345,7 @@ def package_issue_groups_to_json(root_payloads: list[dict[str, object]], integri
 
 
 _DIAGNOSTIC_CODE_EXPLANATIONS: dict[str, str] | None = None
+_DIAGNOSTIC_CODE_REFERENCES: dict[str, list[dict[str, object]]] | None = None
 
 
 def diagnostic_code_explanations() -> dict[str, str]:
@@ -1359,8 +1364,36 @@ def diagnostic_code_explanations() -> dict[str, str]:
     return _DIAGNOSTIC_CODE_EXPLANATIONS
 
 
+def diagnostic_code_references() -> dict[str, list[dict[str, object]]]:
+    global _DIAGNOSTIC_CODE_REFERENCES
+    if _DIAGNOSTIC_CODE_REFERENCES is not None:
+        return _DIAGNOSTIC_CODE_REFERENCES
+    if not DIAGNOSTIC_REGISTRY_PATH.exists():
+        _DIAGNOSTIC_CODE_REFERENCES = {}
+        return _DIAGNOSTIC_CODE_REFERENCES
+    registry = json.loads(DIAGNOSTIC_REGISTRY_PATH.read_text(encoding="utf-8"))
+    references: dict[str, list[dict[str, object]]] = {}
+    for entry in registry.get("codes", []):
+        if "code" not in entry:
+            continue
+        raw_references = entry.get("references", [])
+        if not isinstance(raw_references, list):
+            continue
+        references[str(entry["code"])] = [
+            dict(reference)
+            for reference in raw_references
+            if isinstance(reference, dict)
+        ]
+    _DIAGNOSTIC_CODE_REFERENCES = references
+    return _DIAGNOSTIC_CODE_REFERENCES
+
+
 def diagnostic_code_explanation(code: str) -> str:
     return diagnostic_code_explanations().get(code, DEFAULT_CATEGORY_EXPLANATION)
+
+
+def diagnostic_code_reference_entries(code: str) -> list[dict[str, object]]:
+    return diagnostic_code_references().get(code, [])
 
 
 def diagnostic_code_anchor(code: str) -> str:
@@ -1370,6 +1403,16 @@ def diagnostic_code_anchor(code: str) -> str:
 def diagnostic_code_markdown_link(code: str) -> str:
     anchor = diagnostic_code_anchor(code)
     return f"[validator-diagnostic-codes.md#{anchor}]({DIAGNOSTIC_REGISTRY_MARKDOWN_PATH.as_posix()}#{anchor})"
+
+
+def diagnostic_code_reference_markdown(reference: dict[str, object]) -> str:
+    label = str(reference.get("label") or reference.get("path") or reference.get("url") or "")
+    if reference.get("url"):
+        return f"[{label}]({reference['url']})"
+    if reference.get("path"):
+        anchor = f"#{reference['anchor']}" if reference.get("anchor") else ""
+        return f"[{label}]({reference['path']}{anchor})"
+    return label
 
 
 def diagnostic_registry_entries() -> list[dict[str, object]]:
@@ -1401,6 +1444,7 @@ def diagnostic_entry_to_json(entry: dict[str, object]) -> dict[str, object]:
         "documentation_path": DIAGNOSTIC_REGISTRY_MARKDOWN_PATH.as_posix(),
         "documentation_anchor": diagnostic_code_anchor(code),
         "documentation_markdown": diagnostic_code_markdown_link(code),
+        "references": diagnostic_code_reference_entries(code),
     }
 
 
@@ -1413,6 +1457,10 @@ def format_diagnostic_entry(entry: dict[str, object]) -> str:
             f"  corpus: {entry.get('corpus', '')}",
             f"  cursor action: {entry.get('cursor_action', '')}",
             f"  meaning: {entry.get('meaning', '')}",
+            *[
+                f"  reference: {diagnostic_code_reference_markdown(reference)}"
+                for reference in diagnostic_code_reference_entries(str(entry["code"]))
+            ],
         ]
     )
 
@@ -1488,6 +1536,11 @@ def package_report_to_markdown(payload: dict[str, object]) -> str:
                     f"- Documentation: {diagnostic_code_markdown_link(code)}",
                 ]
             )
+            references = diagnostic_code_reference_entries(code)
+            if references:
+                lines.append("- References:")
+                for reference in references:
+                    lines.append(f"  - {diagnostic_code_reference_markdown(reference)}")
             suggestions = sorted({finding.get("suggestion") for finding in findings if finding.get("suggestion")})
             if suggestions:
                 lines.append(f"- Suggestion: {suggestions[0]}")

@@ -4,6 +4,7 @@ from contextlib import redirect_stderr
 import io
 import json
 from pathlib import Path
+import tempfile
 import unittest
 from uuid import uuid4
 
@@ -56,13 +57,14 @@ class CliTests(unittest.TestCase):
     def test_diagnostics_cli_resolves_single_code(self) -> None:
         buffer = io.StringIO()
         with redirect_stdout(buffer):
-            code = main(["diagnostics", "command-role-mismatch"])
+            code = main(["diagnostics", "defconst-value-out-of-range"])
 
         output = buffer.getvalue()
         self.assertEqual(code, 0)
-        self.assertIn("command-role-mismatch", output)
+        self.assertIn("defconst-value-out-of-range", output)
         self.assertIn("severity: error", output)
-        self.assertIn("wrong rule side", output)
+        self.assertIn("signed 16-bit", output)
+        self.assertIn("AIRef Data Limits", output)
         self.assertNotIn("unsafe-set-target-object", output)
 
     def test_diagnostics_cli_emits_json(self) -> None:
@@ -76,6 +78,28 @@ class CliTests(unittest.TestCase):
         self.assertEqual(payload["diagnostics"][0]["code"], "command-role-mismatch")
         self.assertEqual(payload["diagnostics"][0]["documentation_anchor"], "diagnostic-command-role-mismatch")
         self.assertIn("validator-diagnostic-codes.md", payload["diagnostics"][0]["documentation_markdown"])
+
+    def test_lint_json_includes_diagnostic_references_for_range_limits(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="aoe2_lint_refs_") as temp_dir:
+            path = Path(temp_dir) / "Bad.per"
+            path.write_text("(defconst too-large 32768)\n", encoding="utf-8")
+
+            buffer = io.StringIO()
+            with redirect_stdout(buffer):
+                code = main(["lint", str(path), "--json"])
+
+            self.assertEqual(code, 1)
+            payload = json.loads(buffer.getvalue())
+            finding = payload["findings"][0]
+            self.assertEqual(finding["code"], "defconst-value-out-of-range")
+            self.assertEqual(
+                [reference["label"] for reference in finding["references"]],
+                ["Local AI scripting limits", "AIRef Data Limits"],
+            )
+            self.assertEqual(
+                finding["references"][1]["url"],
+                "https://airef.github.io/resources/articles/data-limits.html",
+            )
 
     def test_diagnostics_cli_unknown_code_fails(self) -> None:
         stdout_buffer = io.StringIO()

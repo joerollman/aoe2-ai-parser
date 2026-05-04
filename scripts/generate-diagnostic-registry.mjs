@@ -21,6 +21,24 @@ function tableEscape(value) {
   return String(value).replace(/\|/g, "\\|");
 }
 
+function renderReference(reference) {
+  if (typeof reference === "string") {
+    return reference;
+  }
+  if (!reference || typeof reference !== "object") {
+    return "";
+  }
+  const label = reference.label || reference.path || reference.url || "";
+  if (reference.url) {
+    return `[${label}](${reference.url})`;
+  }
+  if (reference.path) {
+    const anchor = reference.anchor ? `#${reference.anchor}` : "";
+    return `[${label}](${reference.path}${anchor})`;
+  }
+  return label;
+}
+
 function renderMarkdown(registry) {
   const lines = [];
   lines.push(`# ${registry.title}`);
@@ -61,6 +79,15 @@ function renderMarkdown(registry) {
     lines.push(`- Corpus profile: ${entry.corpus}`);
     lines.push(`- Cursor action: ${entry.cursor_action}`);
     lines.push(`- Meaning: ${entry.meaning}`);
+    if (Array.isArray(entry.references) && entry.references.length > 0) {
+      lines.push("- References:");
+      for (const reference of entry.references) {
+        const rendered = renderReference(reference);
+        if (rendered) {
+          lines.push(`  - ${rendered}`);
+        }
+      }
+    }
   }
   lines.push("");
   lines.push("## Triage Notes");

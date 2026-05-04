@@ -148,7 +148,11 @@ failures otherwise waste an in-game launch.
 
 ## Data Limits That Affect This Project
 
-Source: AoE2 AI Scripting Encyclopedia, Data Limits.
+Sources:
+
+- [AIRef Data Limits](https://airef.github.io/resources/articles/data-limits.html)
+- AoE2 AI Expert documentation for `defconst`, which describes numeric
+  `defconst` values as C++ `short` values.
 
 Important limits for `sample_ai` work:
 

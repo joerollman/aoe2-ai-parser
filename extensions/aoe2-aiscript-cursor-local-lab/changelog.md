@@ -5,6 +5,12 @@ this file. Version numbers are given as:
 
     <major>.<minor>.<patch>
 
+## v0.1.80
+
+- Add source references to diagnostic metadata and package output for diagnostics
+  with external or local evidence. `defconst-value-out-of-range` now points to
+  the local AI scripting limits section and AIRef Data Limits.
+
 ## v0.1.79
 
 - Make `AoE2: Write Semantic Color Settings` write user settings by default
