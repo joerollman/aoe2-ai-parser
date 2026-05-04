@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import shutil
 import sys
@@ -1400,18 +1401,32 @@ def diagnostic_code_anchor(code: str) -> str:
     return f"diagnostic-{re.sub(r'[^a-z0-9_-]+', '-', code.lower())}"
 
 
-def diagnostic_code_markdown_link(code: str) -> str:
+def markdown_relative_path(target: Path, source_dir: Path | None = None) -> str:
+    if source_dir is None:
+        return target.as_posix()
+    try:
+        return os.path.relpath(target, source_dir).replace(os.sep, "/")
+    except ValueError:
+        return target.as_posix()
+
+
+def diagnostic_code_markdown_link(code: str, source_dir: Path | None = None) -> str:
     anchor = diagnostic_code_anchor(code)
-    return f"[validator-diagnostic-codes.md#{anchor}]({DIAGNOSTIC_REGISTRY_MARKDOWN_PATH.as_posix()}#{anchor})"
+    target = markdown_relative_path(DIAGNOSTIC_REGISTRY_MARKDOWN_PATH, source_dir)
+    return f"[validator-diagnostic-codes.md]({target}#{anchor})"
 
 
-def diagnostic_code_reference_markdown(reference: dict[str, object]) -> str:
+def diagnostic_code_reference_markdown(reference: dict[str, object], source_dir: Path | None = None) -> str:
     label = str(reference.get("label") or reference.get("path") or reference.get("url") or "")
     if reference.get("url"):
         return f"[{label}]({reference['url']})"
     if reference.get("path"):
         anchor = f"#{reference['anchor']}" if reference.get("anchor") else ""
-        return f"[{label}]({reference['path']}{anchor})"
+        reference_path = Path(str(reference["path"]))
+        if not reference_path.is_absolute():
+            reference_path = (DIAGNOSTIC_REGISTRY_MARKDOWN_PATH.parent / reference_path).resolve()
+        target = markdown_relative_path(reference_path, source_dir)
+        return f"[{label}]({target}{anchor})"
     return label
 
 
@@ -1465,9 +1480,10 @@ def format_diagnostic_entry(entry: dict[str, object]) -> str:
     )
 
 
-def package_report_to_markdown(payload: dict[str, object]) -> str:
+def package_report_to_markdown(payload: dict[str, object], report_path: Path | None = None) -> str:
     totals = payload["totals"]
     integrity = payload["integrity"]
+    report_dir = report_path.parent.resolve() if report_path is not None else None
     lines = [
         "# AI Package Validation Report",
         "",
@@ -1533,14 +1549,14 @@ def package_report_to_markdown(payload: dict[str, object]) -> str:
                     f"- Count: `{count}`",
                     f"- Unique occurrences: `{unique_count}`",
                     f"- Explanation: {diagnostic_code_explanation(code)}",
-                    f"- Documentation: {diagnostic_code_markdown_link(code)}",
+                    f"- Documentation: {diagnostic_code_markdown_link(code, report_dir)}",
                 ]
             )
             references = diagnostic_code_reference_entries(code)
             if references:
                 lines.append("- References:")
                 for reference in references:
-                    lines.append(f"  - {diagnostic_code_reference_markdown(reference)}")
+                    lines.append(f"  - {diagnostic_code_reference_markdown(reference, report_dir)}")
             suggestions = sorted({finding.get("suggestion") for finding in findings if finding.get("suggestion")})
             if suggestions:
                 lines.append(f"- Suggestion: {suggestions[0]}")
@@ -1809,7 +1825,7 @@ def main(argv: list[str] | None = None) -> int:
             report_written = False
             if args.report:
                 args.report.parent.mkdir(parents=True, exist_ok=True)
-                args.report.write_text(package_report_to_markdown(payload), encoding="utf-8")
+                args.report.write_text(package_report_to_markdown(payload, args.report), encoding="utf-8")
                 report_written = True
             if args.output:
                 args.output.parent.mkdir(parents=True, exist_ok=True)

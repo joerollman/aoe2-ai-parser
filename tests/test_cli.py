@@ -16,6 +16,8 @@ from aoe2_ai_lab.cli import (
     main,
 )
 
+REPO_ROOT = Path(__file__).resolve().parents[1]
+
 
 class WorkspaceTempDir:
     def __enter__(self) -> Path:
@@ -1240,8 +1242,45 @@ class CliTests(unittest.TestCase):
         self.assertIn("### `up-build-place-point-coordinate-as-escrow`", report)
         self.assertIn("- Unique occurrences: `1`", report)
         self.assertIn("third argument is escrow state", report)
-        self.assertIn("validator-diagnostic-codes.md#diagnostic-up-build-place-point-coordinate-as-escrow", report)
+        diagnostic_reference = os.path.relpath(
+            REPO_ROOT / "docs" / "workflows" / "validator-diagnostic-codes.md",
+            report_path.parent,
+        ).replace(os.sep, "/")
+        self.assertIn(
+            f"[validator-diagnostic-codes.md]({diagnostic_reference}#diagnostic-up-build-place-point-coordinate-as-escrow)",
+            report,
+        )
         self.assertIn("Warn.per:7", report)
+
+    def test_lint_package_report_uses_report_relative_diagnostic_links(self) -> None:
+        with WorkspaceTempDir() as root:
+            report_path = root / "nested" / "reports" / "package.md"
+            (root / "Broken.ai").write_text('(load "Broken")\n', encoding="utf-8")
+            (root / "Broken.per").write_text("(defconst too-large 32768)\n", encoding="utf-8")
+
+            buffer = io.StringIO()
+            with redirect_stdout(buffer):
+                code = main(["lint-package", str(root), "--report", str(report_path)])
+            report = report_path.read_text(encoding="utf-8")
+
+        self.assertEqual(code, 1)
+        diagnostic_reference = os.path.relpath(
+            REPO_ROOT / "docs" / "workflows" / "validator-diagnostic-codes.md",
+            report_path.parent,
+        ).replace(os.sep, "/")
+        limits_reference = os.path.relpath(
+            REPO_ROOT / "docs" / "reference" / "ai-scripting-reference.md",
+            report_path.parent,
+        ).replace(os.sep, "/")
+        self.assertIn(
+            f"[validator-diagnostic-codes.md]({diagnostic_reference}#diagnostic-defconst-value-out-of-range)",
+            report,
+        )
+        self.assertIn(
+            f"[Local AI scripting limits]({limits_reference}#data-limits-that-affect-this-project)",
+            report,
+        )
+        self.assertNotIn("validator-diagnostic-codes.md#diagnostic-defconst-value-out-of-range.md", report)
 
     def test_lint_package_root_manifest_reports_skipped_load_random_entries(self) -> None:
         with WorkspaceTempDir() as root:

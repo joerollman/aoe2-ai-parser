@@ -5,6 +5,13 @@ this file. Version numbers are given as:
 
     <major>.<minor>.<patch>
 
+## v0.1.81
+
+- Fix package report diagnostic documentation links so generated Markdown uses
+  paths relative to the report file location. This makes links like
+  `validator-diagnostic-codes.md#diagnostic-*` open correctly from `.tmp`
+  reports and custom report folders.
+
 ## v0.1.80
 
 - Add source references to diagnostic metadata and package output for diagnostics
