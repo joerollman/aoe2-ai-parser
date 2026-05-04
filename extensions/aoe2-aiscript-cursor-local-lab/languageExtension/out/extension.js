@@ -26,6 +26,41 @@ const semanticColorSettings = {
     aoe2Value: "semanticColors.value",
     aoe2LocalConstant: "semanticColors.localConstant"
 };
+const semanticColorDefaults = {
+    action: "#5DADEC",
+    fact: "#C69CFF",
+    factAction: "#38C2B3",
+    command: "#D7A72F",
+    strategicNumber: "#4CC2FF",
+    object: "#F0A35E",
+    tech: "#8FD694",
+    value: "#D6C56F",
+    localConstant: "#57D68D"
+};
+const semanticColorByThemeDefaults = {
+    "AOE2 AI Parser Dark": {
+        action: "#5DADEC",
+        fact: "#C69CFF",
+        factAction: "#38C2B3",
+        command: "#D7A72F",
+        strategicNumber: "#4CC2FF",
+        object: "#F0A35E",
+        tech: "#8FD694",
+        value: "#D6C56F",
+        localConstant: "#57D68D"
+    },
+    "AOE2 AI Parser Light": {
+        action: "#0550AE",
+        fact: "#6F42C1",
+        factAction: "#008B8B",
+        command: "#7A5B00",
+        strategicNumber: "#0A7EA4",
+        object: "#B35900",
+        tech: "#22863A",
+        value: "#6E5A00",
+        localConstant: "#116329"
+    }
+};
 const semanticColorSettingKeys = {
     aoe2Action: "action",
     aoe2Fact: "fact",
@@ -356,6 +391,21 @@ function scheduleSemanticDecorationUpdate(document) {
             .filter(editor => editor.document.uri.toString() === key)
             .forEach(updateSemanticDecorationsForEditor);
     }, 250));
+}
+async function scaffoldSemanticColorSettings() {
+    let target = vscode_1.workspace.workspaceFolders && vscode_1.workspace.workspaceFolders.length > 0
+        ? vscode_1.ConfigurationTarget.Workspace
+        : vscode_1.ConfigurationTarget.Global;
+    let config = vscode_1.workspace.getConfiguration("aoe2_AiScript");
+    await config.update("enableSemanticColors", true, target);
+    for (const [key, color] of Object.entries(semanticColorDefaults)) {
+        await config.update("semanticColors." + key, config.get("semanticColors." + key) || color, target);
+    }
+    let existingByTheme = config.get("semanticColors.byTheme") || {};
+    await config.update("semanticColors.byTheme", Object.assign({}, semanticColorByThemeDefaults, existingByTheme), target);
+    vscode_1.window.showInformationMessage(target === vscode_1.ConfigurationTarget.Workspace
+        ? "AoE2 semantic color settings written to workspace settings.json."
+        : "AoE2 semantic color settings written to user settings.json.");
 }
 function normalizeFsPath(filePath) {
     return path.resolve(filePath).toLowerCase();
@@ -1239,6 +1289,7 @@ function activate(context) {
     context.subscriptions.push(vscode_1.workspace.onWillSaveTextDocument(autoFormatOnSave));
     context.subscriptions.push(vscode_1.commands.registerCommand("aoe2AiScript.openSymbolDocsPreview", openSymbolDocsPreview));
     context.subscriptions.push(vscode_1.commands.registerCommand("aoe2AiScript.openDiagnosticDocsPreview", openDiagnosticDocsPreview));
+    context.subscriptions.push(vscode_1.commands.registerCommand("aoe2AiScript.scaffoldSemanticColorSettings", scaffoldSemanticColorSettings));
 }
 exports.activate = activate;
 function deactivate() {

@@ -169,6 +169,10 @@ key must match the active VS Code/Cursor color theme name:
 }
 ```
 
+Use `AoE2: Write Semantic Color Settings` from the command palette to write the
+current global and per-theme semantic color values into `settings.json` so the
+fields are visible and easy to edit.
+
 You can override individual parser colors globally or only for one contributed
 theme. The extension also contributes these parser-theme defaults so the keys
 are discoverable from settings JSON and can be edited directly:

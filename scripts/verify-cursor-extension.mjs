@@ -112,6 +112,7 @@ for (const command of [
   "aoe2AiScript.formatThenLintRecursiveFolder",
   "aoe2AiScript.openSymbolDocsPreview",
   "aoe2AiScript.openDiagnosticDocsPreview",
+  "aoe2AiScript.scaffoldSemanticColorSettings",
 ]) {
   assert(commands.has(command), `missing command contribution: ${command}`);
   assertIncludes(clientSource, `registerCommand("${command}"`, clientPath);
@@ -144,10 +145,14 @@ assertIncludes(clientSource, "validator-diagnostic-codes.md", clientPath);
 assertIncludes(clientSource, "function markdownAnchor", clientPath);
 assertIncludes(clientSource, "function markdownHeadingFragment", clientPath);
 assertIncludes(clientSource, "semanticColorSettings", clientPath);
+assertIncludes(clientSource, "semanticColorDefaults", clientPath);
+assertIncludes(clientSource, "semanticColorByThemeDefaults", clientPath);
 assertIncludes(clientSource, "semanticColorSettingKeys", clientPath);
 assertIncludes(clientSource, 'config.get("semanticColors.byTheme")', clientPath);
 assertIncludes(clientSource, 'get("colorTheme")', clientPath);
 assertIncludes(clientSource, "function refreshSemanticDecorationTypes", clientPath);
+assertIncludes(clientSource, "async function scaffoldSemanticColorSettings", clientPath);
+assertIncludes(clientSource, 'config.update("semanticColors.byTheme"', clientPath);
 assertIncludes(clientSource, "createTextEditorDecorationType({ color })", clientPath);
 assertIncludes(clientSource, "function updateSemanticDecorationsForVisibleEditors", clientPath);
 assertIncludes(clientSource, "function scheduleSemanticDecorationUpdate", clientPath);

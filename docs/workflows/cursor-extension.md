@@ -438,6 +438,11 @@ active theme entry override the global `semanticColors.*` values:
   }
 }
 ```
+`AoE2: Write Semantic Color Settings` scaffolds the current global and
+per-theme color settings into workspace `settings.json` when a workspace is
+open, or user `settings.json` otherwise. This makes the editable fields visible
+for users who do not know the setting names.
+
 The extension contributes default entries for these theme-scoped rules so the
 editable token names are visible from settings JSON:
 

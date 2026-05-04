@@ -175,6 +175,10 @@ match the active editor color theme name:
 }
 ```
 
+Run `AoE2: Write Semantic Color Settings` from the command palette to write the
+current global and per-theme semantic color values into `settings.json` for
+editing.
+
 The extension contributes parser-theme defaults for these keys. Theme-scoped
 overrides let each individual parser color be changed without affecting other
 themes:

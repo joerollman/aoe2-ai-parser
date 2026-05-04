@@ -5,6 +5,12 @@ this file. Version numbers are given as:
 
     <major>.<minor>.<patch>
 
+## v0.1.77
+
+- Add `AoE2: Write Semantic Color Settings`, which writes the current semantic
+  color defaults into user/workspace `settings.json` so users can see and edit
+  the full global and per-theme color fields.
+
 ## v0.1.76
 
 - Add `aoe2_AiScript.semanticColors.byTheme` so semantic colors can be saved
