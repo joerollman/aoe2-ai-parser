@@ -37,7 +37,6 @@ validator with Python. If Python is installed somewhere else, set:
 Useful command palette actions:
 
 - `AoE2: Lint Current File`
-- `AoE2: Lint Package`
 - `AoE2: Lint Current AI`
 - `AoE2: Lint Current Folder`
 - `AoE2: Lint Recursive Folder`
@@ -69,7 +68,6 @@ colors are opt-in so users keep their existing color scheme by default:
 
 `Lint Current File` validates only the active file. `Lint Current AI` validates
 the selected `.ai` root beside the active file plus its reachable `.per` loads.
-`Lint Package` starts from the nearest `.ai` package root for the active file.
 `Lint Current Folder` validates `.ai` roots directly inside the active file's
 folder only. `Lint Recursive Folder` validates every `.ai` root below that
 folder, which is useful when the selected folder is a whole AI package or mod
@@ -110,8 +108,9 @@ palette action when you want the rendered Markdown Preview beside the script.
 
 Diagnostics run on save by default. Live diagnostics validate the active file
 by default; package-aware live diagnostics are opt-in because large AI packages
-can make open/save validation CPU-heavy. Use `AoE2: Lint Package` when you want
-explicit package validation, or enable package-aware live diagnostics with:
+can make open/save validation CPU-heavy. Use the explicit current-AI, current-
+folder, or recursive-folder lint commands when you want manual package
+validation, or enable package-aware live diagnostics with:
 
 ```json
 {

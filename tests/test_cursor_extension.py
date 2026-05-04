@@ -158,6 +158,7 @@ class CursorExtensionTests(unittest.TestCase):
         extension_root = root / "extensions" / "aoe2-aiscript-cursor-local-lab"
         package_data = json.loads((extension_root / "package.json").read_text(encoding="utf-8"))
         extension_source = (extension_root / "languageExtension" / "out" / "extension.js").read_text(encoding="utf-8")
+        server_source = (extension_root / "languageExtension" / "out" / "server.js").read_text(encoding="utf-8")
         commands = {
             command["command"]: command["title"]
             for command in package_data["contributes"]["commands"]
@@ -165,13 +166,13 @@ class CursorExtensionTests(unittest.TestCase):
 
         self.assertEqual(commands["aoe2AiScript.lintCurrentFile"], "AoE2: Lint Current File")
         self.assertEqual(commands["aoe2AiScript.lintCurrentAi"], "AoE2: Lint Current AI")
-        self.assertEqual(commands["aoe2AiScript.lintPackage"], "AoE2: Lint Package")
+        self.assertNotIn("aoe2AiScript.lintPackage", commands)
         self.assertEqual(commands["aoe2AiScript.lintFolder"], "AoE2: Lint Current Folder")
         self.assertEqual(commands["aoe2AiScript.lintRecursiveFolder"], "AoE2: Lint Recursive Folder")
         self.assertEqual(commands["aoe2AiScript.generatePackageReport"], "AoE2: Generate Package Report")
         self.assertEqual(commands["aoe2AiScript.openLatestPackageReport"], "AoE2: Open Latest Package Report")
         self.assertEqual(commands["aoe2AiScript.autoFormat"], "AoE2: AutoFormat Current File")
-        self.assertEqual(commands["aoe2AiScript.autoFormatPackage"], "AoE2: AutoFormat Nearest AI Package")
+        self.assertNotIn("aoe2AiScript.autoFormatPackage", commands)
         self.assertEqual(commands["aoe2AiScript.autoFormatCurrentAi"], "AoE2: AutoFormat Current AI")
         self.assertEqual(commands["aoe2AiScript.autoFormatCurrentFolder"], "AoE2: AutoFormat Current Folder")
         self.assertEqual(commands["aoe2AiScript.autoFormatRecursiveFolder"], "AoE2: AutoFormat Recursive Folder")
@@ -201,7 +202,7 @@ class CursorExtensionTests(unittest.TestCase):
         self.assertIn("AoE2 package command did not run.", extension_source)
         self.assertIn("See AOE2 AI Parser output.", extension_source)
         self.assertIn("documentation_markdown", extension_source)
-        self.assertIn("\"-m\", \"aoe2_ai_lab\", \"lint-package\", packageRoot, \"--json\"", extension_source)
+        self.assertNotIn("\"-m\", \"aoe2_ai_lab\", \"lint-package\", packageRoot, \"--json\"", extension_source)
         self.assertIn('"--trace-progress"', extension_source)
         self.assertIn("function execFileTextStreaming", extension_source)
         self.assertIn("child.stderr.on(\"data\"", extension_source)
@@ -215,13 +216,16 @@ class CursorExtensionTests(unittest.TestCase):
         self.assertIn('config.get("enableSemanticColors")', extension_source)
         self.assertIn("semanticColorsEnabled() &&", extension_source)
         self.assertIn("aoe2AiScript.autoFormat", extension_source)
-        self.assertIn("aoe2AiScript.autoFormatPackage", extension_source)
+        self.assertNotIn("aoe2AiScript.autoFormatPackage", extension_source)
         self.assertIn("aoe2AiScript.autoFormatCurrentAi", extension_source)
         self.assertIn("aoe2AiScript.formatThenLintCurrentAi", extension_source)
         self.assertIn("formatCommandArgs(aiRoot, false, { includeLoads: true })", extension_source)
         self.assertIn("formatThenLintFolder", extension_source)
         self.assertIn("if (formatResult && formatResult.ok)", extension_source)
-        self.assertIn("function autoFormatPackage", extension_source)
+        self.assertNotIn("function autoFormatPackage", extension_source)
+        self.assertIn("documents.onDidOpen(change =>", server_source)
+        self.assertIn("connection.sendDiagnostics({ uri: change.document.uri, diagnostics: [] })", server_source)
+        self.assertNotIn("validateTextDocument(change.document);", server_source)
 
     def test_lab_extension_contributes_color_themes_for_custom_tokens(self) -> None:
         root = Path(__file__).resolve().parents[1]
@@ -373,7 +377,7 @@ class CursorExtensionTests(unittest.TestCase):
         self.assertIn("vscode_1.window.withProgress", extension_source)
         self.assertIn("vscode_1.ProgressLocation.Notification", extension_source)
         self.assertIn('progress.report({ message: "running... " + elapsedSeconds + "s" })', extension_source)
-        self.assertIn("async function lintPackage", extension_source)
+        self.assertNotIn("async function lintPackage", extension_source)
         self.assertIn("await runLabCommand", extension_source)
         self.assertNotIn("__awaiter", extension_source)
         self.assertNotIn("execFileSync(settings.pythonPath", extension_source)

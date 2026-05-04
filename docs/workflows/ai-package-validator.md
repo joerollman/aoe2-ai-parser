@@ -146,10 +146,11 @@ commands, while preserving the original extension's syntax highlighting and
 extending completion, hover, signature-help, and quick-fix behavior with local
 registry data.
 
-The `AoE2: Lint Package` command runs `lint-package --json` and formats
-top-level `issue_groups` in the `AOE2 AI Parser` output panel. Live squiggle
-diagnostics still use the detailed per-file `findings` and `integrity`
-manifest from that same JSON payload.
+The explicit current-AI, current-folder, and recursive-folder lint commands run
+`lint-package --json` with the selected scope and format top-level
+`issue_groups` in the `AOE2 AI Parser` output panel. Live squiggle diagnostics
+still use the detailed per-file `findings` and `integrity` manifest from that
+same JSON payload.
 
 Examples:
 

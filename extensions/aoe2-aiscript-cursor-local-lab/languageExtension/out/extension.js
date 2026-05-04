@@ -662,25 +662,6 @@ async function lintCurrentAi(aiRoot) {
     await openPackageReportPreview(reportPath);
     return result;
 }
-async function lintPackage() {
-    let packageRoot = getCurrentPackageRoot();
-    if (!packageRoot) {
-        return;
-    }
-    let settings = getLabSettings();
-    let reportPath = packageReportPath(settings, packageRoot);
-    let result = await runLabCommand(["-m", "aoe2_ai_lab", "lint-package", packageRoot, "--json", "--report", reportPath, "--fail-level", settings.packageFailLevel, "--trace-progress"], "AoE2: Lint Package", stdout => formatPackageIssueGroups(stdout, settings.labPath));
-    let reportOpened = await openPackageReportPreview(reportPath);
-    if (result.ok) {
-        vscode_1.window.showInformationMessage(reportOpened ? "AoE2 lint package completed. Markdown report opened." : "AoE2 lint package completed. See AOE2 AI Parser output.");
-    }
-    else if (result.stdout) {
-        vscode_1.window.showWarningMessage(reportOpened ? "AoE2 lint package completed with findings. Markdown report opened." : "AoE2 lint package completed with findings.");
-    }
-    else {
-        vscode_1.window.showErrorMessage("AoE2 lint package failed. See AOE2 AI Parser output.");
-    }
-}
 async function lintFolder() {
     return await lintFolderScope(false);
 }
@@ -853,21 +834,6 @@ async function saveOpenPackageDocuments(packageRoot) {
         .map(document => document.save());
     if (saves.length > 0) {
         await Promise.all(saves);
-    }
-}
-async function autoFormatPackage() {
-    let packageRoot = getCurrentPackageRoot();
-    if (!packageRoot) {
-        return;
-    }
-    let formatRoot = path.extname(packageRoot).toLowerCase() === ".ai" ? path.dirname(packageRoot) : packageRoot;
-    await saveOpenPackageDocuments(formatRoot);
-    let result = await runLabCommand(formatCommandArgs(formatRoot, false), "AoE2: AutoFormat Package");
-    if (result.ok) {
-        vscode_1.window.showInformationMessage(result.stdout ? "AoE2 AutoFormat Package applied." : "AoE2 AutoFormat Package: no changes.");
-    }
-    else {
-        vscode_1.window.showErrorMessage("AoE2 AutoFormat Package failed. See AOE2 AI Parser output.");
     }
 }
 async function autoFormatCurrentAi() {
@@ -1100,13 +1066,11 @@ function activate(context) {
     }));
     context.subscriptions.push(vscode_1.commands.registerCommand("aoe2AiScript.lintCurrentFile", lintCurrentFile));
     context.subscriptions.push(vscode_1.commands.registerCommand("aoe2AiScript.lintCurrentAi", () => lintCurrentAi()));
-    context.subscriptions.push(vscode_1.commands.registerCommand("aoe2AiScript.lintPackage", lintPackage));
     context.subscriptions.push(vscode_1.commands.registerCommand("aoe2AiScript.lintFolder", lintFolder));
     context.subscriptions.push(vscode_1.commands.registerCommand("aoe2AiScript.lintRecursiveFolder", lintRecursiveFolder));
     context.subscriptions.push(vscode_1.commands.registerCommand("aoe2AiScript.generatePackageReport", generatePackageReport));
     context.subscriptions.push(vscode_1.commands.registerCommand("aoe2AiScript.openLatestPackageReport", openLatestPackageReport));
     context.subscriptions.push(vscode_1.commands.registerCommand("aoe2AiScript.autoFormat", autoFormat));
-    context.subscriptions.push(vscode_1.commands.registerCommand("aoe2AiScript.autoFormatPackage", autoFormatPackage));
     context.subscriptions.push(vscode_1.commands.registerCommand("aoe2AiScript.autoFormatCurrentAi", autoFormatCurrentAi));
     context.subscriptions.push(vscode_1.commands.registerCommand("aoe2AiScript.autoFormatCurrentFolder", () => autoFormatFolder(false)));
     context.subscriptions.push(vscode_1.commands.registerCommand("aoe2AiScript.autoFormatRecursiveFolder", () => autoFormatFolder(true)));

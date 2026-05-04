@@ -39,7 +39,6 @@ extension.
 ## Commands
 
 - `AoE2: Lint Current File`
-- `AoE2: Lint Package`
 - `AoE2: Lint Current AI`
 - `AoE2: Lint Current Folder`
 - `AoE2: Lint Recursive Folder`
@@ -68,8 +67,8 @@ it colors the original TextMate scopes and leaves semantic highlighting off.
 - `aoe2_AiScript.useLabLinter`: use bundled AOE2 AI Parser diagnostics.
 - `aoe2_AiScript.usePackageLint`: prefer package-aware live diagnostics.
   Default is `false` because large AI packages can make live open/save
-  diagnostics CPU-heavy. Use `AoE2: Lint Package` for explicit package
-  validation.
+  diagnostics CPU-heavy. Use explicit current-AI, current-folder, or
+  recursive-folder lint commands for manual validation.
 - `aoe2_AiScript.packageFailLevel`: minimum package-lint severity surfaced by
   package commands and package-aware diagnostics (`error`, `warning`, or
   `info`). Default is `info`.
@@ -88,11 +87,10 @@ it colors the original TextMate scopes and leaves semantic highlighting off.
 
 `Lint Current File` validates only the active file. `Lint Current AI` validates
 the selected `.ai` root beside the active file plus reachable `.per` loads.
-`Lint Package` uses the nearest `.ai` package root for the active file.
 `Lint Current Folder` validates `.ai` roots directly inside the active file's
 folder only. `Lint Recursive Folder` validates every `.ai` root below that
 folder.
-`Lint Package`, folder lint, current-AI lint, and package-report commands write a Markdown
+Folder lint, current-AI lint, and package-report commands write a Markdown
 summary under `.tmp/lint-package/` and open it in a side Markdown Preview when
 the linter finishes.
 The output panel also starts with a `Lint trace` tree that shows the input path,

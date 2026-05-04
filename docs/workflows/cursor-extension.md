@@ -203,7 +203,6 @@ For `.ai` files:
 Command palette entries:
 
 - `AoE2: Lint Current File`
-- `AoE2: Lint Package`
 - `AoE2: Lint Current AI`
 - `AoE2: Lint Current Folder`
 - `AoE2: Lint Recursive Folder`
@@ -224,13 +223,6 @@ Package lint commands run asynchronously in the extension host. Generated
 package reports open with `vscode.markdown.preview.editor` in a side pane after
 the linter finishes, with a text-editor fallback if Markdown Preview is not
 available.
-
-`AoE2: Lint Package` runs `lint-package --json` from the nearest `.ai` package
-root for the active file and formats top-level
-`issue_groups` for the output panel. This keeps the command palette view aligned
-with the Markdown report: issue categories include both lint findings and
-package-integrity issues, while live diagnostics still use the detailed per-file
-findings and integrity manifest from the same JSON payload.
 
 `AoE2: Lint Current AI` resolves the `.ai` root beside the active file and
 validates that root plus reachable `.per` loads. If multiple `.ai` files are in

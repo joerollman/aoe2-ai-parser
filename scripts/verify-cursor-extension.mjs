@@ -97,15 +97,32 @@ assert(semanticColorDefaults["[AOE2 AI Parser Light]"], "light theme semantic co
 
 for (const command of [
   "aoe2AiScript.lintCurrentFile",
-  "aoe2AiScript.lintPackage",
+  "aoe2AiScript.lintCurrentAi",
   "aoe2AiScript.lintFolder",
+  "aoe2AiScript.lintRecursiveFolder",
   "aoe2AiScript.generatePackageReport",
   "aoe2AiScript.openLatestPackageReport",
+  "aoe2AiScript.autoFormat",
+  "aoe2AiScript.autoFormatCurrentAi",
+  "aoe2AiScript.autoFormatCurrentFolder",
+  "aoe2AiScript.autoFormatRecursiveFolder",
+  "aoe2AiScript.formatThenLintCurrentFile",
+  "aoe2AiScript.formatThenLintCurrentAi",
+  "aoe2AiScript.formatThenLintCurrentFolder",
+  "aoe2AiScript.formatThenLintRecursiveFolder",
   "aoe2AiScript.openSymbolDocsPreview",
   "aoe2AiScript.openDiagnosticDocsPreview",
 ]) {
   assert(commands.has(command), `missing command contribution: ${command}`);
   assertIncludes(clientSource, `registerCommand("${command}"`, clientPath);
+}
+
+for (const removedCommand of [
+  "aoe2AiScript.lintPackage",
+  "aoe2AiScript.autoFormatPackage",
+]) {
+  assert(!commands.has(removedCommand), `removed nearest-package command is still contributed: ${removedCommand}`);
+  assert(!clientSource.includes(`registerCommand("${removedCommand}"`), `removed nearest-package command is still registered: ${removedCommand}`);
 }
 
 assertIncludes(clientSource, "markdown.showPreviewToSide", clientPath);
@@ -131,7 +148,10 @@ assertIncludes(clientSource, "return markdownAnchor(symbol);", clientPath);
 assertIncludes(clientSource, "function execFileText", clientPath);
 assertIncludes(clientSource, "async function runLabCommand", clientPath);
 assertIncludes(clientSource, "await execFileTextStreaming(settings.pythonPath", clientPath);
-assertIncludes(clientSource, "async function lintPackage", clientPath);
+assertIncludes(clientSource, "async function lintCurrentAi", clientPath);
+assertIncludes(clientSource, "function lintFolderScope", clientPath);
+assert(!clientSource.includes("async function lintPackage"), "nearest-package lint command function should be removed");
+assert(!clientSource.includes("async function autoFormatPackage"), "nearest-package format command function should be removed");
 assertIncludes(clientSource, "await runLabCommand", clientPath);
 assert(!clientSource.includes("__awaiter"), "extension client must not reference missing __awaiter helper");
 assert(!clientSource.includes("execFileSync(settings.pythonPath"), "extension commands must not block the extension host with execFileSync");
@@ -184,7 +204,7 @@ for (const needle of [
   "payload.issue_groups || []",
   "root.load_graph || []",
   "documentation_markdown",
-  '"lint-package", packageRoot, "--json", "--report", reportPath, "--fail-level", settings.packageFailLevel',
+  '"lint-package", target, "--json", "--report", reportPath, "--fail-level", settings.packageFailLevel',
   '"lint-package", folderPath, "--json", "--report", reportPath, "--fail-level", settings.packageFailLevel',
   "function packageReportPath",
   "function openPackageReportPreview",

@@ -5,6 +5,14 @@ this file. Version numbers are given as:
 
     <major>.<minor>.<patch>
 
+## v0.1.73
+
+- Stop live diagnostics from running immediately when a `.ai` or `.per` file is
+  opened. Opening a file now clears stale diagnostics; validation follows the
+  `aoe2_AiScript.updateErrorsWhen` setting or explicit lint commands.
+- Remove nearest-package lint/format command palette entries now that explicit
+  current-AI, current-folder, and recursive-folder scopes exist.
+
 ## v0.1.72
 
 - Add explicit current-AI, current-folder, and recursive-folder format/lint

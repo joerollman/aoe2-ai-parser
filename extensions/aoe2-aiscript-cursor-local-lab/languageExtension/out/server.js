@@ -381,12 +381,12 @@ function validateTextDocumentOnSave(textDocument) {
     });
 }
 /**********************************************************************/ /**
- * When a file is opened, evaluate the document for errors
+ * When a file is opened, clear any stale diagnostics. Validation is controlled
+ * by updateErrorsWhen and should not run just because a large AI file was opened.
  * 	@param change			TextDocumentChangeEvent
  **************************************************************************/
 documents.onDidOpen(change => {
-    //connection.console.log("Openned "+change.document.uri);
-    validateTextDocument(change.document);
+    connection.sendDiagnostics({ uri: change.document.uri, diagnostics: [] });
 });
 function labSeverityToDiagnosticSeverity(severity) {
     if (severity === "error") {
