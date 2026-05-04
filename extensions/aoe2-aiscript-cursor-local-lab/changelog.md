@@ -5,6 +5,15 @@ this file. Version numbers are given as:
 
     <major>.<minor>.<patch>
 
+## v0.1.79
+
+- Make `AoE2: Write Semantic Color Settings` write user settings by default
+  and clean up legacy native editor color customization blocks from both user
+  and workspace settings.
+- Hide the old individual global semantic color settings from the contributed
+  Settings UI so users see the simpler `Dark`, `Light`, and `Custom` preset
+  model.
+
 ## v0.1.78
 
 - Simplify semantic color scaffolding to extension-owned settings only. The

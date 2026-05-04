@@ -162,10 +162,11 @@ Syntax colors can be customized through extension settings when
 ```
 
 Use `AoE2: Write Semantic Color Settings` from the command palette to write the
-`Dark`, `Light`, and `Custom` color presets into `settings.json` so the fields
-are visible and easy to edit. The `auto` theme selector uses `Light` for
-light-named editor themes and `Dark` otherwise; set it to `custom` to force the
-custom preset.
+`Dark`, `Light`, and `Custom` color presets into user `settings.json` so the
+fields are visible and easy to edit. The command also removes legacy native
+editor color blocks from user/workspace settings. The `auto` theme selector uses
+`Light` for light-named editor themes and `Dark` otherwise; set it to `custom`
+to force the custom preset.
 
 The marketplace extension identity is:
 

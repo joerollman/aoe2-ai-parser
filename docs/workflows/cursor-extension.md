@@ -440,10 +440,11 @@ The extension-owned color model has three presets under
   }
 }
 ```
-`AoE2: Write Semantic Color Settings` scaffolds these three presets into
-workspace `settings.json` when a workspace is open, or user `settings.json`
-otherwise. This makes the editable fields visible for users who do not know the
-setting names. Exact active editor theme names may also be added under
+`AoE2: Write Semantic Color Settings` scaffolds these three presets into user
+`settings.json`. This makes the editable fields visible for users who do not
+know the setting names, and keeps personal color preferences out of project
+settings. The command also removes legacy native editor color blocks from
+user/workspace settings. Exact active editor theme names may also be added under
 `semanticColors.byTheme` for advanced overrides, but the scaffold intentionally
 uses the simpler `Dark`, `Light`, and `Custom` entries.
 

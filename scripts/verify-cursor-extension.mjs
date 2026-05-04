@@ -157,6 +157,8 @@ assertIncludes(clientSource, 'get("colorTheme")', clientPath);
 assertIncludes(clientSource, "function refreshSemanticDecorationTypes", clientPath);
 assertIncludes(clientSource, "async function scaffoldSemanticColorSettings", clientPath);
 assertIncludes(clientSource, 'config.update("semanticColors.byTheme"', clientPath);
+assertIncludes(clientSource, 'editorConfig.update("semanticTokenColorCustomizations", undefined', clientPath);
+assertIncludes(clientSource, 'editorConfig.update("tokenColorCustomizations", undefined', clientPath);
 assertIncludes(clientSource, "createTextEditorDecorationType({ color })", clientPath);
 assertIncludes(clientSource, "function updateSemanticDecorationsForVisibleEditors", clientPath);
 assertIncludes(clientSource, "function scheduleSemanticDecorationUpdate", clientPath);

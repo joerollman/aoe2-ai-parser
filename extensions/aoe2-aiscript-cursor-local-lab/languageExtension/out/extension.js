@@ -421,10 +421,20 @@ function scheduleSemanticDecorationUpdate(document) {
     }, 250));
 }
 async function scaffoldSemanticColorSettings() {
-    let target = vscode_1.workspace.workspaceFolders && vscode_1.workspace.workspaceFolders.length > 0
-        ? vscode_1.ConfigurationTarget.Workspace
-        : vscode_1.ConfigurationTarget.Global;
+    let target = vscode_1.ConfigurationTarget.Global;
     let config = vscode_1.workspace.getConfiguration("aoe2_AiScript");
+    let editorConfig = vscode_1.workspace.getConfiguration("editor");
+    let cleanupTargets = [vscode_1.ConfigurationTarget.Global];
+    if (vscode_1.workspace.workspaceFolders && vscode_1.workspace.workspaceFolders.length > 0) {
+        cleanupTargets.push(vscode_1.ConfigurationTarget.Workspace);
+    }
+    for (const cleanupTarget of cleanupTargets) {
+        await editorConfig.update("semanticTokenColorCustomizations", undefined, cleanupTarget);
+        await editorConfig.update("tokenColorCustomizations", undefined, cleanupTarget);
+        for (const settingName of Object.values(semanticColorSettings)) {
+            await config.update(settingName, undefined, cleanupTarget);
+        }
+    }
     await config.update("enableSemanticColors", true, target);
     await config.update("semanticColors.theme", config.get("semanticColors.theme") || "auto", target);
     let existingByTheme = config.get("semanticColors.byTheme") || {};
@@ -434,9 +444,7 @@ async function scaffoldSemanticColorSettings() {
         presets[key] = Object.assign({}, semanticColorByThemeDefaults[key], existingPreset);
     });
     await config.update("semanticColors.byTheme", presets, target);
-    vscode_1.window.showInformationMessage(target === vscode_1.ConfigurationTarget.Workspace
-        ? "AoE2 semantic color settings written to workspace settings.json."
-        : "AoE2 semantic color settings written to user settings.json.");
+    vscode_1.window.showInformationMessage("AoE2 semantic color settings written to user settings.json. Legacy native color blocks were removed from user/workspace settings.");
 }
 function normalizeFsPath(filePath) {
     return path.resolve(filePath).toLowerCase();

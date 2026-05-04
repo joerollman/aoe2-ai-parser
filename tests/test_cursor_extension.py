@@ -277,7 +277,7 @@ class CursorExtensionTests(unittest.TestCase):
             settings["aoe2_AiScript.semanticColors.theme"]["enum"],
             ["auto", "dark", "light", "custom"],
         )
-        for setting_name in [
+        for legacy_setting_name in [
             "aoe2_AiScript.semanticColors.action",
             "aoe2_AiScript.semanticColors.fact",
             "aoe2_AiScript.semanticColors.factAction",
@@ -288,8 +288,7 @@ class CursorExtensionTests(unittest.TestCase):
             "aoe2_AiScript.semanticColors.value",
             "aoe2_AiScript.semanticColors.localConstant",
         ]:
-            self.assertIn(setting_name, settings)
-            self.assertTrue(settings[setting_name]["default"].startswith("#"))
+            self.assertNotIn(legacy_setting_name, settings)
         by_theme = settings["aoe2_AiScript.semanticColors.byTheme"]["default"]
         self.assertEqual(set(by_theme), {"Dark", "Light", "Custom"})
         self.assertEqual(by_theme["Dark"]["action"], "#5DADEC")
@@ -365,6 +364,8 @@ class CursorExtensionTests(unittest.TestCase):
         self.assertIn("async function scaffoldSemanticColorSettings", extension_source)
         self.assertIn('config.update("semanticColors.byTheme"', extension_source)
         self.assertIn('config.update("semanticColors.theme"', extension_source)
+        self.assertIn('editorConfig.update("semanticTokenColorCustomizations", undefined', extension_source)
+        self.assertIn('editorConfig.update("tokenColorCustomizations", undefined', extension_source)
         self.assertIn("ConfigurationTarget.Workspace", extension_source)
         self.assertIn("createTextEditorDecorationType({ color })", extension_source)
         self.assertIn("function semanticDecorationRanges", extension_source)

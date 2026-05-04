@@ -44,7 +44,7 @@ The following are not specially colored by default, but have been made available
 
 Parser semantic colors are configured through extension-owned settings. Run
 `AoE2: Write Semantic Color Settings` from the command palette to write the
-editable `Dark`, `Light`, and `Custom` presets into your settings file.
+editable `Dark`, `Light`, and `Custom` presets into user settings.
 
 The generated settings use this shape:
 

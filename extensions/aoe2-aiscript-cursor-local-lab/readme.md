@@ -166,9 +166,10 @@ You can then customize the colors directly through extension settings:
 ```
 
 Run `AoE2: Write Semantic Color Settings` from the command palette to write the
-`Dark`, `Light`, and `Custom` presets into `settings.json` for editing. The
-`auto` selector uses `Light` for light-named editor themes and `Dark`
-otherwise; set it to `custom` to force the custom preset.
+`Dark`, `Light`, and `Custom` presets into user `settings.json` for editing.
+The command also removes legacy native editor color blocks from user/workspace
+settings. The `auto` selector uses `Light` for light-named editor themes and
+`Dark` otherwise; set it to `custom` to force the custom preset.
 
 ## Attribution
 
