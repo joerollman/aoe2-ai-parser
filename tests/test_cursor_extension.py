@@ -273,6 +273,19 @@ class CursorExtensionTests(unittest.TestCase):
         self.assertIn("[AOE2 AI Parser Dark]", customization_defaults)
         self.assertIn("[AOE2 AI Parser Light]", customization_defaults)
         self.assertFalse(settings["aoe2_AiScript.enableSemanticColors"]["default"])
+        for setting_name in [
+            "aoe2_AiScript.semanticColors.action",
+            "aoe2_AiScript.semanticColors.fact",
+            "aoe2_AiScript.semanticColors.factAction",
+            "aoe2_AiScript.semanticColors.command",
+            "aoe2_AiScript.semanticColors.strategicNumber",
+            "aoe2_AiScript.semanticColors.object",
+            "aoe2_AiScript.semanticColors.tech",
+            "aoe2_AiScript.semanticColors.value",
+            "aoe2_AiScript.semanticColors.localConstant",
+        ]:
+            self.assertIn(setting_name, settings)
+            self.assertTrue(settings[setting_name]["default"].startswith("#"))
 
         for label, expected_type in [
             ("AOE2 AI Parser Dark", "dark"),
@@ -327,6 +340,23 @@ class CursorExtensionTests(unittest.TestCase):
         self.assertIn("entity.name.function.aoe2aiscript.fact", classic_scopes)
         self.assertIn("entity.name.function.aoe2aiscript.action", classic_scopes)
         self.assertIn("storage.type.aoe2aiscript.def.rule", classic_scopes)
+
+    def test_lab_extension_supports_setting_driven_semantic_colors(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        extension_root = root / "extensions" / "aoe2-aiscript-cursor-local-lab"
+        extension_source = (extension_root / "languageExtension" / "out" / "extension.js").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn("semanticColorSettings", extension_source)
+        self.assertIn('aoe2Action: "semanticColors.action"', extension_source)
+        self.assertIn("function refreshSemanticDecorationTypes", extension_source)
+        self.assertIn("createTextEditorDecorationType({ color })", extension_source)
+        self.assertIn("function semanticDecorationRanges", extension_source)
+        self.assertIn("function updateSemanticDecorationsForVisibleEditors", extension_source)
+        self.assertIn("function scheduleSemanticDecorationUpdate", extension_source)
+        self.assertIn("setTimeout(() =>", extension_source)
+        self.assertIn('event.affectsConfiguration("aoe2_AiScript.semanticColors")', extension_source)
 
     def test_lab_extension_exposes_package_fail_level_setting(self) -> None:
         root = Path(__file__).resolve().parents[1]

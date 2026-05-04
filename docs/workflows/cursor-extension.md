@@ -386,6 +386,25 @@ Cursor can color known symbols by registry role:
 The contributed `AOE2 AI Parser Dark` and `AOE2 AI Parser Light` themes assign
 default colors for these token types. Users can override individual colors with
 normal VS Code/Cursor settings, either globally or scoped to one parser theme.
+The extension also exposes direct `aoe2_AiScript.semanticColors.*` settings
+for users who do not want to edit `editor.semanticTokenColorCustomizations`
+manually. When `aoe2_AiScript.enableSemanticColors` is enabled, the client
+applies these settings through editor decorations so they work across arbitrary
+themes:
+
+```json
+{
+  "aoe2_AiScript.semanticColors.action": "#5DADEC",
+  "aoe2_AiScript.semanticColors.fact": "#C69CFF",
+  "aoe2_AiScript.semanticColors.factAction": "#38C2B3",
+  "aoe2_AiScript.semanticColors.command": "#D7A72F",
+  "aoe2_AiScript.semanticColors.strategicNumber": "#4CC2FF",
+  "aoe2_AiScript.semanticColors.object": "#F0A35E",
+  "aoe2_AiScript.semanticColors.tech": "#8FD694",
+  "aoe2_AiScript.semanticColors.value": "#D6C56F",
+  "aoe2_AiScript.semanticColors.localConstant": "#57D68D"
+}
+```
 The extension contributes default entries for these theme-scoped rules so the
 editable token names are visible from settings JSON:
 

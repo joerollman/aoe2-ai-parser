@@ -5,6 +5,14 @@ this file. Version numbers are given as:
 
     <major>.<minor>.<patch>
 
+## v0.1.75
+
+- Add direct `aoe2_AiScript.semanticColors.*` settings for action, fact,
+  fact/action, command, strategic-number, object, tech, value, and local
+  constant colors. These settings apply when parser semantic colors are enabled,
+  so users can tune token colors without editing raw
+  `editor.semanticTokenColorCustomizations`.
+
 ## v0.1.74
 
 - Make current-AI lint, format, and format-then-lint resolve nested `.per`

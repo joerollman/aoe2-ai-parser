@@ -84,6 +84,9 @@ it colors the original TextMate scopes and leaves semantic highlighting off.
 - `aoe2_AiScript.enableSemanticColors`: enable parser-specific semantic colors
   for commands, facts, strategic numbers, objects, techs, values, and local
   constants. Default is `false` so users keep their normal editor theme colors.
+- `aoe2_AiScript.semanticColors.*`: direct color settings for parser semantic
+  categories such as action, fact, strategicNumber, object, tech, value, and
+  localConstant. These apply when semantic colors are enabled.
 
 `Lint Current File` validates only the active file. `Lint Current AI` resolves
 which nearby `.ai` root reaches the active `.per` through load directives, then
@@ -140,6 +143,17 @@ names are `aoe2Action`, `aoe2Fact`, `aoe2FactAction`, `aoe2Command`,
 Parser-specific semantic colors are off by default. Enable
 `aoe2_AiScript.enableSemanticColors` if you want those token categories colored
 separately from your normal theme.
+You can then customize the colors directly through extension settings:
+
+```json
+{
+  "aoe2_AiScript.semanticColors.action": "#5DADEC",
+  "aoe2_AiScript.semanticColors.fact": "#C69CFF",
+  "aoe2_AiScript.semanticColors.strategicNumber": "#4CC2FF",
+  "aoe2_AiScript.semanticColors.object": "#F0A35E",
+  "aoe2_AiScript.semanticColors.localConstant": "#57D68D"
+}
+```
 
 The extension contributes parser-theme defaults for these keys. Theme-scoped
 overrides let each individual parser color be changed without affecting other

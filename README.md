@@ -136,6 +136,18 @@ Syntax colors can be customized with normal VS Code/Cursor settings. The
 extension contributes semantic token names such as `aoe2Action`,
 `aoe2Fact`, `aoe2StrategicNumber`, `aoe2Object`, and `aoe2LocalConstant`;
 override them through `editor.semanticTokenColorCustomizations`.
+For users who do not want to edit raw semantic-token JSON, the extension also
+exposes direct settings when `aoe2_AiScript.enableSemanticColors` is enabled:
+
+```json
+{
+  "aoe2_AiScript.semanticColors.action": "#5DADEC",
+  "aoe2_AiScript.semanticColors.fact": "#C69CFF",
+  "aoe2_AiScript.semanticColors.strategicNumber": "#4CC2FF",
+  "aoe2_AiScript.semanticColors.object": "#F0A35E",
+  "aoe2_AiScript.semanticColors.localConstant": "#57D68D"
+}
+```
 
 You can override individual parser colors globally or only for one contributed
 theme. The extension also contributes these parser-theme defaults so the keys

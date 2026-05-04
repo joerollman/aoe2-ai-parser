@@ -2,7 +2,7 @@
 	"name": "aoe2-ai-parser",
 	"displayName": "AOE2 AI Parser",
 	"description": "Parser diagnostics, command tooltips, syntax highlighting, and autocomplete for Age of Empires 2 AI scripts in VS Code and Cursor",
-	"version": "0.1.74",
+	"version": "0.1.75",
 	"keywords": [
 		"aoeII",
 		"age",
@@ -159,6 +159,60 @@
 					"type": "boolean",
 					"default": false,
 					"description": "Enable parser-specific semantic coloring for commands, facts, strategic numbers, objects, techs, values, and local constants. Default off so users keep their normal editor theme colors."
+				},
+				"aoe2_AiScript.semanticColors.action": {
+					"scope": "resource.aiscript",
+					"type": "string",
+					"default": "#5DADEC",
+					"description": "Semantic color for action commands when parser semantic colors are enabled."
+				},
+				"aoe2_AiScript.semanticColors.fact": {
+					"scope": "resource.aiscript",
+					"type": "string",
+					"default": "#C69CFF",
+					"description": "Semantic color for fact commands when parser semantic colors are enabled."
+				},
+				"aoe2_AiScript.semanticColors.factAction": {
+					"scope": "resource.aiscript",
+					"type": "string",
+					"default": "#38C2B3",
+					"description": "Semantic color for commands that can be used as facts or actions when parser semantic colors are enabled."
+				},
+				"aoe2_AiScript.semanticColors.command": {
+					"scope": "resource.aiscript",
+					"type": "string",
+					"default": "#D7A72F",
+					"description": "Semantic color for other command/control tokens when parser semantic colors are enabled."
+				},
+				"aoe2_AiScript.semanticColors.strategicNumber": {
+					"scope": "resource.aiscript",
+					"type": "string",
+					"default": "#4CC2FF",
+					"description": "Semantic color for strategic numbers when parser semantic colors are enabled."
+				},
+				"aoe2_AiScript.semanticColors.object": {
+					"scope": "resource.aiscript",
+					"type": "string",
+					"default": "#F0A35E",
+					"description": "Semantic color for object, unit, building, and class tokens when parser semantic colors are enabled."
+				},
+				"aoe2_AiScript.semanticColors.tech": {
+					"scope": "resource.aiscript",
+					"type": "string",
+					"default": "#8FD694",
+					"description": "Semantic color for technology tokens when parser semantic colors are enabled."
+				},
+				"aoe2_AiScript.semanticColors.value": {
+					"scope": "resource.aiscript",
+					"type": "string",
+					"default": "#D6C56F",
+					"description": "Semantic color for DUC actions, operators, resources, and other value tokens when parser semantic colors are enabled."
+				},
+				"aoe2_AiScript.semanticColors.localConstant": {
+					"scope": "resource.aiscript",
+					"type": "string",
+					"default": "#57D68D",
+					"description": "Semantic color for local defconst names when parser semantic colors are enabled."
 				},
 				"aoe2_AiScript.labPath": {
 					"scope": "resource.aiscript",

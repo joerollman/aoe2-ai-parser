@@ -13,6 +13,19 @@ let client;
 let outputChannel;
 const semanticTokenTypes = ["aoe2Action", "aoe2Fact", "aoe2FactAction", "aoe2Command", "aoe2StrategicNumber", "aoe2Object", "aoe2Tech", "aoe2Value", "aoe2LocalConstant"];
 let semanticTokenLegend;
+let semanticDecorationTypes = new Map();
+let semanticDecorationTimers = new Map();
+const semanticColorSettings = {
+    aoe2Action: "semanticColors.action",
+    aoe2Fact: "semanticColors.fact",
+    aoe2FactAction: "semanticColors.factAction",
+    aoe2Command: "semanticColors.command",
+    aoe2StrategicNumber: "semanticColors.strategicNumber",
+    aoe2Object: "semanticColors.object",
+    aoe2Tech: "semanticColors.tech",
+    aoe2Value: "semanticColors.value",
+    aoe2LocalConstant: "semanticColors.localConstant"
+};
 function getOutputChannel() {
     if (!outputChannel) {
         outputChannel = vscode_1.window.createOutputChannel("AOE2 AI Parser");
@@ -123,6 +136,32 @@ function getFormatSettings() {
 function semanticColorsEnabled() {
     let config = vscode_1.workspace.getConfiguration("aoe2_AiScript");
     return !!config.get("enableSemanticColors");
+}
+function semanticColorOverrides() {
+    let config = vscode_1.workspace.getConfiguration("aoe2_AiScript");
+    let colors = new Map();
+    semanticTokenTypes.forEach(tokenType => {
+        let color = config.get(semanticColorSettings[tokenType]) || "";
+        if (typeof color === "string" && color.trim()) {
+            colors.set(tokenType, color.trim());
+        }
+    });
+    return colors;
+}
+function disposeSemanticDecorations() {
+    semanticDecorationTimers.forEach(timer => clearTimeout(timer));
+    semanticDecorationTimers = new Map();
+    semanticDecorationTypes.forEach(decoration => decoration.dispose());
+    semanticDecorationTypes = new Map();
+}
+function refreshSemanticDecorationTypes() {
+    disposeSemanticDecorations();
+    if (!semanticColorsEnabled()) {
+        return;
+    }
+    semanticColorOverrides().forEach((color, tokenType) => {
+        semanticDecorationTypes.set(tokenType, vscode_1.window.createTextEditorDecorationType({ color }));
+    });
 }
 let labRegistryLabelSet;
 let labRegistryKindMap;
@@ -237,6 +276,71 @@ function semanticTokensForDocument(document) {
         }
     }
     return builder.build();
+}
+function semanticDecorationRanges(document) {
+    let ranges = new Map();
+    semanticTokenTypes.forEach(tokenType => ranges.set(tokenType, []));
+    let registry = labRegistryKinds();
+    let text = document.getText();
+    let tokenPattern = /[#A-Za-z_][#A-Za-z0-9_-]*/g;
+    let localConstants = new Set();
+    let defconstPattern = /\(\s*defconst\s+([A-Za-z_][A-Za-z0-9_-]*)\b/g;
+    let defconstMatch;
+    while ((defconstMatch = defconstPattern.exec(text)) !== null) {
+        localConstants.add(defconstMatch[1]);
+    }
+    for (let line = 0; line < document.lineCount; line++) {
+        let lineText = document.lineAt(line).text;
+        let commentIndex = lineText.indexOf(";");
+        let scanText = commentIndex >= 0 ? lineText.slice(0, commentIndex) : lineText;
+        let match;
+        while ((match = tokenPattern.exec(scanText)) !== null) {
+            let token = match[0];
+            let tokenType;
+            let item = registry.get(token);
+            if (item) {
+                tokenType = semanticTokenTypeForRegistryItem(item);
+            }
+            else if (localConstants.has(token)) {
+                tokenType = "aoe2LocalConstant";
+            }
+            if (tokenType && ranges.has(tokenType)) {
+                ranges.get(tokenType).push(new vscode_1.Range(line, match.index, line, match.index + token.length));
+            }
+        }
+    }
+    return ranges;
+}
+function updateSemanticDecorationsForEditor(editor) {
+    if (!editor || editor.document.languageId !== "aoe2aiscript" || !semanticColorsEnabled()) {
+        return;
+    }
+    let ranges = semanticDecorationRanges(editor.document);
+    semanticDecorationTypes.forEach((decoration, tokenType) => {
+        editor.setDecorations(decoration, ranges.get(tokenType) || []);
+    });
+}
+function clearSemanticDecorationsForEditor(editor) {
+    if (!editor) {
+        return;
+    }
+    semanticDecorationTypes.forEach(decoration => editor.setDecorations(decoration, []));
+}
+function updateSemanticDecorationsForVisibleEditors() {
+    vscode_1.window.visibleTextEditors.forEach(updateSemanticDecorationsForEditor);
+}
+function scheduleSemanticDecorationUpdate(document) {
+    let key = document.uri.toString();
+    let existing = semanticDecorationTimers.get(key);
+    if (existing) {
+        clearTimeout(existing);
+    }
+    semanticDecorationTimers.set(key, setTimeout(() => {
+        semanticDecorationTimers.delete(key);
+        vscode_1.window.visibleTextEditors
+            .filter(editor => editor.document.uri.toString() === key)
+            .forEach(updateSemanticDecorationsForEditor);
+    }, 250));
 }
 function normalizeFsPath(filePath) {
     return path.resolve(filePath).toLowerCase();
@@ -1084,6 +1188,22 @@ function activate(context) {
             provideDocumentSemanticTokens: semanticTokensForDocument
         }, semanticTokenLegend));
     }
+    refreshSemanticDecorationTypes();
+    updateSemanticDecorationsForVisibleEditors();
+    context.subscriptions.push({
+        dispose: disposeSemanticDecorations
+    });
+    context.subscriptions.push(vscode_1.window.onDidChangeVisibleTextEditors(updateSemanticDecorationsForVisibleEditors));
+    context.subscriptions.push(vscode_1.workspace.onDidChangeTextDocument(event => {
+        scheduleSemanticDecorationUpdate(event.document);
+    }));
+    context.subscriptions.push(vscode_1.workspace.onDidChangeConfiguration(event => {
+        if (event.affectsConfiguration("aoe2_AiScript.enableSemanticColors") || event.affectsConfiguration("aoe2_AiScript.semanticColors")) {
+            vscode_1.window.visibleTextEditors.forEach(clearSemanticDecorationsForEditor);
+            refreshSemanticDecorationTypes();
+            updateSemanticDecorationsForVisibleEditors();
+        }
+    }));
     context.subscriptions.push(vscode_1.languages.registerHoverProvider('aoe2aiscript', {
         provideHover: symbolDocsHover
     }));
