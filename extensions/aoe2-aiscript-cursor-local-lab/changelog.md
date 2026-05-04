@@ -5,6 +5,15 @@ this file. Version numbers are given as:
 
     <major>.<minor>.<patch>
 
+## v0.1.72
+
+- Add explicit current-AI, current-folder, and recursive-folder format/lint
+  commands.
+- Add format-then-lint commands so users can apply safe formatter fixes before
+  reviewing parser diagnostics.
+- Add CLI `format --no-recursive`, `format --include-loads`, and
+  `lint-package --no-recursive` scope controls.
+
 ## v0.1.71
 
 - Improve AutoFormat indentation for multiline `defrule` blocks, including

@@ -465,7 +465,7 @@ def find_duplicate_load_targets(ai_paths: list[Path], *, package_root: Path) -> 
     return duplicates
 
 
-def inspect_package_integrity(package_dir: str | Path) -> PackageIntegrityResult:
+def inspect_package_integrity(package_dir: str | Path, *, recursive: bool = True) -> PackageIntegrityResult:
     root = Path(package_dir)
     if root.is_file() and root.suffix.lower() == ".ai":
         package_root = root.parent
@@ -503,7 +503,8 @@ def inspect_package_integrity(package_dir: str | Path) -> PackageIntegrityResult
     stale_ai_roots: list[StaleAiRoot] = []
     ai_names: dict[str, list[Path]] = {}
     per_names: dict[str, list[Path]] = {}
-    for ai_path in sorted(root.rglob("*.ai")):
+    ai_iterator = root.rglob("*.ai") if recursive else root.glob("*.ai")
+    for ai_path in sorted(ai_iterator):
         ai_names.setdefault(ai_path.stem.lower(), []).append(ai_path)
         package_roots = resolve_ai_roots(ai_path, package_dir=ai_path.parent)
         if not package_roots:
@@ -521,7 +522,8 @@ def inspect_package_integrity(package_dir: str | Path) -> PackageIntegrityResult
         files, _ = collect_reachable_per_files(package_root.per_path, package_root=package_root.package_dir)
         reachable.update(path.resolve() for path in files)
 
-    all_per_files = {path.resolve() for path in root.rglob("*.per")}
+    per_iterator = root.rglob("*.per") if recursive else root.glob("*.per")
+    all_per_files = {path.resolve() for path in per_iterator}
     for per_path in sorted(all_per_files):
         per_names.setdefault(per_path.stem.lower(), []).append(per_path)
     unreachable = sorted(all_per_files - reachable)

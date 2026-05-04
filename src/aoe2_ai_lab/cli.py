@@ -28,6 +28,7 @@ from .ai_package import (
     find_load_references,
     inspect_package_integrity,
     lint_package_root,
+    resolve_ai_roots,
 )
 from .assembler import assemble_per
 from .binary_strings import scan_strings, write_filtered_strings, write_userpatch_sections
@@ -237,6 +238,12 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="emit a live package trace to stderr before and during linting; stdout remains machine-readable",
     )
+    lint_package.add_argument(
+        "--recursive",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="when linting a directory, recurse into subdirectories; use --no-recursive for direct children only",
+    )
 
     suppress = subparsers.add_parser(
         "suppress-finding", help="insert an inline suppression comment for one diagnostic"
@@ -303,6 +310,17 @@ def build_parser() -> argparse.ArgumentParser:
         "--format-chat",
         action="store_true",
         help="allow formatting chat-to-all/chat-to-player lines; default leaves chat lines unchanged",
+    )
+    formatter.add_argument(
+        "--recursive",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="when formatting a directory, recurse into subdirectories; use --no-recursive for direct children only",
+    )
+    formatter.add_argument(
+        "--include-loads",
+        action="store_true",
+        help="when formatting a .ai or .per root, include reachable .per files from load directives",
     )
 
     redundancy = subparsers.add_parser(
@@ -1557,6 +1575,36 @@ def trace_package_root(root: object, *, enabled: bool) -> None:
     trace_progress("|   `-- linting reachable graph...", enabled=enabled)
 
 
+def format_scope_files(path: Path, *, recursive: bool, include_loads: bool) -> list[Path]:
+    if not include_loads:
+        return discover_script_files(path, recursive=recursive)
+
+    files: list[Path] = []
+    seen: set[Path] = set()
+
+    def add(file_path: Path) -> None:
+        resolved = file_path.resolve()
+        if resolved not in seen and file_path.suffix.lower() in {".ai", ".per"}:
+            seen.add(resolved)
+            files.append(resolved)
+
+    if path.is_file() and path.suffix.lower() == ".ai":
+        add(path)
+        for root in resolve_ai_roots(path):
+            reachable, _missing = collect_reachable_per_files(root.per_path, package_root=root.package_dir)
+            for file_path in reachable:
+                add(file_path)
+        return files
+
+    if path.is_file() and path.suffix.lower() == ".per":
+        reachable, _missing = collect_reachable_per_files(path, package_root=path.parent)
+        for file_path in reachable:
+            add(file_path)
+        return files
+
+    return discover_script_files(path, recursive=recursive)
+
+
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
 
@@ -1590,7 +1638,7 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "lint-package":
         trace_progress(f"Lint trace: inspecting package input {args.path}", enabled=args.trace_progress)
-        integrity = inspect_package_integrity(args.path)
+        integrity = inspect_package_integrity(args.path, recursive=args.recursive)
         roots = integrity.roots
         if not roots:
             trace_progress("Lint trace: no AI package roots resolved", enabled=args.trace_progress)
@@ -1772,7 +1820,7 @@ def main(argv: list[str] | None = None) -> int:
         if args.stdin:
             print(format_text(sys.stdin.read(), args.path.suffix, options), end="")
             return 0
-        files = discover_script_files(args.path)
+        files = format_scope_files(args.path, recursive=args.recursive, include_loads=args.include_loads)
         if not files:
             print(f"no .ai or .per files found at {args.path}", file=sys.stderr)
             return 2

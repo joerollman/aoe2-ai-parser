@@ -18,8 +18,8 @@ and use the AoE2 command palette actions for linting and package reports.
 - Go to definition for local `defconst` declarations, `.ai` load targets, and
   generated local Markdown reference docs.
 - Package-aware diagnostics from the bundled parser/linter.
-- Command palette actions for linting the current file, linting an AI package,
-  and generating package reports.
+- Command palette actions for linting/formatting the current file, current AI,
+  current folder, recursive folder, and generated package reports.
 - Compact package graph output for reachable `.per` loads and `.xs` includes.
 - Quick fixes and diagnostic documentation actions for common validator
   diagnostics.
@@ -40,11 +40,19 @@ extension.
 
 - `AoE2: Lint Current File`
 - `AoE2: Lint Package`
-- `AoE2: Lint Folder`
+- `AoE2: Lint Current AI`
+- `AoE2: Lint Current Folder`
+- `AoE2: Lint Recursive Folder`
 - `AoE2: Generate Package Report`
 - `AoE2: Open Latest Package Report`
-- `AoE2: AutoFormat`
-- `AoE2: AutoFormat Package`
+- `AoE2: AutoFormat Current File`
+- `AoE2: AutoFormat Current AI`
+- `AoE2: AutoFormat Current Folder`
+- `AoE2: AutoFormat Recursive Folder`
+- `AoE2: Format Then Lint Current File`
+- `AoE2: Format Then Lint Current AI`
+- `AoE2: Format Then Lint Current Folder`
+- `AoE2: Format Then Lint Recursive Folder`
 - `AoE2: Open Symbol Docs Preview`
 - `AoE2: Open Diagnostic Docs Preview`
 
@@ -78,11 +86,13 @@ it colors the original TextMate scopes and leaves semantic highlighting off.
   for commands, facts, strategic numbers, objects, techs, values, and local
   constants. Default is `false` so users keep their normal editor theme colors.
 
-`Lint Current File` validates only the active file. `Lint Package` uses the
-nearest `.ai` package root for the active file. `Lint Folder` validates the
-folder containing the active file, which is useful when a mod folder is too broad
-to treat as one package.
-`Lint Package`, `Lint Folder`, and package-report commands write a Markdown
+`Lint Current File` validates only the active file. `Lint Current AI` validates
+the selected `.ai` root beside the active file plus reachable `.per` loads.
+`Lint Package` uses the nearest `.ai` package root for the active file.
+`Lint Current Folder` validates `.ai` roots directly inside the active file's
+folder only. `Lint Recursive Folder` validates every `.ai` root below that
+folder.
+`Lint Package`, folder lint, current-AI lint, and package-report commands write a Markdown
 summary under `.tmp/lint-package/` and open it in a side Markdown Preview when
 the linter finishes.
 The output panel also starts with a `Lint trace` tree that shows the input path,
@@ -91,13 +101,18 @@ resolved `.ai` roots, root `.per` files, every reachable `.per`, included
 validated. Package and folder lint commands also stream a simpler live trace
 while linting is still running.
 
-`AoE2: AutoFormat` formats the active `.per` or `.ai` file. It enforces final
-newlines for `.per`, keeps `.ai` entry files empty, wraps long comments,
-promotes overlong inline comments above code, normalizes load path separators
-to the dominant style in the file, and splits multiple same-line expressions
-into separate lines. Chat lines are skipped unless `formatChat` is enabled.
-`AoE2: AutoFormat Package` finds the nearest `.ai` package root for the active
-file and formats every `.ai` and `.per` file in that package folder.
+`AoE2: AutoFormat Current File` formats the active `.per` or `.ai` file. It
+enforces final newlines for `.per`, keeps `.ai` entry files empty, wraps long
+comments, promotes overlong inline comments above code, normalizes load path
+separators to the dominant style in the file, and splits multiple same-line
+expressions into separate lines. Chat lines are skipped unless `formatChat` is
+enabled.
+`AoE2: AutoFormat Current AI` formats the selected `.ai` root beside the active
+file plus reachable `.per` loads. `AutoFormat Current Folder` formats direct
+`.ai`/`.per` children only. `AutoFormat Recursive Folder` formats every
+`.ai`/`.per` below the active file's folder. The `Format Then Lint` commands
+run the corresponding formatter first and then lint the same scope when
+formatting succeeds.
 
 For local symbol docs, VS Code's built-in definition gesture is `Ctrl+Click`.
 Cursor also supports its own side-definition gestures such as `Ctrl+Alt+Click`.

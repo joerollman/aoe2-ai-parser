@@ -204,10 +204,20 @@ Command palette entries:
 
 - `AoE2: Lint Current File`
 - `AoE2: Lint Package`
-- `AoE2: Lint Folder`
+- `AoE2: Lint Current AI`
+- `AoE2: Lint Current Folder`
+- `AoE2: Lint Recursive Folder`
 - `AoE2: Generate Package Report`
 - `AoE2: Open Latest Package Report`
 - `AoE2: Open Symbol Docs Preview`
+- `AoE2: AutoFormat Current File`
+- `AoE2: AutoFormat Current AI`
+- `AoE2: AutoFormat Current Folder`
+- `AoE2: AutoFormat Recursive Folder`
+- `AoE2: Format Then Lint Current File`
+- `AoE2: Format Then Lint Current AI`
+- `AoE2: Format Then Lint Current Folder`
+- `AoE2: Format Then Lint Recursive Folder`
 
 Command output goes to the `AOE2 AI Parser` output panel.
 Package lint commands run asynchronously in the extension host. Generated
@@ -222,9 +232,21 @@ with the Markdown report: issue categories include both lint findings and
 package-integrity issues, while live diagnostics still use the detailed per-file
 findings and integrity manifest from the same JSON payload.
 
-`AoE2: Lint Folder` runs the same package validator against the folder that
-contains the active file. This is useful for local mod layouts where the
-workspace/package root is broader than the AI folder being reviewed.
+`AoE2: Lint Current AI` resolves the `.ai` root beside the active file and
+validates that root plus reachable `.per` loads. If multiple `.ai` files are in
+the same folder, the extension asks which root to use.
+
+`AoE2: Lint Current Folder` runs the same package validator against `.ai` roots
+directly inside the folder that contains the active file. `AoE2: Lint Recursive
+Folder` validates every `.ai` root below that folder. This separates a common
+single-AI workflow from broad mod/corpus-folder validation.
+
+`AoE2: AutoFormat Current File` formats only the active `.ai` or `.per` file.
+`AoE2: AutoFormat Current AI` formats the selected `.ai` root plus reachable
+`.per` loads. `AoE2: AutoFormat Current Folder` formats direct `.ai`/`.per`
+children only. `AoE2: AutoFormat Recursive Folder` formats every `.ai`/`.per`
+below the active file's folder. The `Format Then Lint` commands run the matching
+formatter scope first and then lint the same scope if formatting succeeds.
 
 Package reports are written to:
 

@@ -2,7 +2,7 @@
 	"name": "aoe2-ai-parser",
 	"displayName": "AOE2 AI Parser",
 	"description": "Parser diagnostics, command tooltips, syntax highlighting, and autocomplete for Age of Empires 2 AI scripts in VS Code and Cursor",
-	"version": "0.1.71",
+	"version": "0.1.72",
 	"keywords": [
 		"aoeII",
 		"age",
@@ -21,12 +21,21 @@
 		"activationEvents": [
 		"onLanguage:aoe2aiscript",
 		"onCommand:aoe2AiScript.lintCurrentFile",
+		"onCommand:aoe2AiScript.lintCurrentAi",
 		"onCommand:aoe2AiScript.lintPackage",
 		"onCommand:aoe2AiScript.lintFolder",
+		"onCommand:aoe2AiScript.lintRecursiveFolder",
 		"onCommand:aoe2AiScript.generatePackageReport",
 		"onCommand:aoe2AiScript.openLatestPackageReport",
 		"onCommand:aoe2AiScript.autoFormat",
 		"onCommand:aoe2AiScript.autoFormatPackage",
+		"onCommand:aoe2AiScript.autoFormatCurrentAi",
+		"onCommand:aoe2AiScript.autoFormatCurrentFolder",
+		"onCommand:aoe2AiScript.autoFormatRecursiveFolder",
+		"onCommand:aoe2AiScript.formatThenLintCurrentFile",
+		"onCommand:aoe2AiScript.formatThenLintCurrentAi",
+		"onCommand:aoe2AiScript.formatThenLintCurrentFolder",
+		"onCommand:aoe2AiScript.formatThenLintRecursiveFolder",
 		"onCommand:aoe2AiScript.openSymbolDocsPreview",
 		"onCommand:aoe2AiScript.openDiagnosticDocsPreview"
 	],
@@ -282,12 +291,20 @@
 				"title": "AoE2: Lint Current File"
 			},
 			{
+				"command": "aoe2AiScript.lintCurrentAi",
+				"title": "AoE2: Lint Current AI"
+			},
+			{
 				"command": "aoe2AiScript.lintPackage",
 				"title": "AoE2: Lint Package"
 			},
 			{
 				"command": "aoe2AiScript.lintFolder",
-				"title": "AoE2: Lint Folder"
+				"title": "AoE2: Lint Current Folder"
+			},
+			{
+				"command": "aoe2AiScript.lintRecursiveFolder",
+				"title": "AoE2: Lint Recursive Folder"
 			},
 			{
 				"command": "aoe2AiScript.generatePackageReport",
@@ -304,6 +321,34 @@
 			{
 				"command": "aoe2AiScript.autoFormatPackage",
 				"title": "AoE2: AutoFormat Nearest AI Package"
+			},
+			{
+				"command": "aoe2AiScript.autoFormatCurrentAi",
+				"title": "AoE2: AutoFormat Current AI"
+			},
+			{
+				"command": "aoe2AiScript.autoFormatCurrentFolder",
+				"title": "AoE2: AutoFormat Current Folder"
+			},
+			{
+				"command": "aoe2AiScript.autoFormatRecursiveFolder",
+				"title": "AoE2: AutoFormat Recursive Folder"
+			},
+			{
+				"command": "aoe2AiScript.formatThenLintCurrentFile",
+				"title": "AoE2: Format Then Lint Current File"
+			},
+			{
+				"command": "aoe2AiScript.formatThenLintCurrentAi",
+				"title": "AoE2: Format Then Lint Current AI"
+			},
+			{
+				"command": "aoe2AiScript.formatThenLintCurrentFolder",
+				"title": "AoE2: Format Then Lint Current Folder"
+			},
+			{
+				"command": "aoe2AiScript.formatThenLintRecursiveFolder",
+				"title": "AoE2: Format Then Lint Recursive Folder"
 			},
 			{
 				"command": "aoe2AiScript.openSymbolDocsPreview",

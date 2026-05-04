@@ -32,11 +32,12 @@ class FormatResult:
     formatted_text: str
 
 
-def discover_script_files(path: Path) -> list[Path]:
+def discover_script_files(path: Path, *, recursive: bool = True) -> list[Path]:
     if path.is_file():
         return [path] if path.suffix.lower() in SCRIPT_SUFFIXES else []
     if path.is_dir():
-        return sorted(file for file in path.rglob("*") if file.is_file() and file.suffix.lower() in SCRIPT_SUFFIXES)
+        iterator = path.rglob("*") if recursive else path.iterdir()
+        return sorted(file for file in iterator if file.is_file() and file.suffix.lower() in SCRIPT_SUFFIXES)
     return []
 
 
@@ -60,11 +61,14 @@ def format_text(text: str, suffix: str = ".per", options: FormatOptions | None =
         if next_lines and next_lines[0] == "" and should_drop_promoted_comment_separator(formatted_lines, next_lines):
             next_lines = next_lines[1:]
         formatted_lines.extend(next_lines)
+    formatted_lines = ensure_defrule_separators(formatted_lines)
     formatted_lines = normalize_defrule_indentation(formatted_lines)
     return "\n".join(formatted_lines) + "\n"
 
 
 def should_drop_promoted_comment_separator(formatted_lines: list[str], next_lines: list[str]) -> bool:
+    if formatted_lines and not formatted_lines[-1].strip():
+        return True
     previous_nonempty = next((line for line in reversed(formatted_lines) if line.strip()), "")
     if not previous_nonempty:
         return True
@@ -74,6 +78,25 @@ def should_drop_promoted_comment_separator(formatted_lines: list[str], next_line
         return True
     code = next_lines[-1].strip() if next_lines else ""
     return code.startswith("(defrule")
+
+
+def ensure_defrule_separators(lines: list[str]) -> list[str]:
+    separated: list[str] = []
+    for line in lines:
+        stripped = line.strip()
+        if is_defrule_line(stripped) and should_insert_defrule_separator(separated):
+            separated.append("")
+        separated.append(line)
+    return separated
+
+
+def should_insert_defrule_separator(lines: list[str]) -> bool:
+    if not lines:
+        return False
+    if not lines[-1].strip():
+        return False
+    previous_nonempty = next((line for line in reversed(lines) if line.strip()), "")
+    return bool(previous_nonempty) and not is_comment_line(previous_nonempty)
 
 
 def format_line(line: str, options: FormatOptions, dominant_separator: str | None) -> list[str]:

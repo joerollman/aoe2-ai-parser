@@ -38,11 +38,19 @@ Useful command palette actions:
 
 - `AoE2: Lint Current File`
 - `AoE2: Lint Package`
-- `AoE2: Lint Folder`
+- `AoE2: Lint Current AI`
+- `AoE2: Lint Current Folder`
+- `AoE2: Lint Recursive Folder`
 - `AoE2: Generate Package Report`
 - `AoE2: Open Latest Package Report`
-- `AoE2: AutoFormat`
-- `AoE2: AutoFormat Package`
+- `AoE2: AutoFormat Current File`
+- `AoE2: AutoFormat Current AI`
+- `AoE2: AutoFormat Current Folder`
+- `AoE2: AutoFormat Recursive Folder`
+- `AoE2: Format Then Lint Current File`
+- `AoE2: Format Then Lint Current AI`
+- `AoE2: Format Then Lint Current Folder`
+- `AoE2: Format Then Lint Recursive Folder`
 - `AoE2: Open Symbol Docs Preview`
 - `AoE2: Open Diagnostic Docs Preview`
 
@@ -59,10 +67,13 @@ colors are opt-in so users keep their existing color scheme by default:
 }
 ```
 
-`Lint Current File` validates only the active file. `Lint Package` starts from
-the nearest `.ai` package root for the active file. `Lint Folder` validates the
-folder containing the active file, which is useful when the workspace or local
-mods folder is broader than the AI package you want to inspect.
+`Lint Current File` validates only the active file. `Lint Current AI` validates
+the selected `.ai` root beside the active file plus its reachable `.per` loads.
+`Lint Package` starts from the nearest `.ai` package root for the active file.
+`Lint Current Folder` validates `.ai` roots directly inside the active file's
+folder only. `Lint Recursive Folder` validates every `.ai` root below that
+folder, which is useful when the selected folder is a whole AI package or mod
+tree.
 Package-report commands open the generated Markdown report in a side preview
 after the linter finishes.
 The output panel starts with a `Lint trace` tree for package/folder linting so
@@ -71,8 +82,8 @@ reachable `.per`, included `.xs` files, and load/include edges that were
 validated. Package and folder lint commands also stream a simpler live trace
 while linting is still running.
 
-`AoE2: AutoFormat` formats the active `.per` or `.ai` file. Formatting is
-manual by default; enable opt-in save-time formatting with:
+`AoE2: AutoFormat Current File` formats only the active `.per` or `.ai` file.
+Formatting is manual by default; enable opt-in save-time formatting with:
 
 ```json
 {
@@ -85,8 +96,12 @@ files, comment wrapping up to `aoe2_AiScript.formatMaxLineLength` (maximum
 255), load path separator normalization, and conservative one-expression-per-
 line splitting for facts/actions. Chat lines are skipped by default; set
 `aoe2_AiScript.formatChat` only when you explicitly want chat lines formatted.
-`AoE2: AutoFormat Package` finds the nearest `.ai` package root from the active
-file and formats every `.ai` and `.per` file in that package folder.
+`AoE2: AutoFormat Current AI` formats the selected `.ai` root beside the active
+file plus reachable `.per` loads. `AutoFormat Current Folder` formats direct
+`.ai`/`.per` children only. `AutoFormat Recursive Folder` formats every
+`.ai`/`.per` below the active file's folder. The `Format Then Lint` commands
+run the corresponding formatter first and then lint the same scope when
+formatting succeeds.
 
 For local symbol docs, VS Code's built-in definition gesture is `Ctrl+Click`.
 Cursor also supports its own side-definition gestures such as `Ctrl+Alt+Click`.
@@ -225,15 +240,17 @@ Generate a Markdown report:
 python -m aoe2_ai_lab lint-package path\to\your-ai-package --report .tmp\lint-package\report.md
 ```
 
-Format one file or a folder of `.ai`/`.per` files:
+Format one file, a current folder, or a recursive folder of `.ai`/`.per` files:
 
 ```powershell
 python -m aoe2_ai_lab format path\to\your-ai-package --check
 python -m aoe2_ai_lab format path\to\your-ai-package --write --max-line-length 220
+python -m aoe2_ai_lab format path\to\your-ai-folder --write --no-recursive
 ```
 
 The CLI formatter leaves `chat-to-all` and `chat-to-player` lines alone unless
-you pass `--format-chat`.
+you pass `--format-chat`. Use `--include-loads` when the path is a `.ai` or
+`.per` root and you want the formatter to include reachable loaded `.per` files.
 
 Use `--profile corpus` when reviewing imported/community AI packages where
 legacy-compatible patterns should be suppressed:

@@ -895,6 +895,23 @@ class CliTests(unittest.TestCase):
         self.assertEqual(payload["totals"]["reachable_file_count"], 2)
         self.assertEqual(payload["integrity"]["unreachable_per_files"], [])
 
+    def test_lint_package_no_recursive_limits_directory_roots(self) -> None:
+        with WorkspaceTempDir() as root:
+            nested = root / "nested"
+            nested.mkdir()
+            (root / "Top.ai").write_text('(load "Top")\n', encoding="utf-8")
+            (root / "Top.per").write_text("(defrule\n    (true)\n=>\n    (do-nothing)\n)\n", encoding="utf-8")
+            (nested / "Nested.ai").write_text('(load "Nested")\n', encoding="utf-8")
+            (nested / "Nested.per").write_text("(defrule\n    (true)\n=>\n    (do-nothing)\n)\n", encoding="utf-8")
+            buffer = io.StringIO()
+            with redirect_stdout(buffer):
+                code = main(["lint-package", str(root), "--json", "--no-recursive"])
+
+        self.assertEqual(code, 0)
+        payload = json.loads(buffer.getvalue())
+        self.assertEqual(payload["root_count"], 1)
+        self.assertEqual(Path(payload["roots"][0]["ai_path"]).name, "Top.ai")
+
     def test_lint_package_json_marks_error_failures(self) -> None:
         with WorkspaceTempDir() as root:
             (root / "Bad.ai").write_text('(load "Bad")\n', encoding="utf-8")
