@@ -40,41 +40,38 @@ The following are not specially colored by default, but have been made available
 | keyword.control.aoe2aiscript.load.file          | `load`, `load-random`
 
 
-## How to define a color for a given "scope"
+## How to customize parser colors
 
-In order to apply your own custom coloring you need to modify your settings file. If you place these modifications in your main Users Settings file then any color definitions you make will be applied to all files.
+Parser semantic colors are configured through extension-owned settings. Run
+`AoE2: Write Semantic Color Settings` from the command palette to write the
+editable `Dark`, `Light`, and `Custom` presets into your settings file.
 
-As an example, if you want to color `defconst` and `defrule` as red (hex `#ff0000`), add the following settings somewhere in your settings.json file. Note that this will apply these colorings regardless of which color theme you are using:
+The generated settings use this shape:
 
 ```json
 {
-    /* ... other settings ... */
-
-    "editor.tokenColorCustomizations": {
-        "textMateRules": [
-            {
-                "scope": "storage.type.aoe2aiscript.def",
-                "settings": {"foreground": "#ff0000"}
-            }
-        ]}
-}
-```
-Or you can also color them differently. For example, to color `defrule` red and `defconst` bright-green:
-```json
-{
-    /* ... other settings ... */
-
-    "editor.tokenColorCustomizations": {
-        "textMateRules": [
-            {
-                "scope": "storage.type.aoe2aiscript.def.rule",
-                "settings": {"foreground": "#ff0000"}
-            },{
-                "scope": "storage.type.aoe2aiscript.def.const",
-                "settings": {"foreground": "#00ff00"}
-            }
-        ]}
+  "aoe2_AiScript.enableSemanticColors": true,
+  "aoe2_AiScript.semanticColors.theme": "auto",
+  "aoe2_AiScript.semanticColors.byTheme": {
+    "Dark": {
+      "action": "#5DADEC",
+      "fact": "#C69CFF",
+      "strategicNumber": "#4CC2FF"
+    },
+    "Light": {
+      "action": "#0550AE",
+      "fact": "#6F42C1",
+      "strategicNumber": "#0A7EA4"
+    },
+    "Custom": {
+      "action": "#569CD6",
+      "fact": "#C586C0",
+      "strategicNumber": "#4BA3FF"
+    }
+  }
 }
 ```
 
-You may need to reload vscode for the changes to take effect.
+`auto` selects `Light` for light-named editor themes and `Dark` otherwise.
+Set `aoe2_AiScript.semanticColors.theme` to `custom` to force the `Custom`
+preset.

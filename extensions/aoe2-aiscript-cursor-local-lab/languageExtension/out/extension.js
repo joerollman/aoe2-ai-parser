@@ -38,7 +38,7 @@ const semanticColorDefaults = {
     localConstant: "#57D68D"
 };
 const semanticColorByThemeDefaults = {
-    "AOE2 AI Parser Dark": {
+    Dark: {
         action: "#5DADEC",
         fact: "#C69CFF",
         factAction: "#38C2B3",
@@ -49,7 +49,7 @@ const semanticColorByThemeDefaults = {
         value: "#D6C56F",
         localConstant: "#57D68D"
     },
-    "AOE2 AI Parser Light": {
+    Light: {
         action: "#0550AE",
         fact: "#6F42C1",
         factAction: "#008B8B",
@@ -59,6 +59,17 @@ const semanticColorByThemeDefaults = {
         tech: "#22863A",
         value: "#6E5A00",
         localConstant: "#116329"
+    },
+    Custom: {
+        action: "#569CD6",
+        fact: "#C586C0",
+        factAction: "#4EC9B0",
+        command: "#DCDCAA",
+        strategicNumber: "#4BA3FF",
+        object: "#CE9178",
+        tech: "#B5CEA8",
+        value: "#D7BA7D",
+        localConstant: "#7EE787"
     }
 };
 const semanticColorSettingKeys = {
@@ -187,7 +198,24 @@ function semanticColorOverrides() {
     let config = vscode_1.workspace.getConfiguration("aoe2_AiScript");
     let activeTheme = vscode_1.workspace.getConfiguration("workbench").get("colorTheme") || "";
     let byTheme = config.get("semanticColors.byTheme") || {};
-    let themeColors = activeTheme && byTheme && typeof byTheme === "object" ? byTheme[activeTheme] || {} : {};
+    let themeChoice = (config.get("semanticColors.theme") || "auto").toLowerCase();
+    let presetKey = "Dark";
+    if (themeChoice === "custom") {
+        presetKey = "Custom";
+    }
+    else if (themeChoice === "light") {
+        presetKey = "Light";
+    }
+    else if (themeChoice === "dark") {
+        presetKey = "Dark";
+    }
+    else if (/light/i.test(activeTheme)) {
+        presetKey = "Light";
+    }
+    let themeColors = {};
+    if (byTheme && typeof byTheme === "object") {
+        themeColors = byTheme[activeTheme] || byTheme[presetKey] || {};
+    }
     let colors = new Map();
     semanticTokenTypes.forEach(tokenType => {
         let themeColor = themeColors && typeof themeColors === "object" ? themeColors[semanticColorSettingKeys[tokenType]] || "" : "";
@@ -398,11 +426,14 @@ async function scaffoldSemanticColorSettings() {
         : vscode_1.ConfigurationTarget.Global;
     let config = vscode_1.workspace.getConfiguration("aoe2_AiScript");
     await config.update("enableSemanticColors", true, target);
-    for (const [key, color] of Object.entries(semanticColorDefaults)) {
-        await config.update("semanticColors." + key, config.get("semanticColors." + key) || color, target);
-    }
+    await config.update("semanticColors.theme", config.get("semanticColors.theme") || "auto", target);
     let existingByTheme = config.get("semanticColors.byTheme") || {};
-    await config.update("semanticColors.byTheme", Object.assign({}, semanticColorByThemeDefaults, existingByTheme), target);
+    let presets = {};
+    Object.keys(semanticColorByThemeDefaults).forEach(key => {
+        let existingPreset = existingByTheme && typeof existingByTheme === "object" ? existingByTheme[key] || {} : {};
+        presets[key] = Object.assign({}, semanticColorByThemeDefaults[key], existingPreset);
+    });
+    await config.update("semanticColors.byTheme", presets, target);
     vscode_1.window.showInformationMessage(target === vscode_1.ConfigurationTarget.Workspace
         ? "AoE2 semantic color settings written to workspace settings.json."
         : "AoE2 semantic color settings written to user settings.json.");

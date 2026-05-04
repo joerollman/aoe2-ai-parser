@@ -5,6 +5,12 @@ this file. Version numbers are given as:
 
     <major>.<minor>.<patch>
 
+## v0.1.78
+
+- Simplify semantic color scaffolding to extension-owned settings only. The
+  scaffold now writes `Dark`, `Light`, and `Custom` presets plus the preset
+  selector, instead of raw VS Code token color customization blocks.
+
 ## v0.1.77
 
 - Add `AoE2: Write Semantic Color Settings`, which writes the current semantic
@@ -22,8 +28,7 @@ this file. Version numbers are given as:
 - Add direct `aoe2_AiScript.semanticColors.*` settings for action, fact,
   fact/action, command, strategic-number, object, tech, value, and local
   constant colors. These settings apply when parser semantic colors are enabled,
-  so users can tune token colors without editing raw
-  `editor.semanticTokenColorCustomizations`.
+  so users can tune token colors through extension-owned settings.
 
 ## v0.1.74
 

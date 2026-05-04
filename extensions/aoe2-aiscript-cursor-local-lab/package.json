@@ -2,7 +2,7 @@
 	"name": "aoe2-ai-parser",
 	"displayName": "AOE2 AI Parser",
 	"description": "Parser diagnostics, command tooltips, syntax highlighting, and autocomplete for Age of Empires 2 AI scripts in VS Code and Cursor",
-	"version": "0.1.77",
+	"version": "0.1.78",
 	"keywords": [
 		"aoeII",
 		"age",
@@ -161,6 +161,18 @@
 					"default": false,
 					"description": "Enable parser-specific semantic coloring for commands, facts, strategic numbers, objects, techs, values, and local constants. Default off so users keep their normal editor theme colors."
 				},
+				"aoe2_AiScript.semanticColors.theme": {
+					"scope": "resource.aiscript",
+					"type": "string",
+					"enum": [
+						"auto",
+						"dark",
+						"light",
+						"custom"
+					],
+					"default": "auto",
+					"description": "Select which semantic color preset to use when parser semantic colors are enabled. Auto uses Light for light-named editor themes and Dark otherwise."
+				},
 				"aoe2_AiScript.semanticColors.action": {
 					"scope": "resource.aiscript",
 					"type": "string",
@@ -219,7 +231,7 @@
 					"scope": "resource.aiscript",
 					"type": "object",
 					"default": {
-						"AOE2 AI Parser Dark": {
+						"Dark": {
 							"action": "#5DADEC",
 							"fact": "#C69CFF",
 							"factAction": "#38C2B3",
@@ -230,7 +242,7 @@
 							"value": "#D6C56F",
 							"localConstant": "#57D68D"
 						},
-						"AOE2 AI Parser Light": {
+						"Light": {
 							"action": "#0550AE",
 							"fact": "#6F42C1",
 							"factAction": "#008B8B",
@@ -240,9 +252,20 @@
 							"tech": "#22863A",
 							"value": "#6E5A00",
 							"localConstant": "#116329"
+						},
+						"Custom": {
+							"action": "#569CD6",
+							"fact": "#C586C0",
+							"factAction": "#4EC9B0",
+							"command": "#DCDCAA",
+							"strategicNumber": "#4BA3FF",
+							"object": "#CE9178",
+							"tech": "#B5CEA8",
+							"value": "#D7BA7D",
+							"localConstant": "#7EE787"
 						}
 					},
-					"description": "Theme-specific semantic colors keyed by active VS Code/Cursor color theme name. Theme entries override the global aoe2_AiScript.semanticColors.* values when parser semantic colors are enabled."
+					"description": "Semantic color presets for parser coloring. The built-in selector uses Dark, Light, or Custom; an exact active editor theme name can also override these presets."
 				},
 				"aoe2_AiScript.labPath": {
 					"scope": "resource.aiscript",
@@ -255,38 +278,6 @@
 					"type": "string",
 					"default": "python",
 					"description": "Python executable used to run parser diagnostics."
-				}
-			}
-		},
-		"configurationDefaults": {
-			"editor.semanticTokenColorCustomizations": {
-				"[AOE2 AI Parser Dark]": {
-					"enabled": true,
-					"rules": {
-						"aoe2Action:aoe2aiscript": "#5DADEC",
-						"aoe2Fact:aoe2aiscript": "#C69CFF",
-						"aoe2FactAction:aoe2aiscript": "#38C2B3",
-						"aoe2Command:aoe2aiscript": "#D7A72F",
-						"aoe2StrategicNumber:aoe2aiscript": "#4CC2FF",
-						"aoe2Object:aoe2aiscript": "#F0A35E",
-						"aoe2Tech:aoe2aiscript": "#8FD694",
-						"aoe2Value:aoe2aiscript": "#D6C56F",
-						"aoe2LocalConstant:aoe2aiscript": "#57D68D"
-					}
-				},
-				"[AOE2 AI Parser Light]": {
-					"enabled": true,
-					"rules": {
-						"aoe2Action:aoe2aiscript": "#0550AE",
-						"aoe2Fact:aoe2aiscript": "#6F42C1",
-						"aoe2FactAction:aoe2aiscript": "#008B8B",
-						"aoe2Command:aoe2aiscript": "#7A5B00",
-						"aoe2StrategicNumber:aoe2aiscript": "#0A7EA4",
-						"aoe2Object:aoe2aiscript": "#B35900",
-						"aoe2Tech:aoe2aiscript": "#22863A",
-						"aoe2Value:aoe2aiscript": "#6E5A00",
-						"aoe2LocalConstant:aoe2aiscript": "#116329"
-					}
 				}
 			}
 		},

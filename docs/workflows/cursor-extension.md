@@ -384,36 +384,27 @@ Cursor can color known symbols by registry role:
 - `aoe2LocalConstant`: local `defconst` declarations.
 
 The contributed `AOE2 AI Parser Dark` and `AOE2 AI Parser Light` themes assign
-default colors for these token types. Users can override individual colors with
-normal VS Code/Cursor settings, either globally or scoped to one parser theme.
-The extension also exposes direct `aoe2_AiScript.semanticColors.*` settings
-for users who do not want to edit `editor.semanticTokenColorCustomizations`
-manually. When `aoe2_AiScript.enableSemanticColors` is enabled, the client
-applies these settings through editor decorations so they work across arbitrary
-themes. Global settings apply to every theme:
+default colors for these token types. Parser-specific semantic colors are off
+by default so users keep their normal editor theme colors. When
+`aoe2_AiScript.enableSemanticColors` is enabled, the client applies
+extension-owned color settings through editor decorations so they work across
+arbitrary themes.
+
+The extension-owned color model has three presets under
+`aoe2_AiScript.semanticColors.byTheme`: `Dark`, `Light`, and `Custom`.
+`aoe2_AiScript.semanticColors.theme` controls which preset is active:
+
+- `auto`: use `Light` for light-named editor themes and `Dark` otherwise.
+- `dark`: force the `Dark` preset.
+- `light`: force the `Light` preset.
+- `custom`: force the `Custom` preset.
 
 ```json
 {
-  "aoe2_AiScript.semanticColors.action": "#5DADEC",
-  "aoe2_AiScript.semanticColors.fact": "#C69CFF",
-  "aoe2_AiScript.semanticColors.factAction": "#38C2B3",
-  "aoe2_AiScript.semanticColors.command": "#D7A72F",
-  "aoe2_AiScript.semanticColors.strategicNumber": "#4CC2FF",
-  "aoe2_AiScript.semanticColors.object": "#F0A35E",
-  "aoe2_AiScript.semanticColors.tech": "#8FD694",
-  "aoe2_AiScript.semanticColors.value": "#D6C56F",
-  "aoe2_AiScript.semanticColors.localConstant": "#57D68D"
-}
-```
-
-Theme-specific settings are stored in `aoe2_AiScript.semanticColors.byTheme`.
-The top-level keys must match VS Code/Cursor color theme names. Values in the
-active theme entry override the global `semanticColors.*` values:
-
-```json
-{
+  "aoe2_AiScript.enableSemanticColors": true,
+  "aoe2_AiScript.semanticColors.theme": "auto",
   "aoe2_AiScript.semanticColors.byTheme": {
-    "AOE2 AI Parser Dark": {
+    "Dark": {
       "action": "#5DADEC",
       "fact": "#C69CFF",
       "factAction": "#38C2B3",
@@ -424,7 +415,7 @@ active theme entry override the global `semanticColors.*` values:
       "value": "#D6C56F",
       "localConstant": "#57D68D"
     },
-    "AOE2 AI Parser Light": {
+    "Light": {
       "action": "#0550AE",
       "fact": "#6F42C1",
       "factAction": "#008B8B",
@@ -434,57 +425,27 @@ active theme entry override the global `semanticColors.*` values:
       "tech": "#22863A",
       "value": "#6E5A00",
       "localConstant": "#116329"
-    }
-  }
-}
-```
-`AoE2: Write Semantic Color Settings` scaffolds the current global and
-per-theme color settings into workspace `settings.json` when a workspace is
-open, or user `settings.json` otherwise. This makes the editable fields visible
-for users who do not know the setting names.
-
-The extension contributes default entries for these theme-scoped rules so the
-editable token names are visible from settings JSON:
-
-```json
-{
-  "editor.semanticTokenColorCustomizations": {
-    "[AOE2 AI Parser Dark]": {
-      "enabled": true,
-      "rules": {
-        "aoe2Action:aoe2aiscript": "#5DADEC",
-        "aoe2Fact:aoe2aiscript": "#C69CFF",
-        "aoe2FactAction:aoe2aiscript": "#38C2B3",
-        "aoe2Command:aoe2aiscript": "#D7A72F",
-        "aoe2StrategicNumber:aoe2aiscript": "#4CC2FF",
-        "aoe2Object:aoe2aiscript": "#F0A35E",
-        "aoe2Tech:aoe2aiscript": "#8FD694",
-        "aoe2Value:aoe2aiscript": "#D6C56F",
-        "aoe2LocalConstant:aoe2aiscript": "#57D68D"
-      }
     },
-    "[AOE2 AI Parser Light]": {
-      "enabled": true,
-      "rules": {
-        "aoe2Action:aoe2aiscript": "#0550AE",
-        "aoe2Fact:aoe2aiscript": "#6F42C1",
-        "aoe2FactAction:aoe2aiscript": "#008B8B",
-        "aoe2Command:aoe2aiscript": "#7A5B00",
-        "aoe2StrategicNumber:aoe2aiscript": "#0A7EA4",
-        "aoe2Object:aoe2aiscript": "#B35900",
-        "aoe2Tech:aoe2aiscript": "#22863A",
-        "aoe2Value:aoe2aiscript": "#6E5A00",
-        "aoe2LocalConstant:aoe2aiscript": "#116329"
-      }
+    "Custom": {
+      "action": "#569CD6",
+      "fact": "#C586C0",
+      "factAction": "#4EC9B0",
+      "command": "#DCDCAA",
+      "strategicNumber": "#4BA3FF",
+      "object": "#CE9178",
+      "tech": "#B5CEA8",
+      "value": "#D7BA7D",
+      "localConstant": "#7EE787"
     }
   }
 }
 ```
-
-The workspace also includes TextMate fallback color rules for the grammar scopes
-used by commands, facts, strategic numbers, object-ish tokens, value tokens,
-resources, and local constants. These fallback rules help Cursor themes that do
-not visibly apply custom semantic token types.
+`AoE2: Write Semantic Color Settings` scaffolds these three presets into
+workspace `settings.json` when a workspace is open, or user `settings.json`
+otherwise. This makes the editable fields visible for users who do not know the
+setting names. Exact active editor theme names may also be added under
+`semanticColors.byTheme` for advanced overrides, but the scaffold intentionally
+uses the simpler `Dark`, `Light`, and `Custom` entries.
 
 Use `samples/semantic_coloring_sample.per` as the visual check file after
 changing grammar scopes or color settings. It is intentionally lint-clean while

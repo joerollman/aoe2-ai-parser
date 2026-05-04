@@ -239,8 +239,6 @@ class CursorExtensionTests(unittest.TestCase):
         extension_root = root / "extensions" / "aoe2-aiscript-cursor-local-lab"
         package_data = json.loads((extension_root / "package.json").read_text(encoding="utf-8"))
         settings = package_data["contributes"]["configuration"]["properties"]
-        defaults = package_data["contributes"]["configurationDefaults"]
-        customization_defaults = defaults["editor.semanticTokenColorCustomizations"]
         themes = {
             theme["label"]: theme
             for theme in package_data["contributes"]["themes"]
@@ -272,9 +270,13 @@ class CursorExtensionTests(unittest.TestCase):
         self.assertEqual(themes["AOE2 AI Parser Dark"]["uiTheme"], "vs-dark")
         self.assertEqual(themes["AOE2 AI Parser Light"]["uiTheme"], "vs")
         self.assertEqual(themes["AOE2 AiScript Classic"]["uiTheme"], "vs-dark")
-        self.assertIn("[AOE2 AI Parser Dark]", customization_defaults)
-        self.assertIn("[AOE2 AI Parser Light]", customization_defaults)
+        self.assertNotIn("configurationDefaults", package_data["contributes"])
         self.assertFalse(settings["aoe2_AiScript.enableSemanticColors"]["default"])
+        self.assertEqual(settings["aoe2_AiScript.semanticColors.theme"]["default"], "auto")
+        self.assertEqual(
+            settings["aoe2_AiScript.semanticColors.theme"]["enum"],
+            ["auto", "dark", "light", "custom"],
+        )
         for setting_name in [
             "aoe2_AiScript.semanticColors.action",
             "aoe2_AiScript.semanticColors.fact",
@@ -289,10 +291,10 @@ class CursorExtensionTests(unittest.TestCase):
             self.assertIn(setting_name, settings)
             self.assertTrue(settings[setting_name]["default"].startswith("#"))
         by_theme = settings["aoe2_AiScript.semanticColors.byTheme"]["default"]
-        self.assertIn("AOE2 AI Parser Dark", by_theme)
-        self.assertIn("AOE2 AI Parser Light", by_theme)
-        self.assertEqual(by_theme["AOE2 AI Parser Dark"]["action"], "#5DADEC")
-        self.assertEqual(by_theme["AOE2 AI Parser Light"]["action"], "#0550AE")
+        self.assertEqual(set(by_theme), {"Dark", "Light", "Custom"})
+        self.assertEqual(by_theme["Dark"]["action"], "#5DADEC")
+        self.assertEqual(by_theme["Light"]["action"], "#0550AE")
+        self.assertEqual(by_theme["Custom"]["action"], "#569CD6")
 
         for label, expected_type in [
             ("AOE2 AI Parser Dark", "dark"),
@@ -308,10 +310,6 @@ class CursorExtensionTests(unittest.TestCase):
             for token in semantic_tokens:
                 self.assertIn(token, semantic_colors)
                 self.assertIn(f"{token}:aoe2aiscript", semantic_colors)
-                self.assertIn(
-                    f"{token}:aoe2aiscript",
-                    customization_defaults[f"[{label}]"]["rules"],
-                )
 
         dark_data = json.loads(
             (extension_root / "themes" / "aoe2-ai-parser-dark-color-theme.json").read_text(
@@ -361,10 +359,12 @@ class CursorExtensionTests(unittest.TestCase):
         self.assertIn("semanticColorSettingKeys", extension_source)
         self.assertIn('aoe2Action: "semanticColors.action"', extension_source)
         self.assertIn('config.get("semanticColors.byTheme")', extension_source)
+        self.assertIn('config.get("semanticColors.theme")', extension_source)
         self.assertIn('get("colorTheme")', extension_source)
         self.assertIn("function refreshSemanticDecorationTypes", extension_source)
         self.assertIn("async function scaffoldSemanticColorSettings", extension_source)
         self.assertIn('config.update("semanticColors.byTheme"', extension_source)
+        self.assertIn('config.update("semanticColors.theme"', extension_source)
         self.assertIn("ConfigurationTarget.Workspace", extension_source)
         self.assertIn("createTextEditorDecorationType({ color })", extension_source)
         self.assertIn("function semanticDecorationRanges", extension_source)

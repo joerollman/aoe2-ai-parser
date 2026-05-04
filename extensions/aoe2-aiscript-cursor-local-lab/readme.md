@@ -134,12 +134,6 @@ Reviewed findings can be suppressed inline with comments:
 Diagnostics expose a quick fix named `Suppress <code> on this line`, which
 inserts `; aoe2-ai-parser-disable-line <code>`.
 
-You can customize parser-specific colors with standard VS Code/Cursor
-`editor.semanticTokenColorCustomizations` settings. The main semantic token
-names are `aoe2Action`, `aoe2Fact`, `aoe2FactAction`, `aoe2Command`,
-`aoe2StrategicNumber`, `aoe2Object`, `aoe2Tech`, `aoe2Value`, and
-`aoe2LocalConstant`.
-
 Parser-specific semantic colors are off by default. Enable
 `aoe2_AiScript.enableSemanticColors` if you want those token categories colored
 separately from your normal theme.
@@ -147,60 +141,34 @@ You can then customize the colors directly through extension settings:
 
 ```json
 {
-  "aoe2_AiScript.semanticColors.action": "#5DADEC",
-  "aoe2_AiScript.semanticColors.fact": "#C69CFF",
-  "aoe2_AiScript.semanticColors.strategicNumber": "#4CC2FF",
-  "aoe2_AiScript.semanticColors.object": "#F0A35E",
-  "aoe2_AiScript.semanticColors.localConstant": "#57D68D"
-}
-```
-
-Theme-specific colors can be saved under `semanticColors.byTheme`. The key must
-match the active editor color theme name:
-
-```json
-{
+  "aoe2_AiScript.semanticColors.theme": "auto",
   "aoe2_AiScript.semanticColors.byTheme": {
-    "AOE2 AI Parser Dark": {
+    "Dark": {
       "action": "#5DADEC",
       "fact": "#C69CFF",
-      "strategicNumber": "#4CC2FF"
+      "strategicNumber": "#4CC2FF",
+      "localConstant": "#57D68D"
     },
-    "AOE2 AI Parser Light": {
+    "Light": {
       "action": "#0550AE",
       "fact": "#6F42C1",
-      "strategicNumber": "#0A7EA4"
+      "strategicNumber": "#0A7EA4",
+      "localConstant": "#116329"
+    },
+    "Custom": {
+      "action": "#569CD6",
+      "fact": "#C586C0",
+      "strategicNumber": "#4BA3FF",
+      "localConstant": "#7EE787"
     }
   }
 }
 ```
 
 Run `AoE2: Write Semantic Color Settings` from the command palette to write the
-current global and per-theme semantic color values into `settings.json` for
-editing.
-
-The extension contributes parser-theme defaults for these keys. Theme-scoped
-overrides let each individual parser color be changed without affecting other
-themes:
-
-```json
-{
-  "editor.semanticTokenColorCustomizations": {
-    "[AOE2 AI Parser Dark]": {
-      "rules": {
-        "aoe2Action:aoe2aiscript": "#5DADEC",
-        "aoe2StrategicNumber:aoe2aiscript": "#4CC2FF"
-      }
-    },
-    "[AOE2 AI Parser Light]": {
-      "rules": {
-        "aoe2Action:aoe2aiscript": "#0550AE",
-        "aoe2StrategicNumber:aoe2aiscript": "#0A7EA4"
-      }
-    }
-  }
-}
-```
+`Dark`, `Light`, and `Custom` presets into `settings.json` for editing. The
+`auto` selector uses `Light` for light-named editor themes and `Dark`
+otherwise; set it to `custom` to force the custom preset.
 
 ## Attribution
 

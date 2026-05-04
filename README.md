@@ -132,73 +132,40 @@ less strict, change the fail level in workspace settings:
 }
 ```
 
-Syntax colors can be customized with normal VS Code/Cursor settings. The
-extension contributes semantic token names such as `aoe2Action`,
-`aoe2Fact`, `aoe2StrategicNumber`, `aoe2Object`, and `aoe2LocalConstant`;
-override them through `editor.semanticTokenColorCustomizations`.
-For users who do not want to edit raw semantic-token JSON, the extension also
-exposes direct settings when `aoe2_AiScript.enableSemanticColors` is enabled:
+Syntax colors can be customized through extension settings when
+`aoe2_AiScript.enableSemanticColors` is enabled:
 
 ```json
 {
-  "aoe2_AiScript.semanticColors.action": "#5DADEC",
-  "aoe2_AiScript.semanticColors.fact": "#C69CFF",
-  "aoe2_AiScript.semanticColors.strategicNumber": "#4CC2FF",
-  "aoe2_AiScript.semanticColors.object": "#F0A35E",
-  "aoe2_AiScript.semanticColors.localConstant": "#57D68D"
-}
-```
-
-Theme-specific overrides are available through `semanticColors.byTheme`. The
-key must match the active VS Code/Cursor color theme name:
-
-```json
-{
+  "aoe2_AiScript.semanticColors.theme": "auto",
   "aoe2_AiScript.semanticColors.byTheme": {
-    "AOE2 AI Parser Dark": {
+    "Dark": {
       "action": "#5DADEC",
       "fact": "#C69CFF",
-      "strategicNumber": "#4CC2FF"
+      "strategicNumber": "#4CC2FF",
+      "localConstant": "#57D68D"
     },
-    "AOE2 AI Parser Light": {
+    "Light": {
       "action": "#0550AE",
       "fact": "#6F42C1",
-      "strategicNumber": "#0A7EA4"
+      "strategicNumber": "#0A7EA4",
+      "localConstant": "#116329"
+    },
+    "Custom": {
+      "action": "#569CD6",
+      "fact": "#C586C0",
+      "strategicNumber": "#4BA3FF",
+      "localConstant": "#7EE787"
     }
   }
 }
 ```
 
 Use `AoE2: Write Semantic Color Settings` from the command palette to write the
-current global and per-theme semantic color values into `settings.json` so the
-fields are visible and easy to edit.
-
-You can override individual parser colors globally or only for one contributed
-theme. The extension also contributes these parser-theme defaults so the keys
-are discoverable from settings JSON and can be edited directly:
-
-```json
-{
-  "editor.semanticTokenColorCustomizations": {
-    "[AOE2 AI Parser Dark]": {
-      "enabled": true,
-      "rules": {
-        "aoe2Action:aoe2aiscript": "#5DADEC",
-        "aoe2StrategicNumber:aoe2aiscript": "#4CC2FF",
-        "aoe2LocalConstant:aoe2aiscript": "#57D68D"
-      }
-    },
-    "[AOE2 AI Parser Light]": {
-      "enabled": true,
-      "rules": {
-        "aoe2Action:aoe2aiscript": "#0550AE",
-        "aoe2StrategicNumber:aoe2aiscript": "#0A7EA4",
-        "aoe2LocalConstant:aoe2aiscript": "#116329"
-      }
-    }
-  }
-}
-```
+`Dark`, `Light`, and `Custom` color presets into `settings.json` so the fields
+are visible and easy to edit. The `auto` theme selector uses `Light` for
+light-named editor themes and `Dark` otherwise; set it to `custom` to force the
+custom preset.
 
 The marketplace extension identity is:
 

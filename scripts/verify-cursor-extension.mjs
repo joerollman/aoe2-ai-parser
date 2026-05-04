@@ -75,7 +75,8 @@ const workspaceSettings = readJson(workspaceSettingsPath);
 const language = packageData.contributes.languages[0];
 const commands = new Set(packageData.contributes.commands.map((command) => command.command));
 const themes = new Map(packageData.contributes.themes.map((theme) => [theme.label, theme]));
-const semanticColorDefaults = packageData.contributes.configurationDefaults?.["editor.semanticTokenColorCustomizations"] || {};
+const semanticColorSettings = packageData.contributes.configuration.properties;
+const semanticColorPresets = semanticColorSettings["aoe2_AiScript.semanticColors.byTheme"]?.default || {};
 const semanticTokenTypes = new Set((packageData.contributes.semanticTokenTypes || []).map((tokenType) => tokenType.id));
 const completionLabels = new Set(completions.items.map((item) => item.label));
 
@@ -92,8 +93,10 @@ assert(darkTheme.semanticHighlighting === true, "dark theme must enable semantic
 assert(lightTheme.semanticHighlighting === true, "light theme must enable semantic highlighting");
 assert(Array.isArray(darkTheme.tokenColors), "dark theme must include TextMate fallback token colors");
 assert(Array.isArray(lightTheme.tokenColors), "light theme must include TextMate fallback token colors");
-assert(semanticColorDefaults["[AOE2 AI Parser Dark]"], "dark theme semantic color defaults are missing");
-assert(semanticColorDefaults["[AOE2 AI Parser Light]"], "light theme semantic color defaults are missing");
+assert(semanticColorSettings["aoe2_AiScript.semanticColors.theme"]?.default === "auto", "semantic color theme selector must default to auto");
+assert(semanticColorPresets.Dark, "Dark semantic color preset is missing");
+assert(semanticColorPresets.Light, "Light semantic color preset is missing");
+assert(semanticColorPresets.Custom, "Custom semantic color preset is missing");
 
 for (const command of [
   "aoe2AiScript.lintCurrentFile",
@@ -149,6 +152,7 @@ assertIncludes(clientSource, "semanticColorDefaults", clientPath);
 assertIncludes(clientSource, "semanticColorByThemeDefaults", clientPath);
 assertIncludes(clientSource, "semanticColorSettingKeys", clientPath);
 assertIncludes(clientSource, 'config.get("semanticColors.byTheme")', clientPath);
+assertIncludes(clientSource, 'config.get("semanticColors.theme")', clientPath);
 assertIncludes(clientSource, 'get("colorTheme")', clientPath);
 assertIncludes(clientSource, "function refreshSemanticDecorationTypes", clientPath);
 assertIncludes(clientSource, "async function scaffoldSemanticColorSettings", clientPath);
@@ -186,7 +190,8 @@ assertIncludes(grammarSource, "constant.other.object.aoe2aiscript", grammarPath)
 assertIncludes(grammarSource, "constant.other.value.aoe2aiscript", grammarPath);
 assertIncludes(grammarSource, "variable.other.constant.aoe2aiscript", grammarPath);
 assert(workspaceSettings["editor.semanticHighlighting.enabled"] === true, "workspace semantic highlighting must be enabled");
-assert(workspaceSettings["editor.tokenColorCustomizations"], "workspace TextMate token colors must be configured");
+assert(!workspaceSettings["editor.semanticTokenColorCustomizations"], "workspace must not carry native semantic token color overrides");
+assert(!workspaceSettings["editor.tokenColorCustomizations"], "workspace must not carry native TextMate token color overrides");
 
 for (const tokenType of [
   "aoe2Action",
@@ -204,8 +209,6 @@ for (const tokenType of [
   assert(lightTheme.semanticTokenColors[tokenType], `light theme missing color for ${tokenType}`);
   assert(darkTheme.semanticTokenColors[`${tokenType}:aoe2aiscript`], `dark theme missing language-scoped color for ${tokenType}`);
   assert(lightTheme.semanticTokenColors[`${tokenType}:aoe2aiscript`], `light theme missing language-scoped color for ${tokenType}`);
-  assert(semanticColorDefaults["[AOE2 AI Parser Dark]"].rules[`${tokenType}:aoe2aiscript`], `dark theme semantic default missing ${tokenType}`);
-  assert(semanticColorDefaults["[AOE2 AI Parser Light]"].rules[`${tokenType}:aoe2aiscript`], `light theme semantic default missing ${tokenType}`);
 }
 assert(
   darkTheme.semanticTokenColors.aoe2StrategicNumber !== darkTheme.semanticTokenColors.aoe2LocalConstant,
