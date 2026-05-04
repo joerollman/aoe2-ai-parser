@@ -89,7 +89,8 @@ it colors the original TextMate scopes and leaves semantic highlighting off.
 which nearby `.ai` root reaches the active `.per` through load directives, then
 validates that selected AI root plus reachable `.per` loads. If exactly one AI
 reaches the active file, it is selected automatically; if the file is shared by
-multiple AIs, the extension asks which root to use.
+multiple AIs, the extension asks which root to use. If no AI load graph reaches
+the active file, the command stops instead of guessing from nearby `.ai` files.
 `Lint Current Folder` validates `.ai` roots directly inside the active file's
 folder only. `Lint Recursive Folder` validates every `.ai` root below that
 folder.

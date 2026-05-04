@@ -229,7 +229,9 @@ nested `.per`, this walks upward to nearby `.ai` roots, follows each root's
 reachable `.per` load graph, and checks which roots contain the active file. If
 exactly one `.ai` reaches the file, that root is selected automatically. If a
 shared `.per` is reachable from multiple `.ai` roots, the extension asks which
-root to lint.
+root to lint. If no `.ai` load graph reaches the active file, the command stops
+with a no-candidate message instead of falling back to unrelated nearby `.ai`
+files.
 
 `AoE2: Lint Current Folder` runs the same package validator against `.ai` roots
 directly inside the folder that contains the active file. `AoE2: Lint Recursive

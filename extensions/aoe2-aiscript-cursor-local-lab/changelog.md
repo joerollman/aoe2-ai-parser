@@ -10,7 +10,8 @@ this file. Version numbers are given as:
 - Make current-AI lint, format, and format-then-lint resolve nested `.per`
   files by following nearby `.ai` load graphs. If exactly one `.ai` reaches the
   active `.per`, that root is used automatically; shared `.per` files prompt
-  for an AI root.
+  for an AI root. If no `.ai` reaches the active file, the command stops instead
+  of guessing from nearby `.ai` files.
 - Add CLI `resolve-current-ai` for lightweight load-graph scope resolution.
 
 ## v0.1.73

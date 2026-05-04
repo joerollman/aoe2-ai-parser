@@ -644,39 +644,18 @@ async function currentAiRoot() {
                 });
                 return picked ? picked.file : undefined;
             }
-            let candidates = payload.candidates || [];
-            if (candidates.length > 0) {
-                let picked = await vscode_1.window.showQuickPick(candidates.map(candidate => ({
-                    label: path.basename(candidate.ai_path),
-                    description: candidate.ai_path,
-                    detail: "nearby .ai root; active .per was not found in its load graph",
-                    file: candidate.ai_path
-                })), {
-                    placeHolder: "No .ai load graph reaches this file. Select a nearby AI root."
-                });
-                return picked ? picked.file : undefined;
-            }
+            vscode_1.window.showWarningMessage("No candidate AI found: no nearby .ai load graph reaches the active file.");
+            return undefined;
         }
         catch (error) {
             let channel = getOutputChannel();
-            channel.appendLine("Current AI graph resolution failed; falling back to same-folder lookup.");
+            channel.appendLine("Current AI graph resolution failed.");
             channel.appendLine(String(error && error.stderr ? error.stderr : (error && error.message ? error.message : error)));
+            vscode_1.window.showErrorMessage("Current AI graph resolution failed. See AOE2 AI Parser output.");
+            return undefined;
         }
     }
-    let folderPath = fs.statSync(filePath).isDirectory() ? filePath : path.dirname(filePath);
-    let aiFiles = fs.readdirSync(folderPath)
-        .filter(name => name.toLowerCase().endsWith(".ai"))
-        .map(name => path.join(folderPath, name));
-    if (aiFiles.length === 1) {
-        return aiFiles[0];
-    }
-    if (aiFiles.length > 1) {
-        let picked = await vscode_1.window.showQuickPick(aiFiles.map(file => ({ label: path.basename(file), description: file, file })), {
-            placeHolder: "Select the .ai root to format/lint"
-        });
-        return picked ? picked.file : undefined;
-    }
-    vscode_1.window.showWarningMessage("No .ai root found for the active file.");
+    vscode_1.window.showWarningMessage("No candidate AI found: AOE2 AI Parser runtime is unavailable.");
     return undefined;
 }
 async function lintCurrentFile() {

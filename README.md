@@ -70,7 +70,9 @@ colors are opt-in so users keep their existing color scheme by default:
 which nearby `.ai` root reaches the active `.per` through load directives, then
 validates that selected AI root plus its reachable `.per` loads. If exactly one
 AI reaches the active file, it is selected automatically; if the file is shared
-by multiple AIs, the extension asks which root to use.
+by multiple AIs, the extension asks which root to use. If no AI load graph
+reaches the active file, the command stops instead of guessing from nearby
+`.ai` files.
 `Lint Current Folder` validates `.ai` roots directly inside the active file's
 folder only. `Lint Recursive Folder` validates every `.ai` root below that
 folder, which is useful when the selected folder is a whole AI package or mod

@@ -152,6 +152,8 @@ assertIncludes(clientSource, "async function lintCurrentAi", clientPath);
 assertIncludes(clientSource, "function lintFolderScope", clientPath);
 assertIncludes(clientSource, '"resolve-current-ai", filePath, "--json"', clientPath);
 assertIncludes(clientSource, "Multiple .ai roots reach this .per file", clientPath);
+assertIncludes(clientSource, "No candidate AI found: no nearby .ai load graph reaches the active file.", clientPath);
+assert(!clientSource.includes("No .ai load graph reaches this file. Select a nearby AI root."), "current-AI must not fall back to unrelated nearby roots");
 assert(!clientSource.includes("async function lintPackage"), "nearest-package lint command function should be removed");
 assert(!clientSource.includes("async function autoFormatPackage"), "nearest-package format command function should be removed");
 assertIncludes(clientSource, "await runLabCommand", clientPath);
