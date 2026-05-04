@@ -5,6 +5,12 @@ this file. Version numbers are given as:
 
     <major>.<minor>.<patch>
 
+## v0.1.76
+
+- Add `aoe2_AiScript.semanticColors.byTheme` so semantic colors can be saved
+  per editor color theme. The active theme's entry overrides the global
+  `aoe2_AiScript.semanticColors.*` values.
+
 ## v0.1.75
 
 - Add direct `aoe2_AiScript.semanticColors.*` settings for action, fact,

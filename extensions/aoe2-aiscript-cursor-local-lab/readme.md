@@ -155,6 +155,26 @@ You can then customize the colors directly through extension settings:
 }
 ```
 
+Theme-specific colors can be saved under `semanticColors.byTheme`. The key must
+match the active editor color theme name:
+
+```json
+{
+  "aoe2_AiScript.semanticColors.byTheme": {
+    "AOE2 AI Parser Dark": {
+      "action": "#5DADEC",
+      "fact": "#C69CFF",
+      "strategicNumber": "#4CC2FF"
+    },
+    "AOE2 AI Parser Light": {
+      "action": "#0550AE",
+      "fact": "#6F42C1",
+      "strategicNumber": "#0A7EA4"
+    }
+  }
+}
+```
+
 The extension contributes parser-theme defaults for these keys. Theme-scoped
 overrides let each individual parser color be changed without affecting other
 themes:

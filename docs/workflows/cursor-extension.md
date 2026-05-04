@@ -390,7 +390,7 @@ The extension also exposes direct `aoe2_AiScript.semanticColors.*` settings
 for users who do not want to edit `editor.semanticTokenColorCustomizations`
 manually. When `aoe2_AiScript.enableSemanticColors` is enabled, the client
 applies these settings through editor decorations so they work across arbitrary
-themes:
+themes. Global settings apply to every theme:
 
 ```json
 {
@@ -403,6 +403,39 @@ themes:
   "aoe2_AiScript.semanticColors.tech": "#8FD694",
   "aoe2_AiScript.semanticColors.value": "#D6C56F",
   "aoe2_AiScript.semanticColors.localConstant": "#57D68D"
+}
+```
+
+Theme-specific settings are stored in `aoe2_AiScript.semanticColors.byTheme`.
+The top-level keys must match VS Code/Cursor color theme names. Values in the
+active theme entry override the global `semanticColors.*` values:
+
+```json
+{
+  "aoe2_AiScript.semanticColors.byTheme": {
+    "AOE2 AI Parser Dark": {
+      "action": "#5DADEC",
+      "fact": "#C69CFF",
+      "factAction": "#38C2B3",
+      "command": "#D7A72F",
+      "strategicNumber": "#4CC2FF",
+      "object": "#F0A35E",
+      "tech": "#8FD694",
+      "value": "#D6C56F",
+      "localConstant": "#57D68D"
+    },
+    "AOE2 AI Parser Light": {
+      "action": "#0550AE",
+      "fact": "#6F42C1",
+      "factAction": "#008B8B",
+      "command": "#7A5B00",
+      "strategicNumber": "#0A7EA4",
+      "object": "#B35900",
+      "tech": "#22863A",
+      "value": "#6E5A00",
+      "localConstant": "#116329"
+    }
+  }
 }
 ```
 The extension contributes default entries for these theme-scoped rules so the

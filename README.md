@@ -149,6 +149,26 @@ exposes direct settings when `aoe2_AiScript.enableSemanticColors` is enabled:
 }
 ```
 
+Theme-specific overrides are available through `semanticColors.byTheme`. The
+key must match the active VS Code/Cursor color theme name:
+
+```json
+{
+  "aoe2_AiScript.semanticColors.byTheme": {
+    "AOE2 AI Parser Dark": {
+      "action": "#5DADEC",
+      "fact": "#C69CFF",
+      "strategicNumber": "#4CC2FF"
+    },
+    "AOE2 AI Parser Light": {
+      "action": "#0550AE",
+      "fact": "#6F42C1",
+      "strategicNumber": "#0A7EA4"
+    }
+  }
+}
+```
+
 You can override individual parser colors globally or only for one contributed
 theme. The extension also contributes these parser-theme defaults so the keys
 are discoverable from settings JSON and can be edited directly:

@@ -286,6 +286,11 @@ class CursorExtensionTests(unittest.TestCase):
         ]:
             self.assertIn(setting_name, settings)
             self.assertTrue(settings[setting_name]["default"].startswith("#"))
+        by_theme = settings["aoe2_AiScript.semanticColors.byTheme"]["default"]
+        self.assertIn("AOE2 AI Parser Dark", by_theme)
+        self.assertIn("AOE2 AI Parser Light", by_theme)
+        self.assertEqual(by_theme["AOE2 AI Parser Dark"]["action"], "#5DADEC")
+        self.assertEqual(by_theme["AOE2 AI Parser Light"]["action"], "#0550AE")
 
         for label, expected_type in [
             ("AOE2 AI Parser Dark", "dark"),
@@ -349,7 +354,10 @@ class CursorExtensionTests(unittest.TestCase):
         )
 
         self.assertIn("semanticColorSettings", extension_source)
+        self.assertIn("semanticColorSettingKeys", extension_source)
         self.assertIn('aoe2Action: "semanticColors.action"', extension_source)
+        self.assertIn('config.get("semanticColors.byTheme")', extension_source)
+        self.assertIn('get("colorTheme")', extension_source)
         self.assertIn("function refreshSemanticDecorationTypes", extension_source)
         self.assertIn("createTextEditorDecorationType({ color })", extension_source)
         self.assertIn("function semanticDecorationRanges", extension_source)
@@ -357,6 +365,7 @@ class CursorExtensionTests(unittest.TestCase):
         self.assertIn("function scheduleSemanticDecorationUpdate", extension_source)
         self.assertIn("setTimeout(() =>", extension_source)
         self.assertIn('event.affectsConfiguration("aoe2_AiScript.semanticColors")', extension_source)
+        self.assertIn('event.affectsConfiguration("workbench.colorTheme")', extension_source)
 
     def test_lab_extension_exposes_package_fail_level_setting(self) -> None:
         root = Path(__file__).resolve().parents[1]

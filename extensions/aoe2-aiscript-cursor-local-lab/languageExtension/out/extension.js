@@ -26,6 +26,17 @@ const semanticColorSettings = {
     aoe2Value: "semanticColors.value",
     aoe2LocalConstant: "semanticColors.localConstant"
 };
+const semanticColorSettingKeys = {
+    aoe2Action: "action",
+    aoe2Fact: "fact",
+    aoe2FactAction: "factAction",
+    aoe2Command: "command",
+    aoe2StrategicNumber: "strategicNumber",
+    aoe2Object: "object",
+    aoe2Tech: "tech",
+    aoe2Value: "value",
+    aoe2LocalConstant: "localConstant"
+};
 function getOutputChannel() {
     if (!outputChannel) {
         outputChannel = vscode_1.window.createOutputChannel("AOE2 AI Parser");
@@ -139,9 +150,13 @@ function semanticColorsEnabled() {
 }
 function semanticColorOverrides() {
     let config = vscode_1.workspace.getConfiguration("aoe2_AiScript");
+    let activeTheme = vscode_1.workspace.getConfiguration("workbench").get("colorTheme") || "";
+    let byTheme = config.get("semanticColors.byTheme") || {};
+    let themeColors = activeTheme && byTheme && typeof byTheme === "object" ? byTheme[activeTheme] || {} : {};
     let colors = new Map();
     semanticTokenTypes.forEach(tokenType => {
-        let color = config.get(semanticColorSettings[tokenType]) || "";
+        let themeColor = themeColors && typeof themeColors === "object" ? themeColors[semanticColorSettingKeys[tokenType]] || "" : "";
+        let color = themeColor || config.get(semanticColorSettings[tokenType]) || "";
         if (typeof color === "string" && color.trim()) {
             colors.set(tokenType, color.trim());
         }
@@ -1198,7 +1213,7 @@ function activate(context) {
         scheduleSemanticDecorationUpdate(event.document);
     }));
     context.subscriptions.push(vscode_1.workspace.onDidChangeConfiguration(event => {
-        if (event.affectsConfiguration("aoe2_AiScript.enableSemanticColors") || event.affectsConfiguration("aoe2_AiScript.semanticColors")) {
+        if (event.affectsConfiguration("aoe2_AiScript.enableSemanticColors") || event.affectsConfiguration("aoe2_AiScript.semanticColors") || event.affectsConfiguration("workbench.colorTheme")) {
             vscode_1.window.visibleTextEditors.forEach(clearSemanticDecorationsForEditor);
             refreshSemanticDecorationTypes();
             updateSemanticDecorationsForVisibleEditors();

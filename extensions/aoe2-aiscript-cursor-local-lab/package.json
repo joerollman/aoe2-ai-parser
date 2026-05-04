@@ -2,7 +2,7 @@
 	"name": "aoe2-ai-parser",
 	"displayName": "AOE2 AI Parser",
 	"description": "Parser diagnostics, command tooltips, syntax highlighting, and autocomplete for Age of Empires 2 AI scripts in VS Code and Cursor",
-	"version": "0.1.75",
+	"version": "0.1.76",
 	"keywords": [
 		"aoeII",
 		"age",
@@ -213,6 +213,35 @@
 					"type": "string",
 					"default": "#57D68D",
 					"description": "Semantic color for local defconst names when parser semantic colors are enabled."
+				},
+				"aoe2_AiScript.semanticColors.byTheme": {
+					"scope": "resource.aiscript",
+					"type": "object",
+					"default": {
+						"AOE2 AI Parser Dark": {
+							"action": "#5DADEC",
+							"fact": "#C69CFF",
+							"factAction": "#38C2B3",
+							"command": "#D7A72F",
+							"strategicNumber": "#4CC2FF",
+							"object": "#F0A35E",
+							"tech": "#8FD694",
+							"value": "#D6C56F",
+							"localConstant": "#57D68D"
+						},
+						"AOE2 AI Parser Light": {
+							"action": "#0550AE",
+							"fact": "#6F42C1",
+							"factAction": "#008B8B",
+							"command": "#7A5B00",
+							"strategicNumber": "#0A7EA4",
+							"object": "#B35900",
+							"tech": "#22863A",
+							"value": "#6E5A00",
+							"localConstant": "#116329"
+						}
+					},
+					"description": "Theme-specific semantic colors keyed by active VS Code/Cursor color theme name. Theme entries override the global aoe2_AiScript.semanticColors.* values when parser semantic colors are enabled."
 				},
 				"aoe2_AiScript.labPath": {
 					"scope": "resource.aiscript",
