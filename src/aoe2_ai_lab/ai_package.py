@@ -114,6 +114,15 @@ class PackageIntegrityResult:
     duplicate_load_targets: list[DuplicateLoadTarget] = field(default_factory=list)
 
 
+@dataclass(frozen=True)
+class CurrentAiResolution:
+    path: Path
+    search_root: Path
+    candidates: list[PackageRoot]
+    matches: list[PackageRoot]
+    reason: str
+
+
 def merge_confidence(existing: str, incoming: str) -> str:
     if existing == "conditional" or incoming == "conditional":
         return "conditional"
@@ -147,6 +156,74 @@ def resolve_ai_roots(ai_path: str | Path, *, package_dir: str | Path | None = No
             roots.append(PackageRoot(ai_path=path, per_path=candidate, package_dir=root_file_folder))
             seen.add(resolved)
     return roots
+
+
+def nearest_ai_candidates(path: str | Path, *, search_root: str | Path | None = None) -> list[Path]:
+    file_path = Path(path)
+    if file_path.is_file() and file_path.suffix.lower() == ".ai":
+        return [file_path]
+
+    current = file_path if file_path.is_dir() else file_path.parent
+    stop_at = Path(search_root).resolve() if search_root is not None else None
+    while True:
+        candidates = sorted(current.glob("*.ai"))
+        if candidates:
+            return candidates
+        if stop_at is not None and current.resolve() == stop_at:
+            return []
+        parent = current.parent
+        if parent == current:
+            return []
+        if stop_at is not None:
+            try:
+                current.resolve().relative_to(stop_at)
+            except ValueError:
+                return []
+        current = parent
+
+
+def resolve_current_ai(path: str | Path, *, search_root: str | Path | None = None) -> CurrentAiResolution:
+    file_path = Path(path)
+    root_path = Path(search_root) if search_root is not None else (file_path.parent if file_path.parent else Path.cwd())
+    ai_paths = nearest_ai_candidates(file_path, search_root=root_path)
+    candidates: list[PackageRoot] = []
+    matches: list[PackageRoot] = []
+
+    if file_path.suffix.lower() == ".ai":
+        roots = resolve_ai_roots(file_path, package_dir=file_path.parent)
+        return CurrentAiResolution(
+            path=file_path,
+            search_root=root_path,
+            candidates=roots,
+            matches=roots,
+            reason="active-ai",
+        )
+
+    target = file_path.resolve()
+    for ai_path in ai_paths:
+        roots = resolve_ai_roots(ai_path, package_dir=ai_path.parent)
+        candidates.extend(roots)
+        for root in roots:
+            reachable, _missing = collect_reachable_per_files(root.per_path, package_root=root.package_dir)
+            reachable_paths = {reachable_path.resolve() for reachable_path in reachable}
+            if target in reachable_paths:
+                matches.append(root)
+
+    reason = "none"
+    if len(matches) == 1:
+        reason = "unique"
+    elif len(matches) > 1:
+        reason = "multiple"
+    elif candidates:
+        reason = "unmatched-candidates"
+
+    return CurrentAiResolution(
+        path=file_path,
+        search_root=root_path,
+        candidates=candidates,
+        matches=matches,
+        reason=reason,
+    )
 
 
 def describe_ai_root_failure(ai_path: str | Path, *, package_dir: str | Path | None = None) -> str:

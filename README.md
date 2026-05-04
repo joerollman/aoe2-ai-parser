@@ -66,8 +66,11 @@ colors are opt-in so users keep their existing color scheme by default:
 }
 ```
 
-`Lint Current File` validates only the active file. `Lint Current AI` validates
-the selected `.ai` root beside the active file plus its reachable `.per` loads.
+`Lint Current File` validates only the active file. `Lint Current AI` resolves
+which nearby `.ai` root reaches the active `.per` through load directives, then
+validates that selected AI root plus its reachable `.per` loads. If exactly one
+AI reaches the active file, it is selected automatically; if the file is shared
+by multiple AIs, the extension asks which root to use.
 `Lint Current Folder` validates `.ai` roots directly inside the active file's
 folder only. `Lint Recursive Folder` validates every `.ai` root below that
 folder, which is useful when the selected folder is a whole AI package or mod
@@ -94,8 +97,8 @@ files, comment wrapping up to `aoe2_AiScript.formatMaxLineLength` (maximum
 255), load path separator normalization, and conservative one-expression-per-
 line splitting for facts/actions. Chat lines are skipped by default; set
 `aoe2_AiScript.formatChat` only when you explicitly want chat lines formatted.
-`AoE2: AutoFormat Current AI` formats the selected `.ai` root beside the active
-file plus reachable `.per` loads. `AutoFormat Current Folder` formats direct
+`AoE2: AutoFormat Current AI` uses the same current-AI load-graph resolution
+and formats the selected `.ai` root plus reachable `.per` loads. `AutoFormat Current Folder` formats direct
 `.ai`/`.per` children only. `AutoFormat Recursive Folder` formats every
 `.ai`/`.per` below the active file's folder. The `Format Then Lint` commands
 run the corresponding formatter first and then lint the same scope when
@@ -231,6 +234,12 @@ Generate machine-readable package output for agents or CI:
 
 ```powershell
 python -m aoe2_ai_lab lint-package path\to\your-ai-package --json
+```
+
+Resolve which `.ai` root owns a nested `.per` before formatting or linting:
+
+```powershell
+python -m aoe2_ai_lab resolve-current-ai path\to\strategy\eco.per --search-root path\to\your-ai-package --json
 ```
 
 Generate a Markdown report:

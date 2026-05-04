@@ -85,8 +85,11 @@ it colors the original TextMate scopes and leaves semantic highlighting off.
   for commands, facts, strategic numbers, objects, techs, values, and local
   constants. Default is `false` so users keep their normal editor theme colors.
 
-`Lint Current File` validates only the active file. `Lint Current AI` validates
-the selected `.ai` root beside the active file plus reachable `.per` loads.
+`Lint Current File` validates only the active file. `Lint Current AI` resolves
+which nearby `.ai` root reaches the active `.per` through load directives, then
+validates that selected AI root plus reachable `.per` loads. If exactly one AI
+reaches the active file, it is selected automatically; if the file is shared by
+multiple AIs, the extension asks which root to use.
 `Lint Current Folder` validates `.ai` roots directly inside the active file's
 folder only. `Lint Recursive Folder` validates every `.ai` root below that
 folder.
@@ -105,8 +108,8 @@ comments, promotes overlong inline comments above code, normalizes load path
 separators to the dominant style in the file, and splits multiple same-line
 expressions into separate lines. Chat lines are skipped unless `formatChat` is
 enabled.
-`AoE2: AutoFormat Current AI` formats the selected `.ai` root beside the active
-file plus reachable `.per` loads. `AutoFormat Current Folder` formats direct
+`AoE2: AutoFormat Current AI` uses the same current-AI load-graph resolution
+and formats the selected `.ai` root plus reachable `.per` loads. `AutoFormat Current Folder` formats direct
 `.ai`/`.per` children only. `AutoFormat Recursive Folder` formats every
 `.ai`/`.per` below the active file's folder. The `Format Then Lint` commands
 run the corresponding formatter first and then lint the same scope when

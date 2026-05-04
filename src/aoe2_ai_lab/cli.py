@@ -29,6 +29,7 @@ from .ai_package import (
     inspect_package_integrity,
     lint_package_root,
     resolve_ai_roots,
+    resolve_current_ai,
 )
 from .assembler import assemble_per
 from .binary_strings import scan_strings, write_filtered_strings, write_userpatch_sections
@@ -243,6 +244,22 @@ def build_parser() -> argparse.ArgumentParser:
         action=argparse.BooleanOptionalAction,
         default=True,
         help="when linting a directory, recurse into subdirectories; use --no-recursive for direct children only",
+    )
+
+    current_ai = subparsers.add_parser(
+        "resolve-current-ai",
+        help="resolve which .ai roots can reach a .per file through load directives",
+    )
+    current_ai.add_argument("path", type=Path)
+    current_ai.add_argument(
+        "--search-root",
+        type=Path,
+        help="highest ancestor folder to inspect while searching for nearby .ai roots",
+    )
+    current_ai.add_argument(
+        "--json",
+        action="store_true",
+        help="emit machine-readable current-AI resolution",
     )
 
     suppress = subparsers.add_parser(
@@ -1605,6 +1622,14 @@ def format_scope_files(path: Path, *, recursive: bool, include_loads: bool) -> l
     return discover_script_files(path, recursive=recursive)
 
 
+def package_root_to_json(root: object) -> dict[str, str]:
+    return {
+        "ai_path": str(root.ai_path),
+        "per_path": str(root.per_path),
+        "package_dir": str(root.package_dir) if root.package_dir is not None else "",
+    }
+
+
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
 
@@ -1635,6 +1660,30 @@ def main(argv: list[str] | None = None) -> int:
         for finding in findings:
             print(finding.format(args.path))
         return 1 if has_failure(findings, "info") else 0
+
+    if args.command == "resolve-current-ai":
+        resolution = resolve_current_ai(args.path, search_root=args.search_root)
+        payload = {
+            "path": str(resolution.path),
+            "search_root": str(resolution.search_root),
+            "reason": resolution.reason,
+            "candidate_count": len(resolution.candidates),
+            "match_count": len(resolution.matches),
+            "candidates": [package_root_to_json(root) for root in resolution.candidates],
+            "matches": [package_root_to_json(root) for root in resolution.matches],
+        }
+        if args.json:
+            print(json.dumps(payload, indent=2))
+        else:
+            print(f"reason: {resolution.reason}")
+            print(f"matches: {len(resolution.matches)}")
+            for root in resolution.matches:
+                print(f"- {root.ai_path} -> {root.per_path}")
+            if not resolution.matches and resolution.candidates:
+                print(f"candidates: {len(resolution.candidates)}")
+                for root in resolution.candidates:
+                    print(f"- {root.ai_path} -> {root.per_path}")
+        return 0
 
     if args.command == "lint-package":
         trace_progress(f"Lint trace: inspecting package input {args.path}", enabled=args.trace_progress)

@@ -614,12 +614,56 @@ async function currentAiRoot() {
     if (path.extname(filePath).toLowerCase() === ".ai") {
         return filePath;
     }
-    let folderPath = fs.statSync(filePath).isDirectory() ? filePath : path.dirname(filePath);
-    let baseName = path.basename(filePath, path.extname(filePath));
-    let sameNameAi = path.join(folderPath, baseName + ".ai");
-    if (fs.existsSync(sameNameAi)) {
-        return sameNameAi;
+    let settings = getLabSettings();
+    if (settings.labPath && fs.existsSync(settings.labPath)) {
+        try {
+            let args = ["-m", "aoe2_ai_lab", "resolve-current-ai", filePath, "--json"];
+            if (settings.workspacePath) {
+                args.push("--search-root", settings.workspacePath);
+            }
+            let env = Object.assign({}, process.env, { PYTHONPATH: path.join(settings.labPath, "src") });
+            let stdout = await execFileText(settings.pythonPath, args, {
+                cwd: settings.labPath,
+                env,
+                shell: false,
+                windowsHide: true
+            });
+            let payload = JSON.parse(stdout);
+            let matches = payload.matches || [];
+            if (matches.length === 1) {
+                return matches[0].ai_path;
+            }
+            if (matches.length > 1) {
+                let picked = await vscode_1.window.showQuickPick(matches.map(match => ({
+                    label: path.basename(match.ai_path),
+                    description: match.ai_path,
+                    detail: "reaches " + path.basename(filePath),
+                    file: match.ai_path
+                })), {
+                    placeHolder: "Multiple .ai roots reach this .per file. Select the AI root to format/lint."
+                });
+                return picked ? picked.file : undefined;
+            }
+            let candidates = payload.candidates || [];
+            if (candidates.length > 0) {
+                let picked = await vscode_1.window.showQuickPick(candidates.map(candidate => ({
+                    label: path.basename(candidate.ai_path),
+                    description: candidate.ai_path,
+                    detail: "nearby .ai root; active .per was not found in its load graph",
+                    file: candidate.ai_path
+                })), {
+                    placeHolder: "No .ai load graph reaches this file. Select a nearby AI root."
+                });
+                return picked ? picked.file : undefined;
+            }
+        }
+        catch (error) {
+            let channel = getOutputChannel();
+            channel.appendLine("Current AI graph resolution failed; falling back to same-folder lookup.");
+            channel.appendLine(String(error && error.stderr ? error.stderr : (error && error.message ? error.message : error)));
+        }
     }
+    let folderPath = fs.statSync(filePath).isDirectory() ? filePath : path.dirname(filePath);
     let aiFiles = fs.readdirSync(folderPath)
         .filter(name => name.toLowerCase().endsWith(".ai"))
         .map(name => path.join(folderPath, name));
@@ -632,7 +676,7 @@ async function currentAiRoot() {
         });
         return picked ? picked.file : undefined;
     }
-    vscode_1.window.showWarningMessage("No .ai root found beside the active file.");
+    vscode_1.window.showWarningMessage("No .ai root found for the active file.");
     return undefined;
 }
 async function lintCurrentFile() {

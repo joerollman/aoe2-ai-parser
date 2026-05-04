@@ -224,9 +224,12 @@ package reports open with `vscode.markdown.preview.editor` in a side pane after
 the linter finishes, with a text-editor fallback if Markdown Preview is not
 available.
 
-`AoE2: Lint Current AI` resolves the `.ai` root beside the active file and
-validates that root plus reachable `.per` loads. If multiple `.ai` files are in
-the same folder, the extension asks which root to use.
+`AoE2: Lint Current AI` calls `resolve-current-ai` for the active file. For a
+nested `.per`, this walks upward to nearby `.ai` roots, follows each root's
+reachable `.per` load graph, and checks which roots contain the active file. If
+exactly one `.ai` reaches the file, that root is selected automatically. If a
+shared `.per` is reachable from multiple `.ai` roots, the extension asks which
+root to lint.
 
 `AoE2: Lint Current Folder` runs the same package validator against `.ai` roots
 directly inside the folder that contains the active file. `AoE2: Lint Recursive
@@ -234,8 +237,9 @@ Folder` validates every `.ai` root below that folder. This separates a common
 single-AI workflow from broad mod/corpus-folder validation.
 
 `AoE2: AutoFormat Current File` formats only the active `.ai` or `.per` file.
-`AoE2: AutoFormat Current AI` formats the selected `.ai` root plus reachable
-`.per` loads. `AoE2: AutoFormat Current Folder` formats direct `.ai`/`.per`
+`AoE2: AutoFormat Current AI` uses the same current-AI load-graph resolution and
+formats the selected `.ai` root plus reachable `.per` loads.
+`AoE2: AutoFormat Current Folder` formats direct `.ai`/`.per`
 children only. `AoE2: AutoFormat Recursive Folder` formats every `.ai`/`.per`
 below the active file's folder. The `Format Then Lint` commands run the matching
 formatter scope first and then lint the same scope if formatting succeeds.

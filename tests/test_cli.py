@@ -912,6 +912,42 @@ class CliTests(unittest.TestCase):
         self.assertEqual(payload["root_count"], 1)
         self.assertEqual(Path(payload["roots"][0]["ai_path"]).name, "Top.ai")
 
+    def test_resolve_current_ai_finds_single_root_for_nested_per(self) -> None:
+        with WorkspaceTempDir() as root:
+            strategy = root / "strategy"
+            strategy.mkdir()
+            (root / "Bot.ai").write_text('(load "Bot")\n', encoding="utf-8")
+            (root / "Bot.per").write_text('(load "strategy\\eco")\n', encoding="utf-8")
+            nested = strategy / "eco.per"
+            nested.write_text("(defrule\n    (true)\n=>\n    (do-nothing)\n)\n", encoding="utf-8")
+            buffer = io.StringIO()
+            with redirect_stdout(buffer):
+                code = main(["resolve-current-ai", str(nested), "--search-root", str(root), "--json"])
+
+        self.assertEqual(code, 0)
+        payload = json.loads(buffer.getvalue())
+        self.assertEqual(payload["reason"], "unique")
+        self.assertEqual(payload["match_count"], 1)
+        self.assertEqual(Path(payload["matches"][0]["ai_path"]).name, "Bot.ai")
+
+    def test_resolve_current_ai_reports_multiple_roots_for_shared_per(self) -> None:
+        with WorkspaceTempDir() as root:
+            shared = root / "shared.per"
+            shared.write_text("(defrule\n    (true)\n=>\n    (do-nothing)\n)\n", encoding="utf-8")
+            (root / "A.ai").write_text('(load "A")\n', encoding="utf-8")
+            (root / "A.per").write_text('(load "shared")\n', encoding="utf-8")
+            (root / "B.ai").write_text('(load "B")\n', encoding="utf-8")
+            (root / "B.per").write_text('(load "shared")\n', encoding="utf-8")
+            buffer = io.StringIO()
+            with redirect_stdout(buffer):
+                code = main(["resolve-current-ai", str(shared), "--search-root", str(root), "--json"])
+
+        self.assertEqual(code, 0)
+        payload = json.loads(buffer.getvalue())
+        self.assertEqual(payload["reason"], "multiple")
+        self.assertEqual(payload["match_count"], 2)
+        self.assertEqual({Path(match["ai_path"]).name for match in payload["matches"]}, {"A.ai", "B.ai"})
+
     def test_lint_package_json_marks_error_failures(self) -> None:
         with WorkspaceTempDir() as root:
             (root / "Bad.ai").write_text('(load "Bad")\n', encoding="utf-8")

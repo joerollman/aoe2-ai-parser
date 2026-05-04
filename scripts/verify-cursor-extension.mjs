@@ -150,6 +150,8 @@ assertIncludes(clientSource, "async function runLabCommand", clientPath);
 assertIncludes(clientSource, "await execFileTextStreaming(settings.pythonPath", clientPath);
 assertIncludes(clientSource, "async function lintCurrentAi", clientPath);
 assertIncludes(clientSource, "function lintFolderScope", clientPath);
+assertIncludes(clientSource, '"resolve-current-ai", filePath, "--json"', clientPath);
+assertIncludes(clientSource, "Multiple .ai roots reach this .per file", clientPath);
 assert(!clientSource.includes("async function lintPackage"), "nearest-package lint command function should be removed");
 assert(!clientSource.includes("async function autoFormatPackage"), "nearest-package format command function should be removed");
 assertIncludes(clientSource, "await runLabCommand", clientPath);
