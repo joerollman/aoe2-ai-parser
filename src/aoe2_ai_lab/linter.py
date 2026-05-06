@@ -37,6 +37,7 @@ WARNING_FINDING_CODES = {
     "command-numeric-range-mismatch",
     "command-typed-operand-mismatch",
     "defconst-alias-cycle",
+    "defconst-value-out-of-range",
     "duplicate-defconst-conflict",
     "duplicate-include-target",
     "duplicate-per-load-target",
@@ -84,7 +85,7 @@ def finding_suggestion(code: str, message: str) -> str | None:
     if code == "defconst-alias-cycle":
         return "Break the alias cycle by assigning one constant a numeric value or a non-cyclic documented symbol."
     if code == "defconst-value-out-of-range":
-        return "Use a signed 32-bit integer value from -2147483648 to 2147483647."
+        return "Use a signed 32-bit integer value from -2147483648 to 2147483647; DE clamps one-step overflow values to the nearest boundary."
     if code == "command-role-mismatch":
         if "likely intended action:" in message:
             return message.split("likely intended action:", 1)[1].strip()
@@ -1595,7 +1596,7 @@ def lint_defconst_numeric_range(path: Path) -> list[Finding]:
                 Finding(
                     source_line.number,
                     "defconst-value-out-of-range",
-                    f"defconst {name!r} value {value} is outside signed 32-bit range {DEFCONST_MIN_VALUE} to {DEFCONST_MAX_VALUE}",
+                    f"defconst {name!r} value {value} is outside signed 32-bit range {DEFCONST_MIN_VALUE} to {DEFCONST_MAX_VALUE}; validated DE behavior clamps one-step overflow to the nearest boundary",
                     source_line.confidence,
                 )
             )

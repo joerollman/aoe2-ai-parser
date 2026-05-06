@@ -64,7 +64,7 @@ class CliTests(unittest.TestCase):
         output = buffer.getvalue()
         self.assertEqual(code, 0)
         self.assertIn("defconst-value-out-of-range", output)
-        self.assertIn("severity: error", output)
+        self.assertIn("severity: warning", output)
         self.assertIn("signed 32-bit", output)
         self.assertIn("AIRef Data Limits", output)
         self.assertNotIn("unsafe-set-target-object", output)
@@ -1263,7 +1263,7 @@ class CliTests(unittest.TestCase):
                 code = main(["lint-package", str(root), "--report", str(report_path)])
             report = report_path.read_text(encoding="utf-8")
 
-        self.assertEqual(code, 1)
+        self.assertEqual(code, 0)
         diagnostic_reference = os.path.relpath(
             REPO_ROOT / "docs" / "workflows" / "validator-diagnostic-codes.md",
             report_path.parent,

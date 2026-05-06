@@ -1327,8 +1327,9 @@ class LinterTests(unittest.TestCase):
             ["defconst-value-out-of-range", "defconst-value-out-of-range"],
         )
         self.assertEqual([finding.line for finding in findings], [1, 2])
-        self.assertEqual(findings[0].severity, "error")
+        self.assertEqual(findings[0].severity, "warning")
         self.assertIn("signed 32-bit", findings[0].message)
+        self.assertIn("clamps", findings[0].message)
 
     def test_allows_defconst_numeric_value_at_signed_32_bit_boundaries(self) -> None:
         with TemporaryDirectory() as tmp:

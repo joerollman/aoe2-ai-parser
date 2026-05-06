@@ -164,9 +164,10 @@ Important limits for `sample_ai` work:
 - Preprocessor conditional loading commands can nest up to 50 levels.
 - Numeric `defconst` values were historically documented as signed 16-bit
   integers, but local DE probes validated larger values including `32768`,
-  `65536`, `350000`, `2000000`, and `-32769`. The validator now treats numeric
-  `defconst` values as signed 32-bit integers and reports
-  `defconst-value-out-of-range` only outside that range.
+  `65536`, `350000`, `2000000`, and `-32769`. Local boundary probes validated
+  exact signed 32-bit values, and one-step overflow values loaded but silently
+  clamped to the nearest signed 32-bit boundary. The validator now treats
+  numeric `defconst` values outside signed 32-bit range as warnings.
 - Compact same-line constants such as `(defconst a 1)(defconst b 2)` are treated
   as separate declarations by the local parser.
 - Lines are limited to 255 characters, comments included. The validator reports
@@ -801,7 +802,7 @@ Useful checks to add to `aoe2_ai_lab`:
 - Logical operator child count.
 - Rule element count.
 - Duplicate `defconst` names and duplicate goal IDs.
-- Numeric `defconst` values outside signed 16-bit range.
+- Numeric `defconst` values outside signed 32-bit range.
 - Missing symbolic constants after typed prefixes such as `c:`.
 - Goal IDs outside 1-512.
 - Suspicious direct numeric goal IDs where a defconst should be used.

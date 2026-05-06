@@ -4,6 +4,16 @@ These notes are for maintainers and agents. Keep user-facing diagnostics focused
 on what to fix; do not expose probe names, scenario files, or log paths in normal
 lint output.
 
+## Validation Standard
+
+- Do not promote inferred behavior into parser truth.
+- Parser rules should be based on directly observed behavior, imported reference
+  data, or clearly documented source material.
+- If a result is inferred from nearby behavior, mark it as inferred or pending
+  and prefer a stronger probe before changing validator behavior.
+- Strong probes should test the exact boundary or command context being modeled,
+  not merely a nearby value or related command.
+
 ## Site-Specific Train Aliases
 
 Public diagnostics:
@@ -99,7 +109,13 @@ Public diagnostics:
 Internal validation source:
 
 - Lab repo: `C:\Users\joero\programming-projects\aoe2-ai-lab`
-- Scenario harness: `ai/defconst_range_probe/defconst_range_probe.per`
+- Scenario harnesses:
+  - `ai/defconst_range_probe/defconst_range_probe.per` in the original
+    broad-range probe.
+  - `ai/defconst_range_probe/defconst_range_valid32.per`,
+    `ai/defconst_range_probe/defconst_range_high_overflow.per`, and
+    `ai/defconst_range_probe/defconst_range_low_overflow.per` in the boundary
+    probe.
 - Scenario config: `docs/workflows/scenario-defconst-range-probe.config.json`
 
 Validated behavior:
@@ -110,10 +126,19 @@ Validated behavior:
   `goal`, ending in `DEFCONST-RANGE ALL-TESTS-COMPLETE`.
 - This contradicts the older local AI scripting limit note that numeric
   `defconst` values are C++ `short` values.
+- DE accepted and matched the signed 32-bit boundary values:
+  `2147483647` and `-2147483648`.
+- DE also loaded the one-step overflow values `2147483648` and `-2147483649`,
+  but clamped them when used as goal values:
+  - `2147483648` matched `2147483647`.
+  - `-2147483649` matched `-2147483648`.
 
 Implementation note:
 
 - Treat ordinary numeric `defconst` values as signed 32-bit integers for parser
   validation.
+- Report values outside signed 32-bit range as warnings, not hard parse errors:
+  validated one-step overflow values load but silently clamp, which is likely a
+  script bug without being a startup failure.
 - Keep command-parameter-specific range checks separate. A large constant can be
   legal as a `defconst` while still invalid for a parameter such as `GoalId`.
