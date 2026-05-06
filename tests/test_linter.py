@@ -302,6 +302,51 @@ class LinterTests(unittest.TestCase):
         self.assertTrue(findings)
         self.assertTrue(all(finding.code == "command-argument-mismatch" for finding in findings))
 
+    def test_allows_validated_shotel_line_action_train_target(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.per"
+            path.write_text(
+                """
+(defrule
+    (true)
+=>
+    (up-find-local c: castle c: 1)
+    (up-target-point 0 action-train c: shotel-line)
+)
+""".strip(),
+                encoding="utf-8",
+            )
+
+            findings = lint_file(path)
+
+        self.assertEqual(findings, [])
+
+    def test_still_warns_for_unvalidated_line_action_train_targets(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.per"
+            path.write_text(
+                """
+(defrule
+    (true)
+=>
+    (up-find-local c: donjon c: 1)
+    (up-target-point 0 action-train c: donjon-serjeant-line)
+    (up-target-point 0 action-train c: donjon-spearman-line)
+    (up-find-local c: krepost c: 1)
+    (up-target-point 0 action-train c: krepost-konnik-line)
+)
+""".strip(),
+                encoding="utf-8",
+            )
+
+            findings = lint_file(path)
+
+        self.assertEqual([finding.code for finding in findings], [
+            "undefined-constant",
+            "undefined-constant",
+            "undefined-constant",
+        ])
+
     def test_allows_documented_dynamic_unique_unit_ids_without_defconst(self) -> None:
         with TemporaryDirectory() as tmp:
             path = Path(tmp) / "sample.per"

@@ -1137,6 +1137,7 @@ def lint_typed_constants(
             or value in DOCUMENTED_TYPED_CONSTANTS
             or value in BUILTIN_CLASS_NAMES
             or value in DOCUMENTED_VALUE_CONSTANTS
+            or is_valid_local_action_train_target(tokens, index, value)
         ):
             continue
         if value.startswith(("g:", "s:", "c:")):
@@ -2005,6 +2006,16 @@ def is_known_schema_value(value: str, valid_values: set[str], defined_constants:
 
 def is_valid_local_symbol_command_context(command: str, parameter_name: str, value: str) -> bool:
     return (value, command, parameter_name) in LOCAL_SYMBOL_COMMAND_CONTEXTS
+
+
+def is_valid_local_action_train_target(tokens: list[str], type_prefix_index: int, value: str) -> bool:
+    if type_prefix_index < 2:
+        return False
+    return (
+        tokens[0] == "up-target-point"
+        and tokens[type_prefix_index - 1] == "action-train"
+        and is_valid_local_symbol_command_context("up-target-point", "ActionTrainTarget", value)
+    )
 
 
 def is_archived_non_de_direct_id(parameter_name: str, value: str) -> bool:

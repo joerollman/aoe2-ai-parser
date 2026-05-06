@@ -156,6 +156,11 @@
           "command": "train",
           "parameter": "UnitId",
           "result": "valid"
+        },
+        {
+          "command": "up-target-point",
+          "parameter": "ActionTrainTarget",
+          "result": "valid"
         }
       ],
       "notes": [
@@ -163,7 +168,7 @@
         "Not present in imported AIRef active object inventory or bundled extension unit IDs.",
         "Validated as a bare UnitId for unit-type-count-total, players-unit-type-count, can-train, and train.",
         "Direct train produced shotel-warrior and then elite-shotel-warrior in the fixture.",
-        "Do not treat c: action-train as validated yet; the action fired after direct train had already produced units."
+        "Validated as a c: target after action-train in up-target-point; isolated action-train produced shotel-warrior and elite-shotel-warrior."
       ]
     }
   ]

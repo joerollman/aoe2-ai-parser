@@ -61,10 +61,15 @@ Validated behavior:
 - `shotel-line` is valid as a bare `UnitId` for direct `can-train` and
   `train`; direct training produced `shotel-warrior` and then
   `elite-shotel-warrior` in the fixture.
+- `shotel-line` is valid as the `c:` target paired with `action-train` in
+  `up-target-point`; an isolated action-train fixture produced
+  `shotel-warrior` and then `elite-shotel-warrior`.
 - Do not mark `donjon-serjeant-line`, `donjon-spearman-line`, or
   `krepost-konnik-line` as validated direct `can-train`/`train` targets.
-- Do not mark `c:` `action-train` contexts for these local unit lines as
-  validated yet.
+- Do not mark `c:` `action-train` contexts for `donjon-serjeant-line`,
+  `donjon-spearman-line`, or `krepost-konnik-line` as validated. In the
+  isolated fixture, each issued but reached observation end without a
+  production marker.
 
 Implementation note:
 
