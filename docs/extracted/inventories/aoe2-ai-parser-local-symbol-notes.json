@@ -62,6 +62,46 @@
       "notes": [
         "Valid unit-line identifier. Do not use as a Krepost direct train target unless future validation proves that context works."
       ]
+    },
+    {
+      "name": "donjon-serjeant-line",
+      "kind": "corpus-observed-unit-line-candidate",
+      "validation_status": "needs-live-validation",
+      "notes": [
+        "Seen in Naga in UnitId and c: train-target contexts.",
+        "Not present in imported AIRef active object inventory or bundled extension unit IDs.",
+        "Keep linter warnings active until live validation confirms the identifier and supported command contexts."
+      ]
+    },
+    {
+      "name": "donjon-spearman-line",
+      "kind": "corpus-observed-unit-line-candidate",
+      "validation_status": "needs-live-validation",
+      "notes": [
+        "Seen in Naga in UnitId and c: train-target contexts.",
+        "Not present in imported AIRef active object inventory or bundled extension unit IDs.",
+        "Keep linter warnings active until live validation confirms the identifier and supported command contexts."
+      ]
+    },
+    {
+      "name": "krepost-konnik-line",
+      "kind": "corpus-observed-unit-line-candidate",
+      "validation_status": "needs-live-validation",
+      "notes": [
+        "Seen in Naga in UnitId and c: train-target contexts.",
+        "Not present in imported AIRef active object inventory or bundled extension unit IDs.",
+        "Keep linter warnings active until live validation confirms the identifier and supported command contexts."
+      ]
+    },
+    {
+      "name": "shotel-line",
+      "kind": "corpus-observed-unit-line-candidate",
+      "validation_status": "needs-live-validation",
+      "notes": [
+        "Seen in Naga in UnitId count contexts.",
+        "Not present in imported AIRef active object inventory or bundled extension unit IDs.",
+        "Keep linter warnings active until live validation confirms the identifier and supported command contexts."
+      ]
     }
   ]
 }

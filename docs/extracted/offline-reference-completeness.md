@@ -109,7 +109,7 @@ Current generated counts:
 - xs constants: `831`
 - rms fixtures: `13`
 - rms topics: `39`
-- local symbol notes: `7`
+- local symbol notes: `11`
 
 These counts include widened object and tech coverage across:
 
