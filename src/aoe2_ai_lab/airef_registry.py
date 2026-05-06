@@ -101,6 +101,14 @@ def load_registry(path: Path) -> dict[str, Any]:
         inventory = json.loads(rms_topic_path.read_text(encoding="utf-8-sig"))
         data["rms_topic_inventory"] = inventory.get("topics", [])
         data["rms_topic_inventory_metadata"] = inventory.get("metadata", {})
+    local_symbol_notes_path = inventory_path_for(path, "aoe2-ai-parser-local-symbol-notes.json")
+    if local_symbol_notes_path.exists():
+        inventory = json.loads(local_symbol_notes_path.read_text(encoding="utf-8-sig"))
+        data["local_symbol_notes"] = inventory.get("symbols", [])
+        data["local_symbol_notes_metadata"] = {
+            "schema": inventory.get("schema", ""),
+            "description": inventory.get("description", ""),
+        }
     return data
 
 
@@ -508,6 +516,45 @@ def iter_registry_entries(data: dict[str, Any]) -> list[RegistryEntry]:
             )
         )
 
+    for symbol in data.get("local_symbol_notes", []):
+        notes = symbol.get("notes", [])
+        if isinstance(notes, list):
+            summary = " ".join(str(note) for note in notes)
+        else:
+            summary = str(notes)
+        entries.append(
+            RegistryEntry(
+                kind="local-symbol-note",
+                entry_id=f"local-symbol::{symbol['name']}",
+                name=symbol["name"],
+                summary=summary,
+                source_urls=tuple(),
+                lookup_terms=tuple(
+                    str(value)
+                    for value in [
+                        symbol.get("name", ""),
+                        symbol.get("kind", ""),
+                        symbol.get("id", ""),
+                        symbol.get("requires_defconst", ""),
+                        symbol.get("builtin_train_target", ""),
+                    ]
+                    if str(value)
+                ),
+                aliases=tuple(symbol.get("aliases", [])) if isinstance(symbol.get("aliases", []), list) else tuple(),
+                tags=tuple(
+                    value
+                    for value in [
+                        "local-symbol-note",
+                        symbol.get("kind", ""),
+                        "requires-defconst" if symbol.get("requires_defconst") else "",
+                        "builtin-train-target" if symbol.get("builtin_train_target") else "",
+                    ]
+                    if value
+                ),
+                validation_status=symbol.get("validation_status", "project-observed"),
+            )
+        )
+
     for family in data.get("local_binary_inventory", {}).get("families", []):
         entries.append(
             RegistryEntry(
@@ -635,7 +682,7 @@ def search_registry(
             score += 35
         elif entry.kind == "command-inventory":
             score += 22
-        elif entry.kind in {"parameter-inventory", "strategic-number-inventory", "value-entry", "object-inventory", "tech-inventory", "xs-function-inventory", "xs-constant-inventory", "rms-fixture", "rms-topic-inventory"}:
+        elif entry.kind in {"parameter-inventory", "strategic-number-inventory", "value-entry", "object-inventory", "tech-inventory", "xs-function-inventory", "xs-constant-inventory", "rms-fixture", "rms-topic-inventory", "local-symbol-note"}:
             score += 20
         elif entry.kind == "value-family":
             score += 14
@@ -744,6 +791,10 @@ def _find_rms_topic(data: dict[str, Any], entry_id: str) -> dict[str, Any] | Non
         ),
         None,
     )
+
+
+def _find_local_symbol_note(data: dict[str, Any], name: str) -> dict[str, Any] | None:
+    return next((item for item in data.get("local_symbol_notes", []) if item.get("name") == name), None)
 
 
 def entry_details(data: dict[str, Any], entry: RegistryEntry) -> dict[str, Any]:
@@ -877,6 +928,17 @@ def entry_details(data: dict[str, Any], entry: RegistryEntry) -> dict[str, Any]:
         return {
             "path": item.get("path", []),
             "level": item.get("level", ""),
+        }
+    if entry.kind == "local-symbol-note":
+        item = _find_local_symbol_note(data, entry.name)
+        if not item:
+            return {}
+        return {
+            "kind": item.get("kind", ""),
+            "id": item.get("id", ""),
+            "requires_defconst": item.get("requires_defconst", ""),
+            "builtin_train_target": item.get("builtin_train_target", ""),
+            "notes": item.get("notes", []),
         }
     return {}
 

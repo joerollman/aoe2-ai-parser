@@ -888,6 +888,36 @@ def _load_archived_symbol_names(filename: str) -> set[str]:
     return names
 
 
+def _load_site_specific_train_aliases_requiring_defconst() -> dict[str, int]:
+    inventory_path = (
+        Path(__file__).resolve().parents[2]
+        / "docs"
+        / "extracted"
+        / "inventories"
+        / "aoe2-ai-parser-local-symbol-notes.json"
+    )
+    fallback = {
+        "donjon-spearman": 1786,
+        "donjon-pikeman": 1787,
+        "donjon-halberdier": 1788,
+    }
+    if not inventory_path.exists():
+        return fallback
+
+    data = json.loads(inventory_path.read_text(encoding="utf-8-sig"))
+    aliases: dict[str, int] = {}
+    for symbol in data.get("symbols", []):
+        if symbol.get("kind") != "site-specific-train-alias":
+            continue
+        if not symbol.get("requires_defconst"):
+            continue
+        name = symbol.get("name")
+        value = symbol.get("id")
+        if isinstance(name, str) and isinstance(value, int):
+            aliases[name] = value
+    return aliases or fallback
+
+
 DUC_ACTION_VALUES = _load_value_family_names("DUCAction")
 FORMATION_VALUES = _load_value_family_names("Formation")
 ATTACK_STANCE_VALUES = _load_value_family_names("AttackStance")
@@ -933,11 +963,7 @@ EFFECT_ID_VALUES = _load_value_family_names("EffectId")
 ORDER_ID_VALUES = _load_value_family_names("OrderId")
 TERRAIN_VALUES = _load_value_family_names("Terrain")
 WALL_ID_VALUES = _load_value_family_names("WallId") | {"stone-wall-line"}
-TRAIN_TARGET_ALIASES_REQUIRING_DEFCONST = {
-    "donjon-spearman": 1786,
-    "donjon-pikeman": 1787,
-    "donjon-halberdier": 1788,
-}
+TRAIN_TARGET_ALIASES_REQUIRING_DEFCONST = _load_site_specific_train_aliases_requiring_defconst()
 DOCUMENTED_VALUE_CONSTANTS = normalize_value_family_names(
     DUC_ACTION_VALUES
     | FORMATION_VALUES

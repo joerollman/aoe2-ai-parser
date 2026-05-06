@@ -3,7 +3,11 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
 
-from aoe2_ai_lab.linter import SCHEMA_VALIDATED_COMMANDS, lint_file
+from aoe2_ai_lab.linter import (
+    SCHEMA_VALIDATED_COMMANDS,
+    TRAIN_TARGET_ALIASES_REQUIRING_DEFCONST,
+    lint_file,
+)
 
 
 class LinterTests(unittest.TestCase):
@@ -43,6 +47,24 @@ class LinterTests(unittest.TestCase):
         )
 
         self.assertEqual(missing, [])
+
+    def test_site_specific_train_aliases_are_sourced_from_local_symbol_notes(self) -> None:
+        notes_path = (
+            Path(__file__).resolve().parents[1]
+            / "docs"
+            / "extracted"
+            / "inventories"
+            / "aoe2-ai-parser-local-symbol-notes.json"
+        )
+        notes = json.loads(notes_path.read_text(encoding="utf-8-sig"))
+        aliases = {
+            symbol["name"]: symbol["id"]
+            for symbol in notes["symbols"]
+            if symbol.get("kind") == "site-specific-train-alias"
+            and symbol.get("requires_defconst")
+        }
+
+        self.assertEqual(TRAIN_TARGET_ALIASES_REQUIRING_DEFCONST, aliases)
 
     def test_flags_chat_rules_that_can_repeat(self) -> None:
         with TemporaryDirectory() as tmp:

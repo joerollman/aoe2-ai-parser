@@ -18,5 +18,9 @@ Imported reference inventories:
 - `xs-constant-inventory.json`
 - `rms-topic-inventory.json`
 
+Parser-maintained local notes:
+
+- `aoe2-ai-parser-local-symbol-notes.json`
+
 These are machine-oriented files. Prefer `resolve-reference` over opening them
 directly.

@@ -1,0 +1,67 @@
+{
+  "schema": 1,
+  "description": "Parser-maintained symbol notes for DE behavior that is not fully represented by imported AIRef inventories.",
+  "symbols": [
+    {
+      "name": "donjon-spearman",
+      "kind": "site-specific-train-alias",
+      "id": 1786,
+      "requires_defconst": true,
+      "notes": [
+        "Use as a local alias with (defconst donjon-spearman 1786) before direct can-train or train use.",
+        "Do not treat as a DE built-in identifier."
+      ]
+    },
+    {
+      "name": "donjon-pikeman",
+      "kind": "site-specific-train-alias",
+      "id": 1787,
+      "requires_defconst": true,
+      "notes": [
+        "Use as a local alias with (defconst donjon-pikeman 1787) before direct can-train or train use.",
+        "Do not treat as a DE built-in identifier."
+      ]
+    },
+    {
+      "name": "donjon-halberdier",
+      "kind": "site-specific-train-alias",
+      "id": 1788,
+      "requires_defconst": true,
+      "notes": [
+        "Use as a local alias with (defconst donjon-halberdier 1788) before direct can-train or train use.",
+        "Do not treat as a DE built-in identifier."
+      ]
+    },
+    {
+      "name": "elite-donjon-serjeant",
+      "kind": "site-specific-train-target",
+      "builtin_train_target": true,
+      "notes": [
+        "Valid built-in direct train target for Donjon; produces elite-serjeant."
+      ]
+    },
+    {
+      "name": "krepost-konnik",
+      "kind": "site-specific-train-target",
+      "builtin_train_target": true,
+      "notes": [
+        "Valid built-in direct train target for Krepost; produces konnik."
+      ]
+    },
+    {
+      "name": "elite-krepost-konnik",
+      "kind": "site-specific-train-target",
+      "builtin_train_target": true,
+      "notes": [
+        "Valid built-in direct train target for Krepost; produces elite-konnik."
+      ]
+    },
+    {
+      "name": "konnik-line",
+      "kind": "unit-line",
+      "notes": [
+        "Valid unit-line identifier. Do not use as a Krepost direct train target unless future validation proves that context works."
+      ]
+    }
+  ]
+}

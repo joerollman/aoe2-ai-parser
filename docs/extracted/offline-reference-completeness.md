@@ -19,6 +19,7 @@ in `.per` scripting and local tooling:
 - classes, resource types, position types, object-data constants
 - objects
 - techs
+- parser-maintained symbol notes for locally observed edge cases
 - project-observed command behavior
 
 ## Canonical Local Inventories
@@ -35,6 +36,7 @@ in `.per` scripting and local tooling:
 | XS constants | `inventories/xs-constant-inventory.json` | `xs-constant-inventory` |
 | RMS fixtures | `inventories/rms-fixture-registry.json` | `rms-fixture` |
 | RMS guide topics | `inventories/rms-topic-inventory.json` | `rms-topic-inventory` |
+| Parser-maintained symbol notes | `inventories/aoe2-ai-parser-local-symbol-notes.json` | `local-symbol-note` |
 | Locally observed behavior | `inventories/airef-site-registry.json` | `validated-command` |
 | Local risky/mixed notes | `inventories/airef-site-registry.json` | `project-command-note` |
 | Executable-only evidence | `inventories/airef-site-registry.json` plus `raw/aoe2de/` files | `binary-token`, `binary-family` opt-in or fallback only |
@@ -56,6 +58,7 @@ in `.per` scripting and local tooling:
 | Strategic numbers | `strategic-number-inventory` |
 | Objects | `object-inventory` |
 | Techs | `tech-inventory` |
+| Parser-maintained symbol notes | `local-symbol-note` |
 | XS functions | `xs-function-inventory` |
 | XS constants | `xs-constant-inventory` |
 | RMS test maps | `rms-fixture` |
@@ -76,8 +79,9 @@ Use the local layers in this order:
 9. `xs-constant-inventory`
 10. `rms-fixture`
 11. `rms-topic-inventory`
-12. `project-command-note`
-13. `binary-token`
+12. `local-symbol-note`
+13. `project-command-note`
+14. `binary-token`
 
 The intent is simple:
 
@@ -105,6 +109,7 @@ Current generated counts:
 - xs constants: `831`
 - rms fixtures: `13`
 - rms topics: `39`
+- local symbol notes: `7`
 
 These counts include widened object and tech coverage across:
 

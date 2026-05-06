@@ -229,6 +229,39 @@ class AirefRegistryTests(unittest.TestCase):
         self.assertEqual(matches[0].entry_id, "airef-command::up-target-point")
         self.assertEqual(matches[0].validation_status, "airef-imported")
 
+    def test_load_registry_includes_local_symbol_notes_when_present(self) -> None:
+        registry = {
+            "concepts": [],
+            "articles": [],
+            "taxonomies": {},
+        }
+        inventory = {
+            "schema": 1,
+            "symbols": [
+                {
+                    "name": "donjon-spearman",
+                    "kind": "site-specific-train-alias",
+                    "id": 1786,
+                    "requires_defconst": True,
+                    "notes": ["Use a local defconst before direct train use."],
+                }
+            ],
+        }
+
+        with WorkspaceTempDir() as tmp:
+            path = tmp / "airef-site-registry.json"
+            inventory_path = tmp / "aoe2-ai-parser-local-symbol-notes.json"
+            path.write_text(json.dumps(registry), encoding="utf-8")
+            inventory_path.write_text(json.dumps(inventory), encoding="utf-8")
+
+            loaded = load_registry(path)
+            resolved = resolve_reference(loaded, "donjon-spearman", kinds={"local-symbol-note"})
+
+        self.assertEqual(resolved.primary.entry_id, "local-symbol::donjon-spearman")
+        self.assertEqual(resolved.primary.validation_status, "project-observed")
+        self.assertEqual(resolved.details["id"], 1786)
+        self.assertEqual(resolved.details["requires_defconst"], True)
+
     def test_search_registry_prefers_validated_command_over_imported_inventory(self) -> None:
         registry = {
             "concepts": [],
