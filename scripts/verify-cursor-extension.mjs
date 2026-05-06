@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 const repoRoot = process.cwd();
-const extensionRoot = path.join(repoRoot, "extensions", "aoe2-aiscript-cursor-local-lab");
+const extensionRoot = path.join(repoRoot, "extensions", "aoe2-ai-parser-extension");
 const packagePath = path.join(extensionRoot, "package.json");
 const serverPath = path.join(extensionRoot, "languageExtension", "out", "server.js");
 const clientPath = path.join(extensionRoot, "languageExtension", "out", "extension.js");
@@ -260,7 +260,7 @@ for (const needle of [
 }
 
 for (const needle of [
-  "aoe2-aiscript-cursor-local-lab",
+  "aoe2-ai-parser-extension",
   "extensions",
   "lab",
   "docs",

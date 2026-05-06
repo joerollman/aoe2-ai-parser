@@ -7,10 +7,10 @@ import {
   IPCMessageReader,
   IPCMessageWriter,
   NullLogger,
-} from "../extensions/aoe2-aiscript-cursor-local-lab/languageExtension/node_modules/vscode-jsonrpc/lib/main.js";
+} from "../extensions/aoe2-ai-parser-extension/languageExtension/node_modules/vscode-jsonrpc/lib/main.js";
 
 const repoRoot = process.cwd();
-const extensionRoot = path.join(repoRoot, "extensions", "aoe2-aiscript-cursor-local-lab");
+const extensionRoot = path.join(repoRoot, "extensions", "aoe2-ai-parser-extension");
 const serverPath = path.join(extensionRoot, "languageExtension", "out", "server.js");
 const fixtureRoot = path.join(repoRoot, ".tmp", "cursor-completion-smoke");
 

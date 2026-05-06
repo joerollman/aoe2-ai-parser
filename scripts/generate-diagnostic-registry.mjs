@@ -7,7 +7,7 @@ const markdownPath = path.join(repoRoot, "docs", "workflows", "validator-diagnos
 const extensionJsonPath = path.join(
   repoRoot,
   "extensions",
-  "aoe2-aiscript-cursor-local-lab",
+  "aoe2-ai-parser-extension",
   "data",
   "diagnostic-codes.json"
 );

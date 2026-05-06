@@ -21,8 +21,8 @@ Use this folder for local tooling and handoff workflows.
 Core commands:
 
 ```powershell
-$env:PYTHONPATH='src'; python -m aoe2_ai_lab lint extensions\aoe2-aiscript-cursor-local-lab\samples\lab_diagnostics_sample.per
-$env:PYTHONPATH='src'; python -m aoe2_ai_lab lint-package extensions\aoe2-aiscript-cursor-local-lab\samples --profile default --json
+$env:PYTHONPATH='src'; python -m aoe2_ai_lab lint extensions\aoe2-ai-parser-extension\samples\lab_diagnostics_sample.per
+$env:PYTHONPATH='src'; python -m aoe2_ai_lab lint-package extensions\aoe2-ai-parser-extension\samples --profile default --json
 $env:PYTHONPATH='src'; python -m pytest tests -p no:cacheprovider
 ```
 

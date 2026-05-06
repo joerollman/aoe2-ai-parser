@@ -43,6 +43,7 @@ WARNING_FINDING_CODES = {
     "livestock-default-point",
     "load-after-include",
     "load-random-plus-weight-de-behavior",
+    "non-de-symbol",
     "repeat-chat",
     "unsafe-set-target-object",
     "unscoped-duc-target",
@@ -89,6 +90,8 @@ def finding_suggestion(code: str, message: str) -> str | None:
         return "Add the missing .per file to the package or update the load path to a reachable file."
     if code == "missing-include-target":
         return "Add the missing included file to the package or update the include path to a reachable file."
+    if code == "non-de-symbol":
+        return "Replace this symbol with a DE-supported equivalent, or verify behavior in an isolated DE probe before suppressing."
     if code == "up-can-build-zero-escrow":
         return "Define a goal set to without-escrow and pass that goal instead of literal 0."
     if code == "command-argument-mismatch" and "mathOp" in message:
@@ -983,6 +986,8 @@ ARCHIVED_NON_DE_TECH_NAMES = _load_archived_symbol_names("non-de-tech-archive.md
 ARCHIVED_NON_DE_STRATEGIC_NUMBER_NAMES = _load_archived_symbol_names("non-de-strategic-number-archive.md")
 DOCUMENTED_STRATEGIC_NUMBER_NAMES = _load_strategic_number_names()
 KNOWN_STRATEGIC_NUMBER_NAMES = DOCUMENTED_STRATEGIC_NUMBER_NAMES | BINARY_OBSERVED_STRATEGIC_NUMBER_NAMES
+NON_DE_ONLY_OBJECT_NAMES = ARCHIVED_NON_DE_OBJECT_NAMES - DOCUMENTED_OBJECT_NAMES
+NON_DE_ONLY_TECH_NAMES = ARCHIVED_NON_DE_TECH_NAMES - DOCUMENTED_TECH_NAMES
 DOCUMENTED_TYPED_CONSTANTS = (
     DOCUMENTED_OBJECT_NAMES
     | DOCUMENTED_TECH_NAMES
@@ -1104,20 +1109,24 @@ def lint_strategic_number_identifier(
         return []
     if value in defined_constants:
         return []
+    if value in ARCHIVED_NON_DE_STRATEGIC_NUMBER_NAMES:
+        return [
+            Finding(
+                line,
+                "non-de-symbol",
+                non_de_symbol_message("strategic-number", value),
+            )
+        ]
     if value in KNOWN_STRATEGIC_NUMBER_NAMES:
         return []
     if value.startswith(("g:", "s:", "c:")):
         return []
     if value.startswith("sn-") and is_symbolic_identifier(value):
-        if value in ARCHIVED_NON_DE_STRATEGIC_NUMBER_NAMES:
-            message = f"{value!r} is archived as non-DE and is excluded from the DE strategic-number registry"
-        else:
-            message = f"{value!r} is used as a strategic number but is not defined with defconst"
         return [
             Finding(
                 line,
                 "undefined-strategic-number",
-                message,
+                f"{value!r} is used as a strategic number but is not defined with defconst",
             )
         ]
     return []
@@ -1242,6 +1251,8 @@ def lint_common_identifier_uses(
         if token in defined_constants or token in BUILTIN_TYPED_CONSTANTS:
             continue
         if token in DOCUMENTED_TYPED_CONSTANTS or token in KNOWN_STRATEGIC_NUMBER_NAMES:
+            continue
+        if token in ARCHIVED_NON_DE_STRATEGIC_NUMBER_NAMES:
             continue
         if token in OBJECT_DATA_VALUES:
             continue
@@ -1894,6 +1905,18 @@ def is_known_schema_value(value: str, valid_values: set[str], defined_constants:
     return value in valid_values or value in defined_constants or is_int_literal(value)
 
 
+def is_archived_non_de_direct_id(parameter_name: str, value: str) -> bool:
+    if parameter_name in {"BuildingId", "ObjectId", "UnitId"}:
+        return value in NON_DE_ONLY_OBJECT_NAMES
+    if parameter_name == "TechId":
+        return value in NON_DE_ONLY_TECH_NAMES
+    return False
+
+
+def non_de_symbol_message(symbol_type: str, value: str) -> str:
+    return f"{value!r} is archived as non-DE and is excluded from the DE {symbol_type} registry"
+
+
 def direct_id_values_for_parameter(parameter_name: str) -> set[str] | None:
     if parameter_name in {"BuildingId", "ObjectId", "UnitId"}:
         return DOCUMENTED_OBJECT_NAMES | BUILTIN_DYNAMIC_UNIT_IDS | BUILTIN_CLASS_NAMES
@@ -1905,10 +1928,10 @@ def direct_id_values_for_parameter(parameter_name: str) -> set[str] | None:
 
 
 def direct_id_not_documented_message(command: str, parameter_name: str, value: str) -> str:
-    if parameter_name in {"BuildingId", "ObjectId", "UnitId"} and value in ARCHIVED_NON_DE_OBJECT_NAMES:
-        return f"{command} {parameter_name} {value!r} is archived as non-DE and is excluded from the DE object registry"
-    if parameter_name == "TechId" and value in ARCHIVED_NON_DE_TECH_NAMES:
-        return f"{command} {parameter_name} {value!r} is archived as non-DE and is excluded from the DE tech registry"
+    if parameter_name in {"BuildingId", "ObjectId", "UnitId"} and value in NON_DE_ONLY_OBJECT_NAMES:
+        return f"{command} {parameter_name} {non_de_symbol_message('object', value)}"
+    if parameter_name == "TechId" and value in NON_DE_ONLY_TECH_NAMES:
+        return f"{command} {parameter_name} {non_de_symbol_message('tech', value)}"
     return f"{command} {parameter_name} {value!r} is not documented"
 
 
@@ -2051,6 +2074,13 @@ def lint_type_op_operand(
     if expected_kind is None:
         return None
     operand = args[parameter_index + 1]
+    if operand in ARCHIVED_NON_DE_STRATEGIC_NUMBER_NAMES:
+        return finding_for_arg(
+            expr,
+            parameter_index + 1,
+            "non-de-symbol",
+            non_de_symbol_message("strategic-number", operand),
+        )
     actual_kind = typed_operand_kind(operand)
     if actual_kind is None or actual_kind == expected_kind:
         return None
@@ -2133,7 +2163,22 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
             if (
                 direct_id_values is not None
                 and not (index > 0 and parameters[index - 1].get("name") in {"typeOp", "mathOp", "compareOp"})
+                and is_archived_non_de_direct_id(parameter_name, value)
+            ):
+                symbol_type = "tech" if parameter_name == "TechId" else "object"
+                findings.append(
+                    finding_for_arg(
+                        expr,
+                        index,
+                        "non-de-symbol",
+                        f"{expr.head} {parameter_name} {non_de_symbol_message(symbol_type, value)}",
+                    )
+                )
+            if (
+                direct_id_values is not None
+                and not (index > 0 and parameters[index - 1].get("name") in {"typeOp", "mathOp", "compareOp"})
                 and not is_known_schema_value(value, direct_id_values, defined_constants)
+                and not is_archived_non_de_direct_id(parameter_name, value)
             ):
                 findings.append(
                     finding_for_arg(

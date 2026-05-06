@@ -12,7 +12,7 @@ REGISTRY_MARKDOWN_PATH = REPO_ROOT / "docs" / "workflows" / "validator-diagnosti
 EXTENSION_REGISTRY_JSON_PATH = (
     REPO_ROOT
     / "extensions"
-    / "aoe2-aiscript-cursor-local-lab"
+    / "aoe2-ai-parser-extension"
     / "data"
     / "diagnostic-codes.json"
 )
@@ -37,7 +37,7 @@ class DiagnosticRegistryTests(unittest.TestCase):
         server_source = (
             REPO_ROOT
             / "extensions"
-            / "aoe2-aiscript-cursor-local-lab"
+            / "aoe2-ai-parser-extension"
             / "languageExtension"
             / "out"
             / "server.js"

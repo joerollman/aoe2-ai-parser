@@ -304,7 +304,7 @@ Repository layout:
 - `docs/extracted/inventories/`: local JSON reference inventories.
 - `docs/reference/`: shared scripting references and generated symbol docs.
 - `docs/workflows/`: validator, extension, release, and generation workflows.
-- `extensions/aoe2-aiscript-cursor-local-lab/`: publishable VS Code/Cursor
+- `extensions/aoe2-ai-parser-extension/`: publishable VS Code/Cursor
   extension package.
 - `scripts/`: generation, verification, packaging, and publishing scripts.
 
@@ -320,7 +320,7 @@ npm run package:editor-extension
 Packaging creates a VSIX under:
 
 ```text
-extensions/aoe2-aiscript-cursor-local-lab/aoe2-ai-parser-<version>.vsix
+extensions/aoe2-ai-parser-extension/aoe2-ai-parser-<version>.vsix
 ```
 
 The VSIX bundles the parser runtime and local reference data. Users need Python

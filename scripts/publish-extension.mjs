@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 const repoRoot = process.cwd();
-const extensionRoot = path.join(repoRoot, "extensions", "aoe2-aiscript-cursor-local-lab");
+const extensionRoot = path.join(repoRoot, "extensions", "aoe2-ai-parser-extension");
 const packageData = JSON.parse(fs.readFileSync(path.join(extensionRoot, "package.json"), "utf8"));
 const vsixPath = path.join(extensionRoot, `${packageData.name}-${packageData.version}.vsix`);
 const target = process.argv[2];

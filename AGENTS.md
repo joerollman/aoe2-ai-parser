@@ -31,7 +31,7 @@ Then go directly to the relevant task surface:
 - `docs/extracted/`: offline reference inventories
 - `docs/reference/`: shared scripting references and generated symbol docs
 - `docs/workflows/`: tooling, release, and editor workflows
-- `extensions/aoe2-aiscript-cursor-local-lab/`: VS Code/Cursor extension
+- `extensions/aoe2-ai-parser-extension/`: VS Code/Cursor extension
 - `scripts/`: generation, verification, packaging, and publishing scripts
 
 ## Community Feedback

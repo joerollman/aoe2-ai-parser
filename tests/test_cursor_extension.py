@@ -11,7 +11,7 @@ class CursorExtensionTests(unittest.TestCase):
         data_path = (
             root
             / "extensions"
-            / "aoe2-aiscript-cursor-local-lab"
+            / "aoe2-ai-parser-extension"
             / "data"
             / "completions.json"
         )
@@ -30,7 +30,7 @@ class CursorExtensionTests(unittest.TestCase):
         sample_path = (
             root
             / "extensions"
-            / "aoe2-aiscript-cursor-local-lab"
+            / "aoe2-ai-parser-extension"
             / "samples"
             / "lab_diagnostics_sample.per"
         )
@@ -55,7 +55,7 @@ class CursorExtensionTests(unittest.TestCase):
         server_path = (
             root
             / "extensions"
-            / "aoe2-aiscript-cursor-local-lab"
+            / "aoe2-ai-parser-extension"
             / "languageExtension"
             / "out"
             / "server.js"
@@ -71,7 +71,7 @@ class CursorExtensionTests(unittest.TestCase):
         server_path = (
             root
             / "extensions"
-            / "aoe2-aiscript-cursor-local-lab"
+            / "aoe2-ai-parser-extension"
             / "languageExtension"
             / "out"
             / "server.js"
@@ -94,7 +94,7 @@ class CursorExtensionTests(unittest.TestCase):
         server_path = (
             root
             / "extensions"
-            / "aoe2-aiscript-cursor-local-lab"
+            / "aoe2-ai-parser-extension"
             / "languageExtension"
             / "out"
             / "server.js"
@@ -112,11 +112,11 @@ class CursorExtensionTests(unittest.TestCase):
 
     def test_lab_extension_supports_ai_roots(self) -> None:
         root = Path(__file__).resolve().parents[1]
-        package_path = root / "extensions" / "aoe2-aiscript-cursor-local-lab" / "package.json"
+        package_path = root / "extensions" / "aoe2-ai-parser-extension" / "package.json"
         server_path = (
             root
             / "extensions"
-            / "aoe2-aiscript-cursor-local-lab"
+            / "aoe2-ai-parser-extension"
             / "languageExtension"
             / "out"
             / "server.js"
@@ -135,7 +135,7 @@ class CursorExtensionTests(unittest.TestCase):
 
     def test_lab_extension_has_setup_diagnostics_and_packaging_ignore(self) -> None:
         root = Path(__file__).resolve().parents[1]
-        extension_root = root / "extensions" / "aoe2-aiscript-cursor-local-lab"
+        extension_root = root / "extensions" / "aoe2-ai-parser-extension"
         server_path = extension_root / "languageExtension" / "out" / "server.js"
 
         server_source = server_path.read_text(encoding="utf-8")
@@ -155,7 +155,7 @@ class CursorExtensionTests(unittest.TestCase):
 
     def test_lab_extension_registers_command_palette_actions(self) -> None:
         root = Path(__file__).resolve().parents[1]
-        extension_root = root / "extensions" / "aoe2-aiscript-cursor-local-lab"
+        extension_root = root / "extensions" / "aoe2-ai-parser-extension"
         package_data = json.loads((extension_root / "package.json").read_text(encoding="utf-8"))
         extension_source = (extension_root / "languageExtension" / "out" / "extension.js").read_text(encoding="utf-8")
         server_source = (extension_root / "languageExtension" / "out" / "server.js").read_text(encoding="utf-8")
@@ -236,7 +236,7 @@ class CursorExtensionTests(unittest.TestCase):
 
     def test_lab_extension_contributes_color_themes_for_custom_tokens(self) -> None:
         root = Path(__file__).resolve().parents[1]
-        extension_root = root / "extensions" / "aoe2-aiscript-cursor-local-lab"
+        extension_root = root / "extensions" / "aoe2-ai-parser-extension"
         package_data = json.loads((extension_root / "package.json").read_text(encoding="utf-8"))
         settings = package_data["contributes"]["configuration"]["properties"]
         themes = {
@@ -347,7 +347,7 @@ class CursorExtensionTests(unittest.TestCase):
 
     def test_lab_extension_supports_setting_driven_semantic_colors(self) -> None:
         root = Path(__file__).resolve().parents[1]
-        extension_root = root / "extensions" / "aoe2-aiscript-cursor-local-lab"
+        extension_root = root / "extensions" / "aoe2-ai-parser-extension"
         extension_source = (extension_root / "languageExtension" / "out" / "extension.js").read_text(
             encoding="utf-8"
         )
@@ -381,7 +381,7 @@ class CursorExtensionTests(unittest.TestCase):
             (
                 root
                 / "extensions"
-                / "aoe2-aiscript-cursor-local-lab"
+                / "aoe2-ai-parser-extension"
                 / "package.json"
             ).read_text(encoding="utf-8")
         )
@@ -411,7 +411,7 @@ class CursorExtensionTests(unittest.TestCase):
         extension_source = (
             root
             / "extensions"
-            / "aoe2-aiscript-cursor-local-lab"
+            / "aoe2-ai-parser-extension"
             / "languageExtension"
             / "out"
             / "extension.js"
@@ -438,7 +438,7 @@ class CursorExtensionTests(unittest.TestCase):
 
     def test_local_lab_extension_merges_registry_completions(self) -> None:
         root = Path(__file__).resolve().parents[1]
-        extension_root = root / "extensions" / "aoe2-aiscript-cursor-local-lab"
+        extension_root = root / "extensions" / "aoe2-ai-parser-extension"
         server_source = (extension_root / "languageExtension" / "out" / "server.js").read_text(encoding="utf-8")
         completion_data = json.loads((extension_root / "data" / "completions.json").read_text(encoding="utf-8"))
         labels = {item["label"] for item in completion_data["items"]}
@@ -452,7 +452,7 @@ class CursorExtensionTests(unittest.TestCase):
 
     def test_lab_extension_uses_contextual_completions(self) -> None:
         root = Path(__file__).resolve().parents[1]
-        extension_root = root / "extensions" / "aoe2-aiscript-cursor-local-lab"
+        extension_root = root / "extensions" / "aoe2-ai-parser-extension"
         server_source = (extension_root / "languageExtension" / "out" / "server.js").read_text(encoding="utf-8")
         smoke_source = (root / "scripts" / "smoke-cursor-completions.mjs").read_text(encoding="utf-8")
         package_output_smoke_source = (
@@ -515,7 +515,7 @@ class CursorExtensionTests(unittest.TestCase):
 
     def test_lab_extension_surfaces_package_integrity_ai_diagnostics(self) -> None:
         root = Path(__file__).resolve().parents[1]
-        extension_root = root / "extensions" / "aoe2-aiscript-cursor-local-lab"
+        extension_root = root / "extensions" / "aoe2-ai-parser-extension"
         server_source = (extension_root / "languageExtension" / "out" / "server.js").read_text(encoding="utf-8")
 
         self.assertIn("skipped-load-random", server_source)
@@ -532,7 +532,7 @@ class CursorExtensionTests(unittest.TestCase):
 
     def test_lab_extension_prefers_python_json_spans(self) -> None:
         root = Path(__file__).resolve().parents[1]
-        extension_root = root / "extensions" / "aoe2-aiscript-cursor-local-lab"
+        extension_root = root / "extensions" / "aoe2-ai-parser-extension"
         server_source = (extension_root / "languageExtension" / "out" / "server.js").read_text(encoding="utf-8")
 
         self.assertIn('"lint", filePath, "--json"', server_source)
@@ -541,7 +541,7 @@ class CursorExtensionTests(unittest.TestCase):
 
     def test_lab_extension_uses_registry_hovers(self) -> None:
         root = Path(__file__).resolve().parents[1]
-        extension_root = root / "extensions" / "aoe2-aiscript-cursor-local-lab"
+        extension_root = root / "extensions" / "aoe2-ai-parser-extension"
         server_source = (extension_root / "languageExtension" / "out" / "server.js").read_text(encoding="utf-8")
         completion_data = json.loads((extension_root / "data" / "completions.json").read_text(encoding="utf-8"))
         by_label = {item["label"]: item for item in completion_data["items"]}
@@ -556,13 +556,13 @@ class CursorExtensionTests(unittest.TestCase):
 
     def test_local_lab_extension_packages_diagnostic_registry(self) -> None:
         root = Path(__file__).resolve().parents[1]
-        extension_root = root / "extensions" / "aoe2-aiscript-cursor-local-lab"
+        extension_root = root / "extensions" / "aoe2-ai-parser-extension"
         extension_source = (extension_root / "languageExtension" / "out" / "extension.js").read_text(encoding="utf-8")
         diagnostic_data = json.loads(
             (
                 root
                 / "extensions"
-                / "aoe2-aiscript-cursor-local-lab"
+                / "aoe2-ai-parser-extension"
                 / "data"
                 / "diagnostic-codes.json"
             ).read_text(encoding="utf-8")

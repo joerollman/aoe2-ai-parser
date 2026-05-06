@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 const repoRoot = process.cwd();
-const extensionRoot = path.join(repoRoot, "extensions", "aoe2-aiscript-cursor-local-lab");
+const extensionRoot = path.join(repoRoot, "extensions", "aoe2-ai-parser-extension");
 const packagePath = path.join(extensionRoot, "package.json");
 const args = new Set(process.argv.slice(2));
 const editorArgIndex = process.argv.indexOf("--editor");

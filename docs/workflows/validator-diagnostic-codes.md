@@ -1,6 +1,6 @@
 # Validator Diagnostic Codes
 
-Generated from `validator-diagnostic-codes.json`; edit the JSON and run `npm run generate:diagnostic-registry`. The same command also syncs the editor extension copy at `extensions/aoe2-aiscript-cursor-local-lab/data/diagnostic-codes.json`.
+Generated from `validator-diagnostic-codes.json`; edit the JSON and run `npm run generate:diagnostic-registry`. The same command also syncs the editor extension copy at `extensions/aoe2-ai-parser-extension/data/diagnostic-codes.json`.
 
 This is the registry for `aoe2_ai_lab` lint and package-integrity issue codes.
 Use it when triaging `lint --json`, `lint-package --json`, Markdown reports, or VS Code/Cursor diagnostics.
@@ -67,6 +67,7 @@ Manual `--suppress-code <code>` can suppress any finding code for one lint run. 
 | `load-after-include` | package lint | warning | active | none | A reachable `.per` file has a `load` or `load-random` directive after an `include` directive. AIRef documents that load directives should be placed before include directives. |
 | `missing-include-target` | package lint | error | active | none | An `(include "...")` target could not be resolved. |
 | `missing-load-target` | package lint | error | active | quick fix, explain | A `(load "...")` or `#load` target could not be resolved. |
+| `non-de-symbol` | lint | warning | active | explain | A symbol is known from archived AIRef/game-string data, but is not marked as DE-compatible in the local DE reference registry. |
 | `raw-load-in-per` | lint | error | active | none | A raw `#load` directive appears in an installed `.per`; assemble components before install. |
 | `redundant-built-in-defconst` | lint | info | suppressed | quick fix, explain | A local `defconst` redefines a documented built-in class constant by the same name. |
 | `repeat-chat` | lint | warning | suppressed | explain | A chat action may repeat every rule pass because the rule is not disabled or guarded. |
@@ -466,6 +467,16 @@ Manual `--suppress-code <code>` can suppress any finding code for one lint run. 
 - Corpus profile: active
 - Cursor action: quick fix, explain
 - Meaning: A `(load "...")` or `#load` target could not be resolved.
+
+<a id="diagnostic-non-de-symbol"></a>
+
+### `non-de-symbol`
+
+- Source: lint
+- Default severity: warning
+- Corpus profile: active
+- Cursor action: explain
+- Meaning: A symbol is known from archived AIRef/game-string data, but is not marked as DE-compatible in the local DE reference registry.
 
 <a id="diagnostic-raw-load-in-per"></a>
 

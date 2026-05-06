@@ -5,7 +5,7 @@ const repoRoot = process.cwd();
 const completionsPath = path.join(
   repoRoot,
   "extensions",
-  "aoe2-aiscript-cursor-local-lab",
+  "aoe2-ai-parser-extension",
   "data",
   "completions.json",
 );
@@ -92,7 +92,7 @@ const toc = [
 const output = [
   "# AI Symbol Reference",
   "",
-  "Generated from `extensions/aoe2-aiscript-cursor-local-lab/data/completions.json`.",
+  "Generated from `extensions/aoe2-ai-parser-extension/data/completions.json`.",
   "Edit the source inventories or completion generator, then run `npm run generate:symbol-docs`.",
   "",
   "This file is the formatted local documentation target for Cursor definition navigation.",

@@ -1,18 +1,21 @@
-import { execFileSync } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import Module from "node:module";
 import path from "node:path";
 import { createRequire } from "node:module";
 
 const repoRoot = process.cwd();
+const diagnosticDocsPath = path
+  .join(repoRoot, "docs", "workflows", "validator-diagnostic-codes.md")
+  .replace(/\\/g, "/");
 const extensionPath = path.join(
   repoRoot,
   "extensions",
-  "aoe2-aiscript-cursor-local-lab",
+  "aoe2-ai-parser-extension",
   "languageExtension",
   "out",
   "extension.js"
 );
-const samplesPath = path.join(repoRoot, "extensions", "aoe2-aiscript-cursor-local-lab", "samples");
+const samplesPath = path.join(repoRoot, "extensions", "aoe2-ai-parser-extension", "samples");
 const require = createRequire(import.meta.url);
 
 function assert(condition, message) {
@@ -81,21 +84,19 @@ assert(
 
 let stdout = "";
 let stderr = "";
-try {
-  stdout = execFileSync(
-    "python",
-    ["-m", "aoe2_ai_lab", "lint-package", samplesPath, "--json", "--fail-level", "error"],
-    {
-      cwd: repoRoot,
-      env: { ...process.env, PYTHONPATH: "src" },
-      encoding: "utf8",
-      windowsHide: true,
-    }
-  );
-} catch (error) {
-  stdout = String(error.stdout || "");
-  stderr = String(error.stderr || "");
-}
+const lintResult = spawnSync(
+  "python",
+  ["-m", "aoe2_ai_lab", "lint-package", samplesPath, "--json", "--fail-level", "error"],
+  {
+    cwd: repoRoot,
+    env: { ...process.env, PYTHONPATH: "src" },
+    encoding: "utf8",
+    maxBuffer: 20 * 1024 * 1024,
+    windowsHide: true,
+  }
+);
+stdout = String(lintResult.stdout || "");
+stderr = String(lintResult.stderr || "");
 
 assert(stdout.includes("{"), `lint-package --json did not produce JSON stdout; stderr: ${stderr.slice(0, 500)}`);
 
@@ -113,8 +114,8 @@ for (const needle of [
   "[integrity] stale-ai-root (1)",
   "[integrity] duplicate-root-target (1)",
   "[integrity] unreachable-per-file (2)",
-  "docs: [validator-diagnostic-codes.md#diagnostic-command-role-mismatch]",
-  "extensions\\aoe2-aiscript-cursor-local-lab\\samples\\lab_diagnostics_sample.per:25",
+  `docs: [validator-diagnostic-codes.md](${diagnosticDocsPath}#diagnostic-command-role-mismatch)`,
+  "extensions\\aoe2-ai-parser-extension\\samples\\lab_diagnostics_sample.per:25",
 ]) {
   assert(formatted.includes(needle), `formatted package output is missing: ${needle}`);
 }

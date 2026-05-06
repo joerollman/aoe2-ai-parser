@@ -1,7 +1,7 @@
 # Editor Extension Workflow
 
 The patched local VS Code/Cursor extension lives at
-`extensions/aoe2-aiscript-cursor-local-lab`.
+`extensions/aoe2-ai-parser-extension`.
 
 It is a local fork of the AoE2 AiScript extension with AOE2 AI Parser
 integration.
@@ -45,7 +45,7 @@ npm run install:cursor-extension:bump
 ```
 
 This increments
-`extensions/aoe2-aiscript-cursor-local-lab/package.json`, packages the new
+`extensions/aoe2-ai-parser-extension/package.json`, packages the new
 version, installs it in Cursor, and verifies the installed source. Commit the
 version bump with the extension change. For VS Code, use:
 
@@ -59,12 +59,12 @@ the relevant bump install or close the editor and retry the normal install.
 Manual fallback:
 
 ```powershell
-Push-Location extensions\aoe2-aiscript-cursor-local-lab
+Push-Location extensions\aoe2-ai-parser-extension
 npx @vscode/vsce package
 Pop-Location
-cursor --install-extension extensions\aoe2-aiscript-cursor-local-lab\aoe2-ai-parser-<version>.vsix --force
+cursor --install-extension extensions\aoe2-ai-parser-extension\aoe2-ai-parser-<version>.vsix --force
 # or
-code --install-extension extensions\aoe2-aiscript-cursor-local-lab\aoe2-ai-parser-<version>.vsix --force
+code --install-extension extensions\aoe2-ai-parser-extension\aoe2-ai-parser-<version>.vsix --force
 ```
 
 Verify the active extension:
@@ -118,7 +118,7 @@ $env:PYTHONPATH='src'; python -m pytest tests -p no:cacheprovider
 The package command writes:
 
 ```text
-extensions/aoe2-aiscript-cursor-local-lab/aoe2-ai-parser-<version>.vsix
+extensions/aoe2-ai-parser-extension/aoe2-ai-parser-<version>.vsix
 ```
 
 Users can install the same VSIX in either editor:
@@ -147,7 +147,7 @@ Distribution options:
 
 Before Marketplace/Open VSX publishing, verify the `publisher`, `name`,
 `displayName`, `license`, `repository`, and `author` fields in
-`extensions/aoe2-aiscript-cursor-local-lab/package.json`.
+`extensions/aoe2-ai-parser-extension/package.json`.
 
 Marketplace publish commands:
 
@@ -161,7 +161,7 @@ and a `vsce` token. `publish:openvsx-extension` requires an Open VSX namespace
 and token for `ovsx`.
 
 See [release-and-repo-split.md](./release-and-repo-split.md) before publishing
-or moving `extensions\aoe2-aiscript-cursor-local-lab\samples` into a separate AI package repo.
+or moving `extensions\aoe2-ai-parser-extension\samples` into a separate AI package repo.
 
 ## Diagnostics
 
@@ -294,11 +294,11 @@ The extension keeps the original completion list and appends local registry
 completions from:
 
 ```text
-extensions/aoe2-aiscript-cursor-local-lab/data/completions.json
+extensions/aoe2-ai-parser-extension/data/completions.json
 ```
 
 This packaged completion data is owned by
-`extensions/aoe2-aiscript-cursor-local-lab`. It includes the original extension
+`extensions/aoe2-ai-parser-extension`. It includes the original extension
 completion surface plus local registry entries for commands, strategic numbers,
 objects, techs, classes/value families, and other enumerated values.
 
@@ -307,8 +307,8 @@ objects, techs, classes/value families, and other enumerated values.
 The extension contributes two color themes:
 
 ```text
-extensions/aoe2-aiscript-cursor-local-lab/themes/aoe2-ai-parser-dark-color-theme.json
-extensions/aoe2-aiscript-cursor-local-lab/themes/aoe2-ai-parser-light-color-theme.json
+extensions/aoe2-ai-parser-extension/themes/aoe2-ai-parser-dark-color-theme.json
+extensions/aoe2-ai-parser-extension/themes/aoe2-ai-parser-light-color-theme.json
 ```
 
 Both themes define semantic token colors and TextMate fallback colors. The
@@ -565,7 +565,7 @@ matching diagnostic-code anchor when the local docs are bundled or configured.
 Diagnostic samples live under:
 
 ```text
-extensions/aoe2-aiscript-cursor-local-lab/samples
+extensions/aoe2-ai-parser-extension/samples
 ```
 
 Useful samples:
@@ -593,8 +593,8 @@ Run these before handoff:
 node scripts\verify-cursor-extension.mjs
 node scripts\smoke-cursor-package-output.mjs
 node scripts\smoke-cursor-completions.mjs
-node --check extensions\aoe2-aiscript-cursor-local-lab\languageExtension\out\extension.js
-node --check extensions\aoe2-aiscript-cursor-local-lab\languageExtension\out\server.js
+node --check extensions\aoe2-ai-parser-extension\languageExtension\out\extension.js
+node --check extensions\aoe2-ai-parser-extension\languageExtension\out\server.js
 $env:PYTHONPATH='src'; python -m pytest tests -p no:cacheprovider
 ```
 

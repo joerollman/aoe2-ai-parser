@@ -10,7 +10,7 @@ Before copying generated output into the game AI folder, run the linter. This is
 required because DE will reject missing identifiers at load time:
 
 ```powershell
-python -m aoe2_ai_lab lint extensions\aoe2-aiscript-cursor-local-lab\samples\lab_diagnostics_sample.per
+python -m aoe2_ai_lab lint extensions\aoe2-ai-parser-extension\samples\lab_diagnostics_sample.per
 ```
 
 ## Markers

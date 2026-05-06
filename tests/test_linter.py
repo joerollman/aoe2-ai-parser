@@ -256,9 +256,51 @@ class LinterTests(unittest.TestCase):
 
             findings = lint_file(path)
 
-        self.assertEqual(findings[0].code, "undefined-strategic-number")
+        self.assertEqual(findings[0].code, "non-de-symbol")
         self.assertIn("archived as non-DE", findings[0].message)
         self.assertIn("strategic-number registry", findings[0].message)
+
+    def test_flags_archived_non_de_strategic_number_even_if_observed_in_binary_strings(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.per"
+            path.write_text(
+                """
+(defrule
+    (true)
+=>
+    (set-strategic-number sn-target-evaluation-distance 1)
+    (disable-self)
+)
+""".strip(),
+                encoding="utf-8",
+            )
+
+            findings = lint_file(path)
+
+        self.assertEqual(findings[0].code, "non-de-symbol")
+        self.assertIn("sn-target-evaluation-distance", findings[0].message)
+        self.assertIn("DE strategic-number registry", findings[0].message)
+
+    def test_flags_archived_non_de_direct_object_and_tech_ids(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.per"
+            path.write_text(
+                """
+(defrule
+    (can-train stable-tarkan)
+    (can-research ri-tracking)
+=>
+    (disable-self)
+)
+""".strip(),
+                encoding="utf-8",
+            )
+
+            findings = lint_file(path)
+
+        self.assertEqual([finding.code for finding in findings], ["non-de-symbol", "non-de-symbol"])
+        self.assertIn("DE object registry", findings[0].message)
+        self.assertIn("DE tech registry", findings[1].message)
 
     def test_allows_defined_strategic_number_constant(self) -> None:
         with TemporaryDirectory() as tmp:
@@ -280,7 +322,7 @@ class LinterTests(unittest.TestCase):
 
         self.assertEqual(findings, [])
 
-    def test_allows_binary_observed_target_evaluation_strategic_numbers(self) -> None:
+    def test_flags_binary_observed_target_evaluation_strategic_numbers_as_non_de(self) -> None:
         with TemporaryDirectory() as tmp:
             path = Path(tmp) / "sample.per"
             path.write_text(
@@ -297,7 +339,8 @@ class LinterTests(unittest.TestCase):
 
             findings = lint_file(path)
 
-        self.assertEqual(findings, [])
+        self.assertEqual([finding.code for finding in findings], ["non-de-symbol", "non-de-symbol", "non-de-symbol"])
+        self.assertTrue(all("strategic-number registry" in finding.message for finding in findings))
 
     def test_flags_rule_with_more_than_thirty_two_elements(self) -> None:
         with TemporaryDirectory() as tmp:
@@ -3290,7 +3333,7 @@ void debug() {
         messages = [finding.message for finding in findings]
         self.assertEqual(
             [finding.code for finding in findings],
-            ["command-argument-mismatch", "command-argument-mismatch", "undefined-constant"],
+            ["non-de-symbol", "non-de-symbol", "undefined-constant"],
         )
         self.assertTrue(any("archived as non-DE" in message and "object registry" in message for message in messages))
         self.assertTrue(any("archived as non-DE" in message and "tech registry" in message for message in messages))

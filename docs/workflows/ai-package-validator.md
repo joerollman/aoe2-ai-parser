@@ -9,14 +9,14 @@ Single-file lint:
 
 ```powershell
 $env:PYTHONPATH='src'
-python -m aoe2_ai_lab lint extensions\aoe2-aiscript-cursor-local-lab\samples\lab_diagnostics_sample.per
+python -m aoe2_ai_lab lint extensions\aoe2-ai-parser-extension\samples\lab_diagnostics_sample.per
 ```
 
 Package lint:
 
 ```powershell
 $env:PYTHONPATH='src'
-python -m aoe2_ai_lab lint-package extensions\aoe2-aiscript-cursor-local-lab\samples --profile default
+python -m aoe2_ai_lab lint-package extensions\aoe2-ai-parser-extension\samples --profile default
 ```
 
 You can pass a specific `.ai` file to validate just one root from a larger pack:
@@ -50,19 +50,19 @@ Machine-readable output:
 
 ```powershell
 $env:PYTHONPATH='src'
-python -m aoe2_ai_lab lint-package extensions\aoe2-aiscript-cursor-local-lab\samples --profile default --json
+python -m aoe2_ai_lab lint-package extensions\aoe2-ai-parser-extension\samples --profile default --json
 ```
 
 Write machine-readable output to a file:
 
 ```powershell
-python -m aoe2_ai_lab lint-package extensions\aoe2-aiscript-cursor-local-lab\samples --profile default --output .tmp\lint-package\p.json
+python -m aoe2_ai_lab lint-package extensions\aoe2-ai-parser-extension\samples --profile default --output .tmp\lint-package\p.json
 ```
 
 Write a verbose Markdown report:
 
 ```powershell
-python -m aoe2_ai_lab lint-package extensions\aoe2-aiscript-cursor-local-lab\samples --profile default --report .tmp\lint-package\p.md
+python -m aoe2_ai_lab lint-package extensions\aoe2-ai-parser-extension\samples --profile default --report .tmp\lint-package\p.md
 ```
 
 The Markdown report is intended for humans and agent handoff notes. It includes
@@ -89,7 +89,7 @@ use `--format-chat` only when that is wanted.
 - `corpus`: suppresses compatibility noise that appears in working community
   AIs, such as redundant built-in class aliases.
 
-Use `default` for `extensions\aoe2-aiscript-cursor-local-lab\samples`. Use `corpus` when evaluating imported AIs unless the
+Use `default` for `extensions\aoe2-ai-parser-extension\samples`. Use `corpus` when evaluating imported AIs unless the
 task is explicitly to enforce project style.
 
 ## Severity
@@ -140,7 +140,7 @@ The JSON form includes `documentation_path`, `documentation_anchor`, and
 The active local VS Code/Cursor extension workflow is documented in
 [`cursor-extension.md`](./cursor-extension.md).
 
-The installed local extension is `extensions/aoe2-aiscript-cursor-local-lab`.
+The installed local extension is `extensions/aoe2-ai-parser-extension`.
 It integrates this validator into VS Code/Cursor diagnostics and command palette
 commands, while preserving the original extension's syntax highlighting and
 extending completion, hover, signature-help, and quick-fix behavior with local
@@ -208,7 +208,7 @@ DUC list in one rule, then consume it in the next rule.
 To fail on warnings too:
 
 ```powershell
-python -m aoe2_ai_lab lint-package extensions\aoe2-aiscript-cursor-local-lab\samples --fail-level warning
+python -m aoe2_ai_lab lint-package extensions\aoe2-ai-parser-extension\samples --fail-level warning
 ```
 
 To include informational package findings in summary output and the failing exit
@@ -286,20 +286,20 @@ severity. Conditional findings are reported but do not fail unless requested.
 Strict conditional failure:
 
 ```powershell
-python -m aoe2_ai_lab lint-package extensions\aoe2-aiscript-cursor-local-lab\samples --fail-confidence conditional
+python -m aoe2_ai_lab lint-package extensions\aoe2-ai-parser-extension\samples --fail-confidence conditional
 ```
 
 Useful combinations:
 
 ```powershell
 # Normal package validation: definite errors fail.
-python -m aoe2_ai_lab lint-package extensions\aoe2-aiscript-cursor-local-lab\samples
+python -m aoe2_ai_lab lint-package extensions\aoe2-ai-parser-extension\samples
 
 # Strict error validation: definite and conditional errors fail.
-python -m aoe2_ai_lab lint-package extensions\aoe2-aiscript-cursor-local-lab\samples --fail-confidence conditional
+python -m aoe2_ai_lab lint-package extensions\aoe2-ai-parser-extension\samples --fail-confidence conditional
 
 # Release-style strictness: warnings and errors fail, including conditional branches.
-python -m aoe2_ai_lab lint-package extensions\aoe2-aiscript-cursor-local-lab\samples --fail-level warning --fail-confidence conditional
+python -m aoe2_ai_lab lint-package extensions\aoe2-ai-parser-extension\samples --fail-level warning --fail-confidence conditional
 ```
 
 ## Preprocessor Handling
@@ -625,11 +625,11 @@ real action instead of a `can-*` fact after `=>`, or adding a missing load file.
 
 ## Recommended Agent Workflow
 
-For `extensions\aoe2-aiscript-cursor-local-lab\samples`:
+For `extensions\aoe2-ai-parser-extension\samples`:
 
 ```powershell
 $env:PYTHONPATH='src'
-python -m aoe2_ai_lab lint-package extensions\aoe2-aiscript-cursor-local-lab\samples --profile default --json
+python -m aoe2_ai_lab lint-package extensions\aoe2-ai-parser-extension\samples --profile default --json
 python -m pytest tests -p no:cacheprovider
 ```
 
