@@ -221,6 +221,66 @@ class LinterTests(unittest.TestCase):
         self.assertEqual(len(relevant), 2)
         self.assertTrue(all(finding.severity == "warning" for finding in relevant))
 
+    def test_allows_locally_validated_unit_line_count_contexts(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.per"
+            path.write_text(
+                """
+(defrule
+    (unit-type-count-total donjon-serjeant-line >= 0)
+    (unit-type-count-total donjon-spearman-line >= 0)
+    (unit-type-count-total krepost-konnik-line >= 0)
+    (unit-type-count-total shotel-line >= 0)
+=>
+    (do-nothing)
+)
+""".strip(),
+                encoding="utf-8",
+            )
+
+            findings = lint_file(path)
+
+        self.assertEqual(findings, [])
+
+    def test_allows_locally_validated_shotel_line_direct_train_contexts_only(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.per"
+            path.write_text(
+                """
+(defrule
+    (can-train shotel-line)
+=>
+    (train shotel-line)
+)
+""".strip(),
+                encoding="utf-8",
+            )
+
+            findings = lint_file(path)
+
+        self.assertEqual(findings, [])
+
+    def test_still_warns_for_unvalidated_line_train_contexts(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.per"
+            path.write_text(
+                """
+(defrule
+    (can-train donjon-serjeant-line)
+    (can-train krepost-konnik-line)
+=>
+    (train donjon-serjeant-line)
+    (train krepost-konnik-line)
+)
+""".strip(),
+                encoding="utf-8",
+            )
+
+            findings = lint_file(path)
+
+        self.assertTrue(findings)
+        self.assertTrue(all(finding.code == "command-argument-mismatch" for finding in findings))
+
     def test_allows_documented_dynamic_unique_unit_ids_without_defconst(self) -> None:
         with TemporaryDirectory() as tmp:
             path = Path(tmp) / "sample.per"

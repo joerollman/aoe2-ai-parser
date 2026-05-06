@@ -65,42 +65,85 @@
     },
     {
       "name": "donjon-serjeant-line",
-      "kind": "corpus-observed-unit-line-candidate",
-      "validation_status": "needs-live-validation",
+      "kind": "local-unit-line",
+      "validation_status": "project-observed",
+      "validated_command_contexts": [
+        {
+          "command": "unit-type-count-total",
+          "parameter": "UnitId",
+          "result": "valid"
+        }
+      ],
       "notes": [
         "Seen in Naga in UnitId and c: train-target contexts.",
         "Not present in imported AIRef active object inventory or bundled extension unit IDs.",
-        "Keep linter warnings active until live validation confirms the identifier and supported command contexts."
+        "Validated as a bare UnitId for unit-type-count-total.",
+        "Do not treat as a validated can-train/train or c: action-train target; action-train resolved to object ID 1660 but reported not available to train in the fixture."
       ]
     },
     {
       "name": "donjon-spearman-line",
-      "kind": "corpus-observed-unit-line-candidate",
-      "validation_status": "needs-live-validation",
+      "kind": "local-unit-line",
+      "validation_status": "project-observed",
+      "validated_command_contexts": [
+        {
+          "command": "unit-type-count-total",
+          "parameter": "UnitId",
+          "result": "valid"
+        }
+      ],
       "notes": [
         "Seen in Naga in UnitId and c: train-target contexts.",
         "Not present in imported AIRef active object inventory or bundled extension unit IDs.",
-        "Keep linter warnings active until live validation confirms the identifier and supported command contexts."
+        "Validated as a bare UnitId for unit-type-count-total.",
+        "Do not treat as a validated can-train/train or c: action-train target; action-train resolved to object ID 1786 but reported not available to train in the fixture."
       ]
     },
     {
       "name": "krepost-konnik-line",
-      "kind": "corpus-observed-unit-line-candidate",
-      "validation_status": "needs-live-validation",
+      "kind": "local-unit-line",
+      "validation_status": "project-observed",
+      "validated_command_contexts": [
+        {
+          "command": "unit-type-count-total",
+          "parameter": "UnitId",
+          "result": "valid"
+        }
+      ],
       "notes": [
         "Seen in Naga in UnitId and c: train-target contexts.",
         "Not present in imported AIRef active object inventory or bundled extension unit IDs.",
-        "Keep linter warnings active until live validation confirms the identifier and supported command contexts."
+        "Validated as a bare UnitId for unit-type-count-total.",
+        "Do not treat as a validated can-train/train or c: action-train target; action-train resolved to object ID 1254 but reported not available to train in the fixture."
       ]
     },
     {
       "name": "shotel-line",
-      "kind": "corpus-observed-unit-line-candidate",
-      "validation_status": "needs-live-validation",
+      "kind": "local-unit-line",
+      "validation_status": "project-observed",
+      "validated_command_contexts": [
+        {
+          "command": "unit-type-count-total",
+          "parameter": "UnitId",
+          "result": "valid"
+        },
+        {
+          "command": "can-train",
+          "parameter": "UnitId",
+          "result": "valid"
+        },
+        {
+          "command": "train",
+          "parameter": "UnitId",
+          "result": "valid"
+        }
+      ],
       "notes": [
         "Seen in Naga in UnitId count contexts.",
         "Not present in imported AIRef active object inventory or bundled extension unit IDs.",
-        "Keep linter warnings active until live validation confirms the identifier and supported command contexts."
+        "Validated as a bare UnitId for unit-type-count-total, can-train, and train.",
+        "Direct train produced shotel-warrior and then elite-shotel-warrior in the fixture.",
+        "Do not treat c: action-train as validated yet; the action fired after direct train had already produced units."
       ]
     }
   ]

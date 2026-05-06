@@ -918,6 +918,34 @@ def _load_site_specific_train_aliases_requiring_defconst() -> dict[str, int]:
     return aliases or fallback
 
 
+def _load_local_symbol_command_contexts() -> set[tuple[str, str, str]]:
+    inventory_path = (
+        Path(__file__).resolve().parents[2]
+        / "docs"
+        / "extracted"
+        / "inventories"
+        / "aoe2-ai-parser-local-symbol-notes.json"
+    )
+    if not inventory_path.exists():
+        return set()
+
+    data = json.loads(inventory_path.read_text(encoding="utf-8-sig"))
+    contexts: set[tuple[str, str, str]] = set()
+    for symbol in data.get("symbols", []):
+        name = symbol.get("name")
+        if not isinstance(name, str):
+            continue
+        for context in symbol.get("validated_command_contexts", []):
+            if not isinstance(context, dict):
+                continue
+            command = context.get("command")
+            parameter = context.get("parameter")
+            result = context.get("result")
+            if isinstance(command, str) and isinstance(parameter, str) and result == "valid":
+                contexts.add((name, command, parameter))
+    return contexts
+
+
 DUC_ACTION_VALUES = _load_value_family_names("DUCAction")
 FORMATION_VALUES = _load_value_family_names("Formation")
 ATTACK_STANCE_VALUES = _load_value_family_names("AttackStance")
@@ -964,6 +992,7 @@ ORDER_ID_VALUES = _load_value_family_names("OrderId")
 TERRAIN_VALUES = _load_value_family_names("Terrain")
 WALL_ID_VALUES = _load_value_family_names("WallId") | {"stone-wall-line"}
 TRAIN_TARGET_ALIASES_REQUIRING_DEFCONST = _load_site_specific_train_aliases_requiring_defconst()
+LOCAL_SYMBOL_COMMAND_CONTEXTS = _load_local_symbol_command_contexts()
 DOCUMENTED_VALUE_CONSTANTS = normalize_value_family_names(
     DUC_ACTION_VALUES
     | FORMATION_VALUES
@@ -1974,6 +2003,10 @@ def is_known_schema_value(value: str, valid_values: set[str], defined_constants:
     return value in valid_values or value in defined_constants or is_int_literal(value)
 
 
+def is_valid_local_symbol_command_context(command: str, parameter_name: str, value: str) -> bool:
+    return (value, command, parameter_name) in LOCAL_SYMBOL_COMMAND_CONTEXTS
+
+
 def is_archived_non_de_direct_id(parameter_name: str, value: str) -> bool:
     if parameter_name in {"BuildingId", "ObjectId", "UnitId"}:
         return value in NON_DE_ONLY_OBJECT_NAMES
@@ -2247,6 +2280,7 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
                 direct_id_values is not None
                 and not (index > 0 and parameters[index - 1].get("name") in {"typeOp", "mathOp", "compareOp"})
                 and not is_known_schema_value(value, direct_id_values, defined_constants)
+                and not is_valid_local_symbol_command_context(expr.head, parameter_name, value)
                 and not is_archived_non_de_direct_id(parameter_name, value)
             ):
                 findings.append(
