@@ -35,3 +35,38 @@ Implementation note:
 
 - User-facing messages should say these aliases require `defconst`; internal
   evidence can stay here and in the lab repo.
+
+## Unit-Line Command Contexts
+
+Public diagnostics:
+
+- `command-argument-mismatch`
+
+Internal validation source:
+
+- Lab repo: `C:\Users\joero\programming-projects\aoe2-ai-lab`
+- Scenario harness: `ai/unitline_context_probes`
+- Scenario config: `docs/workflows/scenario-unitline-context-probes.config.json`
+- Lab commits:
+  - `8a2dccc Add unit-line context scenario probes`
+  - `3eb93c1 Add player-count unit-line probe checks`
+
+Validated behavior:
+
+- `donjon-serjeant-line`, `donjon-spearman-line`, `krepost-konnik-line`, and
+  `shotel-line` are valid bare `UnitId` arguments for
+  `unit-type-count-total`.
+- The same four symbols are valid bare `UnitId` arguments for
+  `players-unit-type-count`.
+- `shotel-line` is valid as a bare `UnitId` for direct `can-train` and
+  `train`; direct training produced `shotel-warrior` and then
+  `elite-shotel-warrior` in the fixture.
+- Do not mark `donjon-serjeant-line`, `donjon-spearman-line`, or
+  `krepost-konnik-line` as validated direct `can-train`/`train` targets.
+- Do not mark `c:` `action-train` contexts for these local unit lines as
+  validated yet.
+
+Implementation note:
+
+- User-facing linter output should say the argument is not validated for that
+  command slot, not reference the scenario fixture directly.

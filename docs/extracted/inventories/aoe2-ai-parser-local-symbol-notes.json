@@ -72,12 +72,17 @@
           "command": "unit-type-count-total",
           "parameter": "UnitId",
           "result": "valid"
+        },
+        {
+          "command": "players-unit-type-count",
+          "parameter": "UnitId",
+          "result": "valid"
         }
       ],
       "notes": [
         "Seen in Naga in UnitId and c: train-target contexts.",
         "Not present in imported AIRef active object inventory or bundled extension unit IDs.",
-        "Validated as a bare UnitId for unit-type-count-total.",
+        "Validated as a bare UnitId for unit-type-count-total and players-unit-type-count.",
         "Do not treat as a validated can-train/train or c: action-train target; action-train resolved to object ID 1660 but reported not available to train in the fixture."
       ]
     },
@@ -90,12 +95,17 @@
           "command": "unit-type-count-total",
           "parameter": "UnitId",
           "result": "valid"
+        },
+        {
+          "command": "players-unit-type-count",
+          "parameter": "UnitId",
+          "result": "valid"
         }
       ],
       "notes": [
         "Seen in Naga in UnitId and c: train-target contexts.",
         "Not present in imported AIRef active object inventory or bundled extension unit IDs.",
-        "Validated as a bare UnitId for unit-type-count-total.",
+        "Validated as a bare UnitId for unit-type-count-total and players-unit-type-count.",
         "Do not treat as a validated can-train/train or c: action-train target; action-train resolved to object ID 1786 but reported not available to train in the fixture."
       ]
     },
@@ -108,12 +118,17 @@
           "command": "unit-type-count-total",
           "parameter": "UnitId",
           "result": "valid"
+        },
+        {
+          "command": "players-unit-type-count",
+          "parameter": "UnitId",
+          "result": "valid"
         }
       ],
       "notes": [
         "Seen in Naga in UnitId and c: train-target contexts.",
         "Not present in imported AIRef active object inventory or bundled extension unit IDs.",
-        "Validated as a bare UnitId for unit-type-count-total.",
+        "Validated as a bare UnitId for unit-type-count-total and players-unit-type-count.",
         "Do not treat as a validated can-train/train or c: action-train target; action-train resolved to object ID 1254 but reported not available to train in the fixture."
       ]
     },
@@ -124,6 +139,11 @@
       "validated_command_contexts": [
         {
           "command": "unit-type-count-total",
+          "parameter": "UnitId",
+          "result": "valid"
+        },
+        {
+          "command": "players-unit-type-count",
           "parameter": "UnitId",
           "result": "valid"
         },
@@ -141,7 +161,7 @@
       "notes": [
         "Seen in Naga in UnitId count contexts.",
         "Not present in imported AIRef active object inventory or bundled extension unit IDs.",
-        "Validated as a bare UnitId for unit-type-count-total, can-train, and train.",
+        "Validated as a bare UnitId for unit-type-count-total, players-unit-type-count, can-train, and train.",
         "Direct train produced shotel-warrior and then elite-shotel-warrior in the fixture.",
         "Do not treat c: action-train as validated yet; the action fired after direct train had already produced units."
       ]

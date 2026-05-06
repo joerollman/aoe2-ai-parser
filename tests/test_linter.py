@@ -242,6 +242,27 @@ class LinterTests(unittest.TestCase):
 
         self.assertEqual(findings, [])
 
+    def test_allows_locally_validated_unit_line_player_count_contexts(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.per"
+            path.write_text(
+                """
+(defrule
+    (players-unit-type-count my-player-number donjon-serjeant-line >= 0)
+    (players-unit-type-count my-player-number donjon-spearman-line >= 0)
+    (players-unit-type-count my-player-number krepost-konnik-line >= 0)
+    (players-unit-type-count my-player-number shotel-line >= 0)
+=>
+    (do-nothing)
+)
+""".strip(),
+                encoding="utf-8",
+            )
+
+            findings = lint_file(path)
+
+        self.assertEqual(findings, [])
+
     def test_allows_locally_validated_shotel_line_direct_train_contexts_only(self) -> None:
         with TemporaryDirectory() as tmp:
             path = Path(tmp) / "sample.per"
