@@ -73,8 +73,8 @@ Manual `--suppress-code <code>` can suppress any finding code for one lint run. 
 | `repeat-chat` | lint | warning | suppressed | explain | A chat action may repeat every rule pass because the rule is not disabled or guarded. |
 | `rule-too-long` | lint | error | active | none | A rule exceeds DE's 32 element limit for facts/actions/logical operators. |
 | `split-typed-comparison` | lint | error | active | none | A typed comparison was split, such as `< g:` instead of `g:<`. |
-| `site-specific-train-alias-requires-defconst` | lint | error | active | explain | A site-specific train-target alias is not a built-in identifier in DE and must be declared with the observed `defconst` value before direct `can-train` or `train` use. |
-| `site-specific-train-alias-requires-defconst-warning` | lint | warning | active | explain | A site-specific train-target alias appears after `c:` but is not known as a built-in typed constant; declare the observed `defconst` value before using it in DUC train actions. |
+| `site-specific-train-alias-requires-defconst` | lint | error | active | explain | A site-specific train-target alias is not a built-in identifier in DE and must be declared with its required `defconst` value before direct `can-train` or `train` use. |
+| `site-specific-train-alias-requires-defconst-warning` | lint | warning | active | explain | A site-specific train-target alias appears after `c:` but is not known as a built-in typed constant; declare its required `defconst` value before using it in DUC train actions. |
 | `source-line-too-long` | lint | error | active | none | A source line exceeds the documented 255-character AI script line limit, including comments. |
 | `stale-ai-root` | integrity | error | active | none | An `.ai` file did not resolve to any root `.per`. |
 | `unbalanced-parentheses` | lint | error | active | none | Parentheses close too early or the file is missing closing parentheses. |
@@ -538,7 +538,7 @@ Manual `--suppress-code <code>` can suppress any finding code for one lint run. 
 - Default severity: error
 - Corpus profile: active
 - Cursor action: explain
-- Meaning: A site-specific train-target alias is not a built-in identifier in DE and must be declared with the observed `defconst` value before direct `can-train` or `train` use.
+- Meaning: A site-specific train-target alias is not a built-in identifier in DE and must be declared with its required `defconst` value before direct `can-train` or `train` use.
 
 <a id="diagnostic-site-specific-train-alias-requires-defconst-warning"></a>
 
@@ -548,7 +548,7 @@ Manual `--suppress-code <code>` can suppress any finding code for one lint run. 
 - Default severity: warning
 - Corpus profile: active
 - Cursor action: explain
-- Meaning: A site-specific train-target alias appears after `c:` but is not known as a built-in typed constant; declare the observed `defconst` value before using it in DUC train actions.
+- Meaning: A site-specific train-target alias appears after `c:` but is not known as a built-in typed constant; declare its required `defconst` value before using it in DUC train actions.
 
 <a id="diagnostic-source-line-too-long"></a>
 

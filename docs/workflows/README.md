@@ -17,6 +17,9 @@ Use this folder for local tooling and handoff workflows.
   manifest for generic Discord automation.
 - [release-and-repo-split.md](./release-and-repo-split.md): public extension
   release flow, marketplace publishing, and bundled validator runtime.
+- [internal-validation-notes.md](./internal-validation-notes.md): maintainer-only
+  validation evidence for diagnostics. Do not surface these details in normal
+  user-facing lint output.
 
 Core commands:
 
