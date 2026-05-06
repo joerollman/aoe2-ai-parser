@@ -436,6 +436,14 @@
       "meaning": "A symbol is locally validated for some train contexts but is not validated as an `up-target-point ... action-train c:` target."
     },
     {
+      "code": "unvalidated-train-target",
+      "source": "lint",
+      "severity": "warning",
+      "corpus": "active",
+      "cursor_action": "explain",
+      "meaning": "A symbol is known in local validation notes, but is not validated for the current direct or dynamic train-target context."
+    },
+    {
       "code": "undefined-identifier",
       "source": "lint",
       "severity": "warning",

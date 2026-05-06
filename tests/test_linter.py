@@ -337,7 +337,7 @@ class LinterTests(unittest.TestCase):
             findings = lint_file(path)
 
         self.assertTrue(findings)
-        self.assertTrue(all(finding.code == "command-argument-mismatch" for finding in findings))
+        self.assertTrue(all(finding.code == "unvalidated-train-target" for finding in findings))
 
     def test_allows_validated_shotel_line_action_train_target(self) -> None:
         with TemporaryDirectory() as tmp:
@@ -379,9 +379,30 @@ class LinterTests(unittest.TestCase):
             findings = lint_file(path)
 
         self.assertEqual([finding.code for finding in findings], [
-            "undefined-constant",
-            "undefined-constant",
-            "undefined-constant",
+            "unvalidated-action-train-target",
+            "unvalidated-action-train-target",
+            "unvalidated-action-train-target",
+        ])
+
+    def test_warns_for_unvalidated_line_dynamic_train_targets(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.per"
+            path.write_text(
+                """
+(defrule
+    (up-can-train 0 c: donjon-serjeant-line)
+=>
+    (up-train 0 c: krepost-konnik-line)
+)
+""".strip(),
+                encoding="utf-8",
+            )
+
+            findings = lint_file(path)
+
+        self.assertEqual([finding.code for finding in findings], [
+            "unvalidated-train-target",
+            "unvalidated-train-target",
         ])
 
     def test_allows_documented_dynamic_unique_unit_ids_without_defconst(self) -> None:

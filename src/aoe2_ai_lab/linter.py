@@ -53,6 +53,7 @@ WARNING_FINDING_CODES = {
     "undefined-strategic-number",
     "unsafe-goal-block",
     "unvalidated-action-train-target",
+    "unvalidated-train-target",
     "up-can-build-zero-escrow",
     "up-build-place-point-coordinate-as-escrow",
     "site-specific-train-alias-requires-defconst-warning",
@@ -1142,6 +1143,17 @@ def lint_typed_constants(
                 )
             )
             continue
+        if is_unvalidated_local_typed_train_target(tokens, index, value):
+            findings.append(
+                Finding(
+                    line,
+                    "unvalidated-train-target",
+                    f"{value!r} is known locally but is not validated as a typed train target in this command context",
+                )
+            )
+            continue
+        if (value, tokens[0], "UnitId") in UNVALIDATED_LOCAL_SYMBOL_COMMAND_CONTEXTS:
+            continue
         if (
             value in defined_constants
             or value in BUILTIN_TYPED_CONSTANTS
@@ -2039,6 +2051,20 @@ def is_unvalidated_local_action_train_target(tokens: list[str], type_prefix_inde
     )
 
 
+def is_unvalidated_local_typed_train_target(tokens: list[str], type_prefix_index: int, value: str) -> bool:
+    if type_prefix_index < 1:
+        return False
+    return (
+        tokens[0] == "up-target-point"
+        and tokens[type_prefix_index - 1] == "action-train"
+        and (value, "up-target-point", "ActionTrainTarget") in UNVALIDATED_LOCAL_SYMBOL_COMMAND_CONTEXTS
+    )
+
+
+def is_unvalidated_local_train_target(command: str, parameter_name: str, value: str) -> bool:
+    return (value, command, parameter_name) in UNVALIDATED_LOCAL_SYMBOL_COMMAND_CONTEXTS
+
+
 def is_archived_non_de_direct_id(parameter_name: str, value: str) -> bool:
     if parameter_name in {"BuildingId", "ObjectId", "UnitId"}:
         return value in NON_DE_ONLY_OBJECT_NAMES
@@ -2293,6 +2319,16 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
             range_finding = lint_numeric_range_operand(expr, args, parameters, parameter, value, index, constant_values)
             if range_finding is not None:
                 findings.append(range_finding)
+            if is_unvalidated_local_train_target(expr.head, parameter_name, value):
+                findings.append(
+                    finding_for_arg(
+                        expr,
+                        index,
+                        "unvalidated-train-target",
+                        f"{expr.head} {parameter_name} {value!r} is known locally but is not validated for this train-target context",
+                    )
+                )
+                continue
             direct_id_values = direct_id_values_for_parameter(parameter_name)
             if (
                 direct_id_values is not None

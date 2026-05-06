@@ -207,6 +207,31 @@
           "command": "players-unit-type-count",
           "parameter": "UnitId",
           "result": "valid"
+        },
+        {
+          "command": "can-train",
+          "parameter": "UnitId",
+          "result": "unvalidated"
+        },
+        {
+          "command": "train",
+          "parameter": "UnitId",
+          "result": "unvalidated"
+        },
+        {
+          "command": "up-can-train",
+          "parameter": "UnitId",
+          "result": "unvalidated"
+        },
+        {
+          "command": "up-train",
+          "parameter": "UnitId",
+          "result": "unvalidated"
+        },
+        {
+          "command": "up-target-point",
+          "parameter": "ActionTrainTarget",
+          "result": "unvalidated"
         }
       ],
       "notes": [
@@ -230,6 +255,31 @@
           "command": "players-unit-type-count",
           "parameter": "UnitId",
           "result": "valid"
+        },
+        {
+          "command": "can-train",
+          "parameter": "UnitId",
+          "result": "unvalidated"
+        },
+        {
+          "command": "train",
+          "parameter": "UnitId",
+          "result": "unvalidated"
+        },
+        {
+          "command": "up-can-train",
+          "parameter": "UnitId",
+          "result": "unvalidated"
+        },
+        {
+          "command": "up-train",
+          "parameter": "UnitId",
+          "result": "unvalidated"
+        },
+        {
+          "command": "up-target-point",
+          "parameter": "ActionTrainTarget",
+          "result": "unvalidated"
         }
       ],
       "notes": [
@@ -253,6 +303,31 @@
           "command": "players-unit-type-count",
           "parameter": "UnitId",
           "result": "valid"
+        },
+        {
+          "command": "can-train",
+          "parameter": "UnitId",
+          "result": "unvalidated"
+        },
+        {
+          "command": "train",
+          "parameter": "UnitId",
+          "result": "unvalidated"
+        },
+        {
+          "command": "up-can-train",
+          "parameter": "UnitId",
+          "result": "unvalidated"
+        },
+        {
+          "command": "up-train",
+          "parameter": "UnitId",
+          "result": "unvalidated"
+        },
+        {
+          "command": "up-target-point",
+          "parameter": "ActionTrainTarget",
+          "result": "unvalidated"
         }
       ],
       "notes": [
