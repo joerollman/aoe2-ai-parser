@@ -16,12 +16,16 @@ Internal validation source:
 - Lab repo: `C:\Users\joero\programming-projects\aoe2-ai-lab`
 - Scenario harness: `ai/site_specific_training_probes/sst_shared/sst_shared.per`
 - Result notes: `ai/site_specific_training_probes/results.md`
+- Action-train alias harness: `ai/unitline_action_train_alias_probes/ulat_alias_shared.per`
+- Action-train alias result notes: `ai/unitline_action_train_alias_probes/results.md`
 - Lab commit: `ed70484 Add canonical site-specific training scenario probe`
 
 Validated behavior:
 
 - `donjon-spearman` is not a built-in identifier; direct bare use failed at
   startup. It works as a local alias with `(defconst donjon-spearman 1786)`.
+- `donjon-serjeant` works as a local alias with
+  `(defconst donjon-serjeant 1660)` for direct `can-train`/`train`.
 - `donjon-pikeman` works as a local alias with
   `(defconst donjon-pikeman 1787)`.
 - `donjon-halberdier` works as a local alias with
@@ -30,6 +34,16 @@ Validated behavior:
   valid built-in direct `train` targets in the validated fixture.
 - `konnik-line` did not become trainable from a Krepost in the validated
   fixture.
+- Do not mark Donjon/Krepost site-specific aliases as validated
+  `up-target-point ... action-train c:` targets. In the alias action-train
+  fixture, `donjon-serjeant`, `donjon-pikeman`, `elite-donjon-serjeant`,
+  `krepost-konnik`, and `elite-krepost-konnik` reached `can-train` and issued
+  from their site-specific buildings, but produced no unit before observation
+  ended.
+- `donjon-halberdier` did not reach `can-train` in the alias action-train
+  fixture, despite being validated as a local alias for direct `train`.
+- `shotel-line` remained the positive control for `action-train c:` and
+  produced `shotel-warrior`.
 
 Implementation note:
 

@@ -52,6 +52,7 @@ WARNING_FINDING_CODES = {
     "undefined-position-constant",
     "undefined-strategic-number",
     "unsafe-goal-block",
+    "unvalidated-action-train-target",
     "up-can-build-zero-escrow",
     "up-build-place-point-coordinate-as-escrow",
     "site-specific-train-alias-requires-defconst-warning",
@@ -918,7 +919,7 @@ def _load_site_specific_train_aliases_requiring_defconst() -> dict[str, int]:
     return aliases or fallback
 
 
-def _load_local_symbol_command_contexts() -> set[tuple[str, str, str]]:
+def _load_local_symbol_command_contexts(result_filter: str = "valid") -> set[tuple[str, str, str]]:
     inventory_path = (
         Path(__file__).resolve().parents[2]
         / "docs"
@@ -941,7 +942,7 @@ def _load_local_symbol_command_contexts() -> set[tuple[str, str, str]]:
             command = context.get("command")
             parameter = context.get("parameter")
             result = context.get("result")
-            if isinstance(command, str) and isinstance(parameter, str) and result == "valid":
+            if isinstance(command, str) and isinstance(parameter, str) and result == result_filter:
                 contexts.add((name, command, parameter))
     return contexts
 
@@ -992,7 +993,8 @@ ORDER_ID_VALUES = _load_value_family_names("OrderId")
 TERRAIN_VALUES = _load_value_family_names("Terrain")
 WALL_ID_VALUES = _load_value_family_names("WallId") | {"stone-wall-line"}
 TRAIN_TARGET_ALIASES_REQUIRING_DEFCONST = _load_site_specific_train_aliases_requiring_defconst()
-LOCAL_SYMBOL_COMMAND_CONTEXTS = _load_local_symbol_command_contexts()
+LOCAL_SYMBOL_COMMAND_CONTEXTS = _load_local_symbol_command_contexts("valid")
+UNVALIDATED_LOCAL_SYMBOL_COMMAND_CONTEXTS = _load_local_symbol_command_contexts("unvalidated")
 DOCUMENTED_VALUE_CONSTANTS = normalize_value_family_names(
     DUC_ACTION_VALUES
     | FORMATION_VALUES
@@ -1130,6 +1132,15 @@ def lint_typed_constants(
             continue
         value = tokens[index + 1]
         if is_int_literal(value):
+            continue
+        if is_unvalidated_local_action_train_target(tokens, index, value):
+            findings.append(
+                Finding(
+                    line,
+                    "unvalidated-action-train-target",
+                    f"{value!r} is not validated as an action-train c: target; use direct train/can-train if that context is validated for this symbol",
+                )
+            )
             continue
         if (
             value in defined_constants
@@ -2018,6 +2029,16 @@ def is_valid_local_action_train_target(tokens: list[str], type_prefix_index: int
     )
 
 
+def is_unvalidated_local_action_train_target(tokens: list[str], type_prefix_index: int, value: str) -> bool:
+    if type_prefix_index < 2:
+        return False
+    return (
+        tokens[0] == "up-target-point"
+        and tokens[type_prefix_index - 1] == "action-train"
+        and (value, "up-target-point", "ActionTrainTarget") in UNVALIDATED_LOCAL_SYMBOL_COMMAND_CONTEXTS
+    )
+
+
 def is_archived_non_de_direct_id(parameter_name: str, value: str) -> bool:
     if parameter_name in {"BuildingId", "ObjectId", "UnitId"}:
         return value in NON_DE_ONLY_OBJECT_NAMES
@@ -2277,6 +2298,7 @@ def lint_command_schema(rule: object, defined_constants: set[str], constant_valu
                 direct_id_values is not None
                 and not (index > 0 and parameters[index - 1].get("name") in {"typeOp", "mathOp", "compareOp"})
                 and is_archived_non_de_direct_id(parameter_name, value)
+                and not is_valid_local_symbol_command_context(expr.head, parameter_name, value)
             ):
                 symbol_type = "tech" if parameter_name == "TechId" else "object"
                 findings.append(

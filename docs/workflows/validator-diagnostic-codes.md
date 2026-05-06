@@ -79,6 +79,7 @@ Manual `--suppress-code <code>` can suppress any finding code for one lint run. 
 | `stale-ai-root` | integrity | error | active | none | An `.ai` file did not resolve to any root `.per`. |
 | `unbalanced-parentheses` | lint | error | active | none | Parentheses close too early or the file is missing closing parentheses. |
 | `undefined-constant` | lint | warning | active | quick fix | A value after `c:` is not a known built-in, documented value, or reachable `defconst`. |
+| `unvalidated-action-train-target` | lint | warning | active | explain | A symbol is locally validated for some train contexts but is not validated as an `up-target-point ... action-train c:` target. |
 | `undefined-identifier` | lint | warning | active | quick fix | A token looks like an AoE identifier but is not known in reachable constants or local reference data. |
 | `undefined-position-constant` | lint | warning | active | quick fix | A position token used by `up-get-point` is not a built-in or reachable `defconst`. |
 | `undefined-strategic-number` | lint | warning | active | quick fix | A strategic-number token is not in the local DE SN registry or reachable constants. |
@@ -589,6 +590,16 @@ Manual `--suppress-code <code>` can suppress any finding code for one lint run. 
 - Corpus profile: active
 - Cursor action: quick fix
 - Meaning: A value after `c:` is not a known built-in, documented value, or reachable `defconst`.
+
+<a id="diagnostic-unvalidated-action-train-target"></a>
+
+### `unvalidated-action-train-target`
+
+- Source: lint
+- Default severity: warning
+- Corpus profile: active
+- Cursor action: explain
+- Meaning: A symbol is locally validated for some train contexts but is not validated as an `up-target-point ... action-train c:` target.
 
 <a id="diagnostic-undefined-identifier"></a>
 

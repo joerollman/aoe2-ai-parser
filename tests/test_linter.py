@@ -150,11 +150,11 @@ class LinterTests(unittest.TestCase):
             path.write_text(
                 """
 (defrule
-    (can-train donjon-spearman)
+    (can-train donjon-serjeant)
     (can-train donjon-pikeman)
     (can-train donjon-halberdier)
 =>
-    (train donjon-spearman)
+    (train donjon-serjeant)
     (train donjon-pikeman)
     (train donjon-halberdier)
 )
@@ -166,7 +166,7 @@ class LinterTests(unittest.TestCase):
 
         codes = [finding.code for finding in findings]
         self.assertIn("site-specific-train-alias-requires-defconst", codes)
-        self.assertTrue(any("defconst donjon-spearman 1786" in finding.message for finding in findings))
+        self.assertTrue(any("defconst donjon-serjeant 1660" in finding.message for finding in findings))
         self.assertTrue(any("defconst donjon-pikeman 1787" in finding.message for finding in findings))
         self.assertTrue(any("defconst donjon-halberdier 1788" in finding.message for finding in findings))
 
@@ -175,14 +175,17 @@ class LinterTests(unittest.TestCase):
             path = Path(tmp) / "sample.per"
             path.write_text(
                 """
+(defconst donjon-serjeant 1660)
 (defconst donjon-spearman 1786)
 (defconst donjon-pikeman 1787)
 (defconst donjon-halberdier 1788)
 (defrule
+    (can-train donjon-serjeant)
     (can-train donjon-spearman)
     (can-train donjon-pikeman)
     (can-train donjon-halberdier)
 =>
+    (train donjon-serjeant)
     (train donjon-spearman)
     (train donjon-pikeman)
     (train donjon-halberdier)
@@ -205,7 +208,6 @@ class LinterTests(unittest.TestCase):
     (true)
 =>
     (up-target-point gl-without-escrow action-train c: donjon-spearman)
-    (up-target-point gl-without-escrow action-train c: donjon-pikeman)
 )
 """.strip(),
                 encoding="utf-8",
@@ -218,7 +220,42 @@ class LinterTests(unittest.TestCase):
             for finding in findings
             if finding.code == "site-specific-train-alias-requires-defconst-warning"
         ]
-        self.assertEqual(len(relevant), 2)
+        self.assertEqual(len(relevant), 1)
+        self.assertTrue(all(finding.severity == "warning" for finding in relevant))
+
+    def test_warns_for_unvalidated_site_specific_action_train_targets_even_with_defconst(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.per"
+            path.write_text(
+                """
+(defconst gl-without-escrow 101)
+(defconst donjon-serjeant 1660)
+(defconst donjon-pikeman 1787)
+(defconst elite-donjon-serjeant 1661)
+(defconst krepost-konnik 1254)
+(defconst elite-krepost-konnik 1255)
+(defrule
+    (true)
+=>
+    (up-find-local c: donjon c: 1)
+    (up-target-point gl-without-escrow action-train c: donjon-serjeant)
+    (up-target-point gl-without-escrow action-train c: donjon-pikeman)
+    (up-target-point gl-without-escrow action-train c: elite-donjon-serjeant)
+    (up-find-local c: krepost c: 1)
+    (up-target-point gl-without-escrow action-train c: krepost-konnik)
+    (up-target-point gl-without-escrow action-train c: elite-krepost-konnik)
+)
+""".strip(),
+                encoding="utf-8",
+            )
+
+            findings = lint_file(path)
+
+        relevant = [
+            finding for finding in findings
+            if finding.code == "unvalidated-action-train-target"
+        ]
+        self.assertEqual(len(relevant), 5)
         self.assertTrue(all(finding.severity == "warning" for finding in relevant))
 
     def test_allows_locally_validated_unit_line_count_contexts(self) -> None:

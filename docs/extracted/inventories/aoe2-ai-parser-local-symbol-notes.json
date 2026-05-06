@@ -3,10 +3,50 @@
   "description": "Parser-maintained symbol notes for DE behavior that is not fully represented by imported AIRef inventories.",
   "symbols": [
     {
+      "name": "donjon-serjeant",
+      "kind": "site-specific-train-alias",
+      "id": 1660,
+      "requires_defconst": true,
+      "validated_command_contexts": [
+        {
+          "command": "can-train",
+          "parameter": "UnitId",
+          "result": "valid"
+        },
+        {
+          "command": "train",
+          "parameter": "UnitId",
+          "result": "valid"
+        },
+        {
+          "command": "up-target-point",
+          "parameter": "ActionTrainTarget",
+          "result": "unvalidated"
+        }
+      ],
+      "notes": [
+        "Use as a local alias with (defconst donjon-serjeant 1660) before direct can-train or train use.",
+        "Do not treat as a validated c: action-train target; an action-train probe reached can-train and issued the command from a Donjon, but no unit was produced before observation ended.",
+        "Do not treat as a DE built-in identifier."
+      ]
+    },
+    {
       "name": "donjon-spearman",
       "kind": "site-specific-train-alias",
       "id": 1786,
       "requires_defconst": true,
+      "validated_command_contexts": [
+        {
+          "command": "can-train",
+          "parameter": "UnitId",
+          "result": "valid"
+        },
+        {
+          "command": "train",
+          "parameter": "UnitId",
+          "result": "valid"
+        }
+      ],
       "notes": [
         "Use as a local alias with (defconst donjon-spearman 1786) before direct can-train or train use.",
         "Do not treat as a DE built-in identifier."
@@ -17,8 +57,26 @@
       "kind": "site-specific-train-alias",
       "id": 1787,
       "requires_defconst": true,
+      "validated_command_contexts": [
+        {
+          "command": "can-train",
+          "parameter": "UnitId",
+          "result": "valid"
+        },
+        {
+          "command": "train",
+          "parameter": "UnitId",
+          "result": "valid"
+        },
+        {
+          "command": "up-target-point",
+          "parameter": "ActionTrainTarget",
+          "result": "unvalidated"
+        }
+      ],
       "notes": [
         "Use as a local alias with (defconst donjon-pikeman 1787) before direct can-train or train use.",
+        "Do not treat as a validated c: action-train target; an action-train probe reached can-train and issued the command from a Donjon, but no unit was produced before observation ended.",
         "Do not treat as a DE built-in identifier."
       ]
     },
@@ -27,8 +85,26 @@
       "kind": "site-specific-train-alias",
       "id": 1788,
       "requires_defconst": true,
+      "validated_command_contexts": [
+        {
+          "command": "can-train",
+          "parameter": "UnitId",
+          "result": "valid"
+        },
+        {
+          "command": "train",
+          "parameter": "UnitId",
+          "result": "valid"
+        },
+        {
+          "command": "up-target-point",
+          "parameter": "ActionTrainTarget",
+          "result": "unvalidated"
+        }
+      ],
       "notes": [
         "Use as a local alias with (defconst donjon-halberdier 1788) before direct can-train or train use.",
+        "Do not treat as a validated c: action-train target; the action-train alias probe did not reach can-train for this symbol in its fixture.",
         "Do not treat as a DE built-in identifier."
       ]
     },
@@ -36,24 +112,78 @@
       "name": "elite-donjon-serjeant",
       "kind": "site-specific-train-target",
       "builtin_train_target": true,
+      "validated_command_contexts": [
+        {
+          "command": "can-train",
+          "parameter": "UnitId",
+          "result": "valid"
+        },
+        {
+          "command": "train",
+          "parameter": "UnitId",
+          "result": "valid"
+        },
+        {
+          "command": "up-target-point",
+          "parameter": "ActionTrainTarget",
+          "result": "unvalidated"
+        }
+      ],
       "notes": [
-        "Valid built-in direct train target for Donjon; produces elite-serjeant."
+        "Valid built-in direct train target for Donjon; produces elite-serjeant.",
+        "Do not treat as a validated c: action-train target; an action-train probe reached can-train and issued the command from a Donjon, but no unit was produced before observation ended."
       ]
     },
     {
       "name": "krepost-konnik",
       "kind": "site-specific-train-target",
       "builtin_train_target": true,
+      "validated_command_contexts": [
+        {
+          "command": "can-train",
+          "parameter": "UnitId",
+          "result": "valid"
+        },
+        {
+          "command": "train",
+          "parameter": "UnitId",
+          "result": "valid"
+        },
+        {
+          "command": "up-target-point",
+          "parameter": "ActionTrainTarget",
+          "result": "unvalidated"
+        }
+      ],
       "notes": [
-        "Valid built-in direct train target for Krepost; produces konnik."
+        "Valid built-in direct train target for Krepost; produces konnik.",
+        "Do not treat as a validated c: action-train target; an action-train probe reached can-train and issued the command from a Krepost, but no unit was produced before observation ended."
       ]
     },
     {
       "name": "elite-krepost-konnik",
       "kind": "site-specific-train-target",
       "builtin_train_target": true,
+      "validated_command_contexts": [
+        {
+          "command": "can-train",
+          "parameter": "UnitId",
+          "result": "valid"
+        },
+        {
+          "command": "train",
+          "parameter": "UnitId",
+          "result": "valid"
+        },
+        {
+          "command": "up-target-point",
+          "parameter": "ActionTrainTarget",
+          "result": "unvalidated"
+        }
+      ],
       "notes": [
-        "Valid built-in direct train target for Krepost; produces elite-konnik."
+        "Valid built-in direct train target for Krepost; produces elite-konnik.",
+        "Do not treat as a validated c: action-train target; an action-train probe reached can-train and issued the command from a Krepost, but no unit was produced before observation ended."
       ]
     },
     {

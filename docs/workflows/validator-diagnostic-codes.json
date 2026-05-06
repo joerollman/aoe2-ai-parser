@@ -428,6 +428,14 @@
       "meaning": "A value after `c:` is not a known built-in, documented value, or reachable `defconst`."
     },
     {
+      "code": "unvalidated-action-train-target",
+      "source": "lint",
+      "severity": "warning",
+      "corpus": "active",
+      "cursor_action": "explain",
+      "meaning": "A symbol is locally validated for some train contexts but is not validated as an `up-target-point ... action-train c:` target."
+    },
+    {
       "code": "undefined-identifier",
       "source": "lint",
       "severity": "warning",
