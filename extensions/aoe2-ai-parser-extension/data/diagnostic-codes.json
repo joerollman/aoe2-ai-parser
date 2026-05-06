@@ -380,6 +380,22 @@
       "meaning": "A typed comparison was split, such as `< g:` instead of `g:<`."
     },
     {
+      "code": "site-specific-train-alias-requires-defconst",
+      "source": "lint",
+      "severity": "error",
+      "corpus": "active",
+      "cursor_action": "explain",
+      "meaning": "A site-specific train-target alias is not a built-in identifier in DE and must be declared with the observed `defconst` value before direct `can-train` or `train` use."
+    },
+    {
+      "code": "site-specific-train-alias-requires-defconst-warning",
+      "source": "lint",
+      "severity": "warning",
+      "corpus": "active",
+      "cursor_action": "explain",
+      "meaning": "A site-specific train-target alias appears after `c:` but is not known as a built-in typed constant; declare the observed `defconst` value before using it in DUC train actions."
+    },
+    {
       "code": "source-line-too-long",
       "source": "lint",
       "severity": "error",

@@ -122,6 +122,83 @@ class LinterTests(unittest.TestCase):
 
         self.assertEqual(findings, [])
 
+    def test_flags_bare_observed_donjon_train_aliases(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.per"
+            path.write_text(
+                """
+(defrule
+    (can-train donjon-spearman)
+    (can-train donjon-pikeman)
+    (can-train donjon-halberdier)
+=>
+    (train donjon-spearman)
+    (train donjon-pikeman)
+    (train donjon-halberdier)
+)
+""".strip(),
+                encoding="utf-8",
+            )
+
+            findings = lint_file(path)
+
+        codes = [finding.code for finding in findings]
+        self.assertIn("site-specific-train-alias-requires-defconst", codes)
+        self.assertTrue(any("defconst donjon-spearman 1786" in finding.message for finding in findings))
+        self.assertTrue(any("defconst donjon-pikeman 1787" in finding.message for finding in findings))
+        self.assertTrue(any("defconst donjon-halberdier 1788" in finding.message for finding in findings))
+
+    def test_allows_defined_donjon_train_aliases(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.per"
+            path.write_text(
+                """
+(defconst donjon-spearman 1786)
+(defconst donjon-pikeman 1787)
+(defconst donjon-halberdier 1788)
+(defrule
+    (can-train donjon-spearman)
+    (can-train donjon-pikeman)
+    (can-train donjon-halberdier)
+=>
+    (train donjon-spearman)
+    (train donjon-pikeman)
+    (train donjon-halberdier)
+)
+""".strip(),
+                encoding="utf-8",
+            )
+
+            findings = lint_file(path)
+
+        self.assertEqual(findings, [])
+
+    def test_warns_for_typed_observed_donjon_train_alias_without_defconst(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.per"
+            path.write_text(
+                """
+(defconst gl-without-escrow 101)
+(defrule
+    (true)
+=>
+    (up-target-point gl-without-escrow action-train c: donjon-spearman)
+    (up-target-point gl-without-escrow action-train c: donjon-pikeman)
+)
+""".strip(),
+                encoding="utf-8",
+            )
+
+            findings = lint_file(path)
+
+        relevant = [
+            finding
+            for finding in findings
+            if finding.code == "site-specific-train-alias-requires-defconst-warning"
+        ]
+        self.assertEqual(len(relevant), 2)
+        self.assertTrue(all(finding.severity == "warning" for finding in relevant))
+
     def test_allows_documented_dynamic_unique_unit_ids_without_defconst(self) -> None:
         with TemporaryDirectory() as tmp:
             path = Path(tmp) / "sample.per"

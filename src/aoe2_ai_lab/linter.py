@@ -54,6 +54,7 @@ WARNING_FINDING_CODES = {
     "unsafe-goal-block",
     "up-can-build-zero-escrow",
     "up-build-place-point-coordinate-as-escrow",
+    "site-specific-train-alias-requires-defconst-warning",
     "xs-script-call-parameterized-function",
 }
 SUPPRESSION_MARKER = "aoe2-ai-parser-disable"
@@ -932,6 +933,11 @@ EFFECT_ID_VALUES = _load_value_family_names("EffectId")
 ORDER_ID_VALUES = _load_value_family_names("OrderId")
 TERRAIN_VALUES = _load_value_family_names("Terrain")
 WALL_ID_VALUES = _load_value_family_names("WallId") | {"stone-wall-line"}
+TRAIN_TARGET_ALIASES_REQUIRING_DEFCONST = {
+    "donjon-spearman": 1786,
+    "donjon-pikeman": 1787,
+    "donjon-halberdier": 1788,
+}
 DOCUMENTED_VALUE_CONSTANTS = normalize_value_family_names(
     DUC_ACTION_VALUES
     | FORMATION_VALUES
@@ -1081,6 +1087,15 @@ def lint_typed_constants(
         if value.startswith(("g:", "s:", "c:")):
             continue
         if is_symbolic_identifier(value):
+            if value in TRAIN_TARGET_ALIASES_REQUIRING_DEFCONST:
+                findings.append(
+                    Finding(
+                        line,
+                        "site-specific-train-alias-requires-defconst-warning",
+                        f"{value!r} is an observed Donjon train-target alias but is not a built-in typed constant; define it with defconst before using it after c:",
+                    )
+                )
+                continue
             findings.append(
                 Finding(
                     line,
@@ -1089,6 +1104,34 @@ def lint_typed_constants(
                 )
             )
     return findings
+
+
+def lint_site_specific_train_alias(
+    line: int,
+    expr: str,
+    defined_constants: set[str],
+) -> list[Finding]:
+    tokens = expression_tokens(expr)
+    if len(tokens) < 2:
+        return []
+
+    symbol = tokens[0]
+    target = tokens[1]
+    if symbol not in {"can-train", "can-train-with-escrow", "train"}:
+        return []
+    if target not in TRAIN_TARGET_ALIASES_REQUIRING_DEFCONST:
+        return []
+    if target in defined_constants:
+        return []
+
+    value = TRAIN_TARGET_ALIASES_REQUIRING_DEFCONST[target]
+    return [
+        Finding(
+            line,
+            "site-specific-train-alias-requires-defconst",
+            f"{target!r} failed in-game as a bare identifier; define `(defconst {target} {value})` before using it as a Donjon train target",
+        )
+    ]
 
 
 def lint_strategic_number_identifier(
@@ -3201,6 +3244,7 @@ def lint_file(
                 )
             findings.extend(apply_confidence(lint_strategic_number_identifier(action_line, action, defined_constants), rule_confidence))
             findings.extend(apply_confidence(lint_typed_constants(action_line, action, defined_constants), rule_confidence))
+            findings.extend(apply_confidence(lint_site_specific_train_alias(action_line, action, defined_constants), rule_confidence))
             findings.extend(apply_confidence(lint_common_identifier_uses(action_line, action, defined_constants), rule_confidence))
             findings.extend(apply_confidence(lint_multi_goal_writer(action_line, action, constant_values), rule_confidence))
             findings.extend(apply_confidence(lint_up_get_point_position_identifier(action_line, action, defined_constants), rule_confidence))
@@ -3210,6 +3254,7 @@ def lint_file(
         for fact, fact_line in expressions_with_lines(rule.facts, rule.fact_lines, rule.start_line):
             findings.extend(apply_confidence(lint_strategic_number_identifier(fact_line, fact, defined_constants), rule_confidence))
             findings.extend(apply_confidence(lint_typed_constants(fact_line, fact, defined_constants), rule_confidence))
+            findings.extend(apply_confidence(lint_site_specific_train_alias(fact_line, fact, defined_constants), rule_confidence))
             findings.extend(apply_confidence(lint_common_identifier_uses(fact_line, fact, defined_constants), rule_confidence))
             findings.extend(apply_confidence(lint_multi_goal_writer(fact_line, fact, constant_values), rule_confidence))
             findings.extend(apply_confidence(lint_up_get_point_position_identifier(fact_line, fact, defined_constants), rule_confidence))
