@@ -73,10 +73,10 @@ class DiagnosticRegistryTests(unittest.TestCase):
 
         self.assertEqual(
             [reference["label"] for reference in entry["references"]],
-            ["Local AI scripting limits", "AIRef Data Limits"],
+            ["Internal validation notes", "AIRef Data Limits"],
         )
         self.assertIn("https://airef.github.io/resources/articles/data-limits.html", markdown)
-        self.assertIn("../reference/ai-scripting-reference.md#data-limits-that-affect-this-project", markdown)
+        self.assertIn("internal-validation-notes.md#defconst-numeric-range", markdown)
 
     def test_extension_registry_copy_matches_source_json(self) -> None:
         self.assertEqual(

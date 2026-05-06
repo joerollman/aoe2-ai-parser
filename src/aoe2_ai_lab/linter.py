@@ -84,7 +84,7 @@ def finding_suggestion(code: str, message: str) -> str | None:
     if code == "defconst-alias-cycle":
         return "Break the alias cycle by assigning one constant a numeric value or a non-cyclic documented symbol."
     if code == "defconst-value-out-of-range":
-        return "Use a value from -32768 to 32767, or store wider runtime values in goals or strategic numbers instead of defconsts."
+        return "Use a signed 32-bit integer value from -2147483648 to 2147483647."
     if code == "command-role-mismatch":
         if "likely intended action:" in message:
             return message.split("likely intended action:", 1)[1].strip()
@@ -307,8 +307,8 @@ RECOVERABLE_STRUCTURE_CODES = {
     "unbalanced-parentheses",
     "unterminated-defrule",
 }
-DEFCONST_MIN_VALUE = -32768
-DEFCONST_MAX_VALUE = 32767
+DEFCONST_MIN_VALUE = -2147483648
+DEFCONST_MAX_VALUE = 2147483647
 MAX_SOURCE_LINE_LENGTH = 255
 
 
@@ -1595,7 +1595,7 @@ def lint_defconst_numeric_range(path: Path) -> list[Finding]:
                 Finding(
                     source_line.number,
                     "defconst-value-out-of-range",
-                    f"defconst {name!r} value {value} is outside signed 16-bit range {DEFCONST_MIN_VALUE} to {DEFCONST_MAX_VALUE}",
+                    f"defconst {name!r} value {value} is outside signed 32-bit range {DEFCONST_MIN_VALUE} to {DEFCONST_MAX_VALUE}",
                     source_line.confidence,
                 )
             )

@@ -118,12 +118,12 @@
       "severity": "error",
       "corpus": "active",
       "cursor_action": "explain",
-      "meaning": "A numeric `defconst` value is outside the documented signed 16-bit range of -32768 to 32767.",
+      "meaning": "A numeric `defconst` value is outside the observed signed 32-bit range of -2147483648 to 2147483647.",
       "references": [
         {
-          "label": "Local AI scripting limits",
-          "path": "../reference/ai-scripting-reference.md",
-          "anchor": "data-limits-that-affect-this-project"
+          "label": "Internal validation notes",
+          "path": "internal-validation-notes.md",
+          "anchor": "defconst-numeric-range"
         },
         {
           "label": "AIRef Data Limits",

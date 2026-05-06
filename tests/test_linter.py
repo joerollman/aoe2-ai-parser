@@ -1304,13 +1304,13 @@ class LinterTests(unittest.TestCase):
             ["builtin-constant-alias"],
         )
 
-    def test_flags_defconst_numeric_value_outside_signed_16_bit_range(self) -> None:
+    def test_flags_defconst_numeric_value_outside_signed_32_bit_range(self) -> None:
         with TemporaryDirectory() as tmp:
             path = Path(tmp) / "sample.per"
             path.write_text(
                 """
-(defconst chat-buffer 7031232)
-(defconst too-low -32769)
+(defconst too-high 2147483648)
+(defconst too-low -2147483649)
 (defrule
     (true)
 =>
@@ -1328,15 +1328,18 @@ class LinterTests(unittest.TestCase):
         )
         self.assertEqual([finding.line for finding in findings], [1, 2])
         self.assertEqual(findings[0].severity, "error")
-        self.assertIn("signed 16-bit", findings[0].message)
+        self.assertIn("signed 32-bit", findings[0].message)
 
-    def test_allows_defconst_numeric_value_at_signed_16_bit_boundaries(self) -> None:
+    def test_allows_defconst_numeric_value_at_signed_32_bit_boundaries(self) -> None:
         with TemporaryDirectory() as tmp:
             path = Path(tmp) / "sample.per"
             path.write_text(
                 """
-(defconst minimum -32768)
-(defconst maximum 32767)
+(defconst below-old-short -32769)
+(defconst above-old-short 32768)
+(defconst large-observed 2000000)
+(defconst minimum -2147483648)
+(defconst maximum 2147483647)
 (defconst alias maximum)
 (defconst greeting "hello")
 (defrule

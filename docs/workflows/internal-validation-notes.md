@@ -89,3 +89,31 @@ Implementation note:
 
 - User-facing linter output should say the argument is not validated for that
   command slot, not reference the scenario fixture directly.
+
+## Defconst Numeric Range
+
+Public diagnostics:
+
+- `defconst-value-out-of-range`
+
+Internal validation source:
+
+- Lab repo: `C:\Users\joero\programming-projects\aoe2-ai-lab`
+- Scenario harness: `ai/defconst_range_probe/defconst_range_probe.per`
+- Scenario config: `docs/workflows/scenario-defconst-range-probe.config.json`
+
+Validated behavior:
+
+- DE accepted and matched numeric `defconst` values outside signed 16-bit range:
+  `32768`, `65536`, `350000`, `2000000`, and `-32769`.
+- These values were assigned with `set-goal` and then successfully checked with
+  `goal`, ending in `DEFCONST-RANGE ALL-TESTS-COMPLETE`.
+- This contradicts the older local AI scripting limit note that numeric
+  `defconst` values are C++ `short` values.
+
+Implementation note:
+
+- Treat ordinary numeric `defconst` values as signed 32-bit integers for parser
+  validation.
+- Keep command-parameter-specific range checks separate. A large constant can be
+  legal as a `defconst` while still invalid for a parameter such as `GoalId`.

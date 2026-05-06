@@ -162,9 +162,11 @@ Important limits for `sample_ai` work:
 - Rules are limited to 10,000 total.
 - Timers are 1-50.
 - Preprocessor conditional loading commands can nest up to 50 levels.
-- Defconst values are limited to signed 16-bit integer range
-  (`-32768` to `32767`). The validator reports
-  `defconst-value-out-of-range` for numeric constants outside this range.
+- Numeric `defconst` values were historically documented as signed 16-bit
+  integers, but local DE probes validated larger values including `32768`,
+  `65536`, `350000`, `2000000`, and `-32769`. The validator now treats numeric
+  `defconst` values as signed 32-bit integers and reports
+  `defconst-value-out-of-range` only outside that range.
 - Compact same-line constants such as `(defconst a 1)(defconst b 2)` are treated
   as separate declarations by the local parser.
 - Lines are limited to 255 characters, comments included. The validator reports
@@ -673,7 +675,7 @@ DE limits from the community reference:
 - Goals: 1 to 512
 - Strategic numbers: 0 to 511
 - Timers: 1 to 50
-- Defconst values: -32768 to 32767, or a text string
+- Defconst values: observed signed 32-bit integer range, or a text string
 - Goal/SN values: signed 32-bit integer range
 - Taunts: 1 to 255
 - Characters per line: 255, including comments

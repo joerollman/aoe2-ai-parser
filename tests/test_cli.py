@@ -65,7 +65,7 @@ class CliTests(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertIn("defconst-value-out-of-range", output)
         self.assertIn("severity: error", output)
-        self.assertIn("signed 16-bit", output)
+        self.assertIn("signed 32-bit", output)
         self.assertIn("AIRef Data Limits", output)
         self.assertNotIn("unsafe-set-target-object", output)
 
@@ -84,7 +84,7 @@ class CliTests(unittest.TestCase):
     def test_lint_json_includes_diagnostic_references_for_range_limits(self) -> None:
         with tempfile.TemporaryDirectory(prefix="aoe2_lint_refs_") as temp_dir:
             path = Path(temp_dir) / "Bad.per"
-            path.write_text("(defconst too-large 32768)\n", encoding="utf-8")
+            path.write_text("(defconst too-large 2147483648)\n", encoding="utf-8")
 
             buffer = io.StringIO()
             with redirect_stdout(buffer):
@@ -96,7 +96,7 @@ class CliTests(unittest.TestCase):
             self.assertEqual(finding["code"], "defconst-value-out-of-range")
             self.assertEqual(
                 [reference["label"] for reference in finding["references"]],
-                ["Local AI scripting limits", "AIRef Data Limits"],
+                ["Internal validation notes", "AIRef Data Limits"],
             )
             self.assertEqual(
                 finding["references"][1]["url"],
@@ -1256,7 +1256,7 @@ class CliTests(unittest.TestCase):
         with WorkspaceTempDir() as root:
             report_path = root / "nested" / "reports" / "package.md"
             (root / "Broken.ai").write_text('(load "Broken")\n', encoding="utf-8")
-            (root / "Broken.per").write_text("(defconst too-large 32768)\n", encoding="utf-8")
+            (root / "Broken.per").write_text("(defconst too-large 2147483648)\n", encoding="utf-8")
 
             buffer = io.StringIO()
             with redirect_stdout(buffer):
@@ -1269,7 +1269,7 @@ class CliTests(unittest.TestCase):
             report_path.parent,
         ).replace(os.sep, "/")
         limits_reference = os.path.relpath(
-            REPO_ROOT / "docs" / "reference" / "ai-scripting-reference.md",
+            REPO_ROOT / "docs" / "workflows" / "internal-validation-notes.md",
             report_path.parent,
         ).replace(os.sep, "/")
         self.assertIn(
@@ -1277,7 +1277,7 @@ class CliTests(unittest.TestCase):
             report,
         )
         self.assertIn(
-            f"[Local AI scripting limits]({limits_reference}#data-limits-that-affect-this-project)",
+            f"[Internal validation notes]({limits_reference}#defconst-numeric-range)",
             report,
         )
         self.assertNotIn("validator-diagnostic-codes.md#diagnostic-defconst-value-out-of-range.md", report)

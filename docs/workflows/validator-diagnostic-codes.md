@@ -41,7 +41,7 @@ Manual `--suppress-code <code>` can suppress any finding code for one lint run. 
 | `command-typed-operand-mismatch` | lint | warning | active | explain | A valid typed prefix or typed operator is followed by an operand whose name strongly suggests a different type, such as `g:` or `g:=` before an `sn-*` strategic number. |
 | `defrule-missing-arrow` | lint | error | active | none | A `defrule` closed without an `=>` separator. |
 | `defconst-alias-cycle` | lint | warning | active | none | A set of `defconst` aliases forms a cycle, so the constants cannot resolve to a numeric value. |
-| `defconst-value-out-of-range` | lint | error | active | explain | A numeric `defconst` value is outside the documented signed 16-bit range of -32768 to 32767. |
+| `defconst-value-out-of-range` | lint | error | active | explain | A numeric `defconst` value is outside the observed signed 32-bit range of -2147483648 to 2147483647. |
 | `duplicate-preprocessor-else` | preprocessor | error | active | none | One `#load-if-defined` or `#load-if-not-defined` block contains more than one `#else`. |
 | `duplicate-root-target` | integrity | warning | active | none | Multiple `.ai` files resolve to the same root `.per`. This can be intentional for personalities but should be explicit. |
 | `duplicate-ai-name` | integrity | warning | active | none | Multiple `.ai` files have the same case-insensitive display name. This can confuse package users and launcher/editor selection. |
@@ -217,9 +217,9 @@ Manual `--suppress-code <code>` can suppress any finding code for one lint run. 
 - Default severity: error
 - Corpus profile: active
 - Cursor action: explain
-- Meaning: A numeric `defconst` value is outside the documented signed 16-bit range of -32768 to 32767.
+- Meaning: A numeric `defconst` value is outside the observed signed 32-bit range of -2147483648 to 2147483647.
 - References:
-  - [Local AI scripting limits](../reference/ai-scripting-reference.md#data-limits-that-affect-this-project)
+  - [Internal validation notes](internal-validation-notes.md#defconst-numeric-range)
   - [AIRef Data Limits](https://airef.github.io/resources/articles/data-limits.html)
 
 <a id="diagnostic-duplicate-preprocessor-else"></a>
