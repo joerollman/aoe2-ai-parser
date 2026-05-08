@@ -890,6 +890,42 @@ class LinterTests(unittest.TestCase):
         self.assertEqual(findings[0].code, "builtin-constant-alias")
         self.assertIn("'villager-class'", findings[0].message)
 
+    def test_allows_confirmed_builtin_class_token_bare(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.per"
+            path.write_text(
+                """
+(defrule
+    (up-object-data object-data-class == building-class)
+=>
+    (do-nothing)
+)
+""".strip(),
+                encoding="utf-8",
+            )
+
+            findings = lint_file(path)
+
+        self.assertNotIn("undefined-identifier", [finding.code for finding in findings])
+
+    def test_flags_non_builtin_class_token_bare(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.per"
+            path.write_text(
+                """
+(defrule
+    (up-object-data object-data-class == monument-class)
+=>
+    (do-nothing)
+)
+""".strip(),
+                encoding="utf-8",
+            )
+
+            findings = lint_file(path)
+
+        self.assertIn("undefined-identifier", [finding.code for finding in findings])
+
     def test_corpus_profile_suppresses_builtin_alias_noise(self) -> None:
         with TemporaryDirectory() as tmp:
             path = Path(tmp) / "sample.per"
@@ -3876,7 +3912,7 @@ void debug() {
     (up-modify-group-flag 1 c: 1)
     (up-reset-group c: 1)
     (up-create-group 0 0 c: 1)
-    (up-find-local c: scout-cavalry-class c: 1)
+    (up-find-local c: villager-class c: 1)
     (up-set-attack-stance spearman-line c: stance-stand-ground)
     (up-assign-builders c: house c: 1)
     (up-set-placement-data my-player-number house c: 1)

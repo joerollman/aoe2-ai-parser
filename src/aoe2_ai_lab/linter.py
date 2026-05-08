@@ -319,7 +319,7 @@ def _load_builtin_class_entries() -> tuple[set[str], dict[int, set[str]]]:
         / "docs"
         / "extracted"
         / "inventories"
-        / "airef-value-family-inventory.json"
+        / "airef-class-inventory.json"
     )
     if not inventory_path.exists():
         return set(), {}
@@ -327,24 +327,18 @@ def _load_builtin_class_entries() -> tuple[set[str], dict[int, set[str]]]:
     data = json.loads(inventory_path.read_text(encoding="utf-8-sig"))
     builtin_names: set[str] = set()
     builtin_ids: dict[int, set[str]] = {}
-    for family in data.get("families", []):
-        if family.get("parameter_name") != "ClassId":
+    for entry in data.get("entries", []):
+        symbol = str(entry.get("symbol", "")).rstrip("*")
+        builtin_exposure = entry.get("validation", {}).get("builtin_exposure", {})
+        if not symbol or builtin_exposure.get("status") != "built-in-confirmed":
             continue
-        for entry in family.get("entries", []):
-            name = entry.get("name")
-            entry_id = entry.get("id")
-            if not name or entry_id is None:
-                continue
-            builtin_names.add(name)
-            if name.endswith("*"):
-                builtin_names.add(name.rstrip("*"))
-            try:
-                numeric_id = int(entry_id)
-            except (TypeError, ValueError):
-                continue
-            builtin_ids.setdefault(numeric_id, set()).add(name)
-            if name.endswith("*"):
-                builtin_ids.setdefault(numeric_id, set()).add(name.rstrip("*"))
+        entry_id = entry.get("de_id", entry.get("legacy_id"))
+        builtin_names.add(symbol)
+        try:
+            numeric_id = int(entry_id)
+        except (TypeError, ValueError):
+            continue
+        builtin_ids.setdefault(numeric_id, set()).add(symbol)
     return builtin_names, builtin_ids
 
 
@@ -1373,6 +1367,8 @@ def lint_common_identifier_uses(
     for token in tokens[1:]:
         if token in defined_constants or token in BUILTIN_TYPED_CONSTANTS:
             continue
+        if token in BUILTIN_CLASS_NAMES:
+            continue
         if token in DOCUMENTED_TYPED_CONSTANTS or token in KNOWN_STRATEGIC_NUMBER_NAMES:
             continue
         if token in ARCHIVED_NON_DE_STRATEGIC_NUMBER_NAMES:
@@ -1393,7 +1389,7 @@ def lint_common_identifier_uses(
             continue
         if token == head:
             continue
-        if any(token.startswith(prefix) for prefix in COMMON_DEFINED_IDENTIFIER_PREFIXES):
+        if any(token.startswith(prefix) for prefix in COMMON_DEFINED_IDENTIFIER_PREFIXES) or token.endswith("-class"):
             findings.append(
                 Finding(
                     line,

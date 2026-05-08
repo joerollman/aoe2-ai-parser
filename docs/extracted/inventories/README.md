@@ -12,6 +12,7 @@ Imported reference inventories:
 - `airef-parameter-inventory.json`
 - `airef-strategic-number-inventory.json`
 - `airef-value-family-inventory.json`
+- `airef-class-inventory.json`
 - `airef-object-inventory.json`
 - `airef-tech-inventory.json`
 - `xs-function-inventory.json`

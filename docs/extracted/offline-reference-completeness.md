@@ -30,6 +30,7 @@ in `.per` scripting and local tooling:
 | Parameters | `inventories/airef-parameter-inventory.json` | `parameter-inventory` |
 | Strategic numbers | `inventories/airef-strategic-number-inventory.json` | `strategic-number-inventory` |
 | Enum/value families | `inventories/airef-value-family-inventory.json` | `value-family`, `value-entry` |
+| Classes | `inventories/airef-class-inventory.json` | `class-entry` |
 | Objects | `inventories/airef-object-inventory.json` | `object-inventory` |
 | Techs | `inventories/airef-tech-inventory.json` | `tech-inventory` |
 | XS functions | `inventories/xs-function-inventory.json` | `xs-function-inventory` |
@@ -50,7 +51,7 @@ in `.per` scripting and local tooling:
 | Actions | `value-entry` under `ActionId` or `DUCAction` |
 | Math operations | `value-entry` under `mathOp`; use the `id` field as the DE ID, with `legacy_id` preserved separately |
 | DUC actions | `value-entry` under `DUCAction` |
-| Classes | `value-entry` under `ClassId` |
+| Classes | `class-entry` |
 | Resource types | `value-entry` under `Resource` |
 | Comparison operations | `value-entry` under `compareOp`; use the `id` field as the DE ID, with `legacy_id` preserved separately |
 | Position types | `value-entry` under `PositionType` |

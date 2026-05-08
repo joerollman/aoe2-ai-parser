@@ -71,6 +71,11 @@ def load_registry(path: Path) -> dict[str, Any]:
         inventory = json.loads(value_inventory_path.read_text(encoding="utf-8-sig"))
         data["value_family_inventory"] = inventory.get("families", [])
         data["value_family_inventory_metadata"] = inventory.get("metadata", {})
+    class_inventory_path = inventory_path_for(path, "airef-class-inventory.json")
+    if class_inventory_path.exists():
+        inventory = json.loads(class_inventory_path.read_text(encoding="utf-8-sig"))
+        data["class_inventory"] = inventory.get("entries", [])
+        data["class_inventory_metadata"] = inventory.get("metadata", {})
     object_inventory_path = inventory_path_for(path, "airef-object-inventory.json")
     if object_inventory_path.exists():
         inventory = json.loads(object_inventory_path.read_text(encoding="utf-8-sig"))
@@ -334,6 +339,32 @@ def iter_registry_entries(data: dict[str, Any]) -> list[RegistryEntry]:
                     validation_status="airef-imported",
                 )
             )
+
+    for item in data.get("class_inventory", []):
+        symbol = str(item.get("symbol", "")).rstrip("*")
+        entry_id = f"airef-class::{symbol}::{item.get('de_id', item.get('legacy_id', ''))}"
+        entries.append(
+            RegistryEntry(
+                kind="class-entry",
+                entry_id=entry_id,
+                name=symbol,
+                summary=str(item.get("description", "")),
+                source_urls=("https://airef.github.io/parameters/parameters-details.html#ClassId",),
+                lookup_terms=tuple(
+                    str(value)
+                    for value in [
+                        symbol,
+                        item.get("de_id", ""),
+                        item.get("legacy_id", ""),
+                        *item.get("aliases", []),
+                    ]
+                    if str(value)
+                ),
+                aliases=tuple(item.get("aliases", [])),
+                tags=("class-entry", "airef-imported", "ClassId"),
+                validation_status=item.get("validation", {}).get("status", "airef-imported"),
+            )
+        )
 
     for obj in data.get("object_inventory", []):
         entries.append(
@@ -682,7 +713,7 @@ def search_registry(
             score += 35
         elif entry.kind == "command-inventory":
             score += 22
-        elif entry.kind in {"parameter-inventory", "strategic-number-inventory", "value-entry", "object-inventory", "tech-inventory", "xs-function-inventory", "xs-constant-inventory", "rms-fixture", "rms-topic-inventory", "local-symbol-note"}:
+        elif entry.kind in {"parameter-inventory", "strategic-number-inventory", "value-entry", "class-entry", "object-inventory", "tech-inventory", "xs-function-inventory", "xs-constant-inventory", "rms-fixture", "rms-topic-inventory", "local-symbol-note"}:
             score += 20
         elif entry.kind == "value-family":
             score += 14
@@ -735,6 +766,23 @@ def _find_value_entry(data: dict[str, Any], entry_id: str) -> tuple[dict[str, An
                 if str(item.get("name", "")) == item_name:
                     return family, item
     return None
+
+
+def _find_class_inventory(data: dict[str, Any], entry_id: str) -> dict[str, Any] | None:
+    parts = entry_id.split("::")
+    if len(parts) < 3:
+        return None
+    symbol = parts[1]
+    class_id = parts[2]
+    return next(
+        (
+            item
+            for item in data.get("class_inventory", [])
+            if str(item.get("symbol", "")).rstrip("*") == symbol
+            and str(item.get("de_id", item.get("legacy_id", ""))) == class_id
+        ),
+        None,
+    )
 
 
 def _find_object_inventory(data: dict[str, Any], entry_id: str) -> dict[str, Any] | None:
@@ -851,6 +899,17 @@ def entry_details(data: dict[str, Any], entry: RegistryEntry) -> dict[str, Any]:
             "aliases": item.get("aliases", []),
             "parameter": item.get("parameter", ""),
             "players": item.get("players", ""),
+        }
+    if entry.kind == "class-entry":
+        item = _find_class_inventory(data, entry.entry_id)
+        if not item:
+            return {}
+        return {
+            "parameter_name": "ClassId",
+            "de_id": item.get("de_id", ""),
+            "legacy_id": item.get("legacy_id", ""),
+            "aliases": item.get("aliases", []),
+            "builtin_exposure": item.get("validation", {}).get("builtin_exposure", {}),
         }
     if entry.kind == "object-inventory":
         item = _find_object_inventory(data, entry.entry_id)

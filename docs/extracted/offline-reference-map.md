@@ -57,6 +57,11 @@ Most of these come from:
 - `ObjectData`
 - `PositionType`
 
+Exception:
+
+- classes now resolve from the dedicated class inventory
+- use `resolve-reference <token> --kind class-entry` for `*-class` tokens when you want the class-specific source of truth
+
 ### A strategic number
 
 Examples:
