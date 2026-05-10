@@ -73,6 +73,14 @@
       "meaning": "A schema-validated command has the wrong number of arguments."
     },
     {
+      "code": "complex-single-line-defrule",
+      "source": "lint",
+      "severity": "error",
+      "corpus": "active",
+      "cursor_action": "none",
+      "meaning": "A long single-line `defrule` is risky because DE can reject it unpredictably even when the repo parser accepts it. Expand the rule across multiple lines."
+    },
+    {
       "code": "command-role-mismatch",
       "source": "lint",
       "severity": "error",

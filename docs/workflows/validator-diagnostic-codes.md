@@ -36,6 +36,7 @@ Manual `--suppress-code <code>` can suppress any finding code for one lint run. 
 | `command-family-mismatch` | lint | warning | active | explain | A command argument is in a direct id slot but its symbol name strongly suggests a different family, such as an `sn-*` strategic number in a `GoalId` slot. |
 | `command-numeric-range-mismatch` | lint | warning | active | explain | A literal numeric command argument or resolved integer `defconst` is outside an explicit documented range for that parameter, such as `0` in a `GoalId` slot documented as `1 to 16000`. |
 | `command-arity-mismatch` | lint | error | active | none | A schema-validated command has the wrong number of arguments. |
+| `complex-single-line-defrule` | lint | error | active | none | A long single-line `defrule` is risky because DE can reject it unpredictably even when the repo parser accepts it. Expand the rule across multiple lines. |
 | `command-role-mismatch` | lint | error | active | explain | A command documented as Fact/Action/FactAction is used in the wrong rule side or nested context. |
 | `command-typed-prefix-mismatch` | lint | error | active | quick fix, explain | A `typeOp` slot received a math/compare operator such as `g:=` instead of a plain type prefix such as `g:`. |
 | `command-typed-operand-mismatch` | lint | warning | active | explain | A valid typed prefix or typed operator is followed by an operand whose name strongly suggests a different type, such as `g:` or `g:=` before an `sn-*` strategic number. |
@@ -158,6 +159,16 @@ Manual `--suppress-code <code>` can suppress any finding code for one lint run. 
 - Corpus profile: active
 - Cursor action: none
 - Meaning: A schema-validated command has the wrong number of arguments.
+
+<a id="diagnostic-complex-single-line-defrule"></a>
+
+### `complex-single-line-defrule`
+
+- Source: lint
+- Default severity: error
+- Corpus profile: active
+- Cursor action: none
+- Meaning: A long single-line `defrule` is risky because DE can reject it unpredictably even when the repo parser accepts it. Expand the rule across multiple lines.
 
 <a id="diagnostic-command-role-mismatch"></a>
 
