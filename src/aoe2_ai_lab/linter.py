@@ -1801,6 +1801,7 @@ def lint_defrule_structure(path: Path) -> list[Finding]:
     saw_arrow = False
     start_line = 0
     rule_balance = 0
+    complex_single_line_threshold = 150
 
     for source_line in active_source_lines(path):
         index = source_line.number
@@ -1825,6 +1826,14 @@ def lint_defrule_structure(path: Path) -> list[Finding]:
             if split_rule_arrow(code) is not None:
                 saw_arrow = True
             if rule_balance == 0:
+                if saw_arrow and len(code) > complex_single_line_threshold:
+                    findings.append(
+                        Finding(
+                            start_line,
+                            "complex-single-line-defrule",
+                            "long single-line defrule is risky; expand it across multiple lines because DE may reject it",
+                        )
+                    )
                 if not saw_arrow:
                     findings.append(
                         Finding(
@@ -3157,6 +3166,8 @@ def lint_unsafe_set_target_objects(rules: tuple[object, ...]) -> list[Finding]:
                 search_ready["search-local"] = True
             elif symbol == "up-find-remote":
                 search_ready["search-remote"] = True
+            elif symbol == "up-find-resource":
+                search_ready["search-remote"] = True
             elif symbol == "up-set-group":
                 if len(tokens) > 1 and tokens[1] in search_ready:
                     search_ready[tokens[1]] = True
@@ -3177,6 +3188,9 @@ def lint_unsafe_set_target_objects(rules: tuple[object, ...]) -> list[Finding]:
                 search_ready["search-local"] = True
                 continue
             if symbol == "up-find-remote":
+                search_ready["search-remote"] = True
+                continue
+            if symbol == "up-find-resource":
                 search_ready["search-remote"] = True
                 continue
             if symbol == "up-set-group":

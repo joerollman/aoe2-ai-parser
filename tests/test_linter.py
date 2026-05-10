@@ -2446,6 +2446,29 @@ void debug() {
 
         self.assertEqual(findings[0].code, "unsafe-set-target-object")
 
+    def test_allows_action_set_target_object_after_find_resource(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.per"
+            path.write_text(
+                """
+(defconst status-ready 2)
+(defconst list-active 0)
+(defrule
+    (true)
+=>
+    (up-filter-status c: status-ready c: list-active)
+    (up-find-resource c: wood c: 1)
+    (up-set-target-object search-remote c: 0)
+    (disable-self)
+)
+""".strip(),
+                encoding="utf-8",
+            )
+
+            findings = lint_file(path)
+
+        self.assertEqual(findings, [])
+
     def test_flags_target_object_arity_mismatch(self) -> None:
         with TemporaryDirectory() as tmp:
             path = Path(tmp) / "sample.per"
@@ -3093,6 +3116,20 @@ void debug() {
             findings = lint_file(path)
 
         self.assertEqual([finding.code for finding in findings], ["empty-fact"])
+
+    def test_flags_complex_single_line_defrule(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.per"
+            path.write_text(
+                "(defrule (true) => (set-goal 0 1) (set-goal 1 2) (set-goal 2 3) "
+                "(set-goal 3 4) (set-goal 4 5) (set-goal 5 6) (set-goal 6 7) "
+                "(set-goal 7 8) (set-goal 8 9) (set-goal 9 10) (disable-self))",
+                encoding="utf-8",
+            )
+
+            findings = lint_file(path)
+
+        self.assertIn("complex-single-line-defrule", [finding.code for finding in findings])
 
     def test_flags_literal_typed_signal_id_outside_documented_range(self) -> None:
         with TemporaryDirectory() as tmp:
